@@ -1,0 +1,5 @@
+../Core/Src/BMP280.c:11:9:BMP280_Init	2
+../Core/Src/BMP280.c:80:19:BMP280_ReadTemperature	1
+../Core/Src/BMP280.c:86:19:BMP280_ReadRegister	1
+../Core/Src/BMP280.c:98:19:BMP280_ReadRegisters	1
+../Core/Src/BMP280.c:110:19:BMP280_WriteRegister	1

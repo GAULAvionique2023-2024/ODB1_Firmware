@@ -1,0 +1,4 @@
+../Core/Src/ICM20602.c:10:9:ICM20602_Init	2
+../Core/Src/ICM20602.c:50:19:ICM20602_ReadRegister	1
+../Core/Src/ICM20602.c:64:19:ICM20602_ReadRegisters	1
+../Core/Src/ICM20602.c:78:19:ICM20602_WriteRegister	1

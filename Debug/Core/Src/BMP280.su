@@ -1,0 +1,5 @@
+../Core/Src/BMP280.c:11:9:BMP280_Init	32	static
+../Core/Src/BMP280.c:80:19:BMP280_ReadTemperature	16	static
+../Core/Src/BMP280.c:86:19:BMP280_ReadRegister	32	static
+../Core/Src/BMP280.c:98:19:BMP280_ReadRegisters	32	static
+../Core/Src/BMP280.c:110:19:BMP280_WriteRegister	32	static
