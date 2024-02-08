@@ -1,4 +1,0 @@
-../Core/Src/ICM20602.c:10:9:ICM20602_Init	32	static
-../Core/Src/ICM20602.c:50:19:ICM20602_ReadRegister	32	static
-../Core/Src/ICM20602.c:64:19:ICM20602_ReadRegisters	32	static
-../Core/Src/ICM20602.c:78:19:ICM20602_WriteRegister	32	static

@@ -17,16 +17,13 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
-
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
+#include <main.h>
 #include "string.h"
 #include "stdio.h"
 #include "stdbool.h"
-#include "BMP280.h"
-
-#include "ICM20602.h"
+#include "GAUL_Drivers/BMP280.h"
+#include "GAUL_Drivers/ICM20602.h"
+#include "GAUL_Drivers/ws2812_led.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -37,10 +34,13 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+
+
 
 /* USER CODE END PM */
 
@@ -67,23 +67,21 @@ DMA_HandleTypeDef hdma_usart2_rx;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM3_Init(void);
-static void MX_TIM2_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
 /* USER CODE BEGIN PFP */
-
+//void solid_colors(struct pixel *framebuffer, uint8_t r, uint8_t g, uint8_t b);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
 /* USER CODE END 0 */
 
 /**
@@ -114,21 +112,22 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
   MX_SPI1_Init();
   MX_SPI2_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_TIM3_Init();
-  MX_TIM2_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
+
   /* USER CODE BEGIN 2 */
   BMP280 bmp;
   ICM20602 icm;
 
   uint8_t status = 0;
+
+
 
   printf(" Starting \n");
 
@@ -140,6 +139,7 @@ int main(void)
   if(status == 0){printf("BMP280 DETECT!\n");}
   else {printf("status = %d \n", status);}
 
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -147,11 +147,36 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
 
+	      __enable_irq();
+	      HAL_Delay(200);
+
+	      memset(led_channels, 0, sizeof(led_channels));
+
+	      led_channels[0].framebuffer = channel_framebuffers;
+	      led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
+
+	      WS2812_Init();
+	      while(1)
+	      {
+
+	    	  WS2812_Solid_Colors(channel_framebuffers[0], led_channels, 0, 255, 0);
+	          HAL_Delay(500);
+	          WS2812_Solid_Colors(channel_framebuffers[0], led_channels, 255, 0, 0);
+	          HAL_Delay(500);
+	          WS2812_Solid_Colors(channel_framebuffers[0], led_channels, 0, 0, 255);
+	          HAL_Delay(500);
+
+	      }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
+
+
+
+
 
 /**
   * @brief System Clock Configuration
@@ -349,51 +374,6 @@ static void MX_SPI2_Init(void)
 }
 
 /**
-  * @brief TIM2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM2_Init(void)
-{
-
-  /* USER CODE BEGIN TIM2_Init 0 */
-
-  /* USER CODE END TIM2_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM2_Init 1 */
-
-  /* USER CODE END TIM2_Init 1 */
-  htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 65535;
-  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM2_Init 2 */
-
-  /* USER CODE END TIM2_Init 2 */
-
-}
-
-/**
   * @brief TIM3 Initialization Function
   * @param None
   * @retval None
@@ -548,22 +528,6 @@ static void MX_USART3_UART_Init(void)
   /* USER CODE BEGIN USART3_Init 2 */
 
   /* USER CODE END USART3_Init 2 */
-
-}
-
-/**
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void)
-{
-
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
-
-  /* DMA interrupt init */
-  /* DMA1_Channel6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
 
 }
 
