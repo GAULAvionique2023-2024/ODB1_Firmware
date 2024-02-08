@@ -76,13 +76,14 @@ static void MX_TIM3_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
 /* USER CODE BEGIN PFP */
-//void solid_colors(struct pixel *framebuffer, uint8_t r, uint8_t g, uint8_t b);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
+struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
 /* USER CODE END 0 */
+
 
 /**
   * @brief  The application entry point.
@@ -139,36 +140,25 @@ int main(void)
   if(status == 0){printf("BMP280 DETECT!\n");}
   else {printf("status = %d \n", status);}
 
+  memset(led_channels, 0, sizeof(led_channels));
+
+  led_channels[0].framebuffer = channel_framebuffers;
+  led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
+
+  WS2812_Init();
 
   /* USER CODE END 2 */
 
-  /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-	  struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
-
-	      __enable_irq();
-	      HAL_Delay(200);
-
-	      memset(led_channels, 0, sizeof(led_channels));
-
-	      led_channels[0].framebuffer = channel_framebuffers;
-	      led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
-
-	      WS2812_Init();
-	      while(1)
-	      {
-
-	    	  WS2812_Solid_Colors(channel_framebuffers[0], led_channels, 0, 255, 0);
-	          HAL_Delay(500);
-	          WS2812_Solid_Colors(channel_framebuffers[0], led_channels, 255, 0, 0);
-	          HAL_Delay(500);
-	          WS2812_Solid_Colors(channel_framebuffers[0], led_channels, 0, 0, 255);
-	          HAL_Delay(500);
-
-	      }
+  WS2812_Solid_Colors(channel_framebuffers[0], led_channels, 0, 255, 0);
+  HAL_Delay(500);
+  WS2812_Solid_Colors(channel_framebuffers[0], led_channels, 255, 0, 0);
+  HAL_Delay(500);
+  WS2812_Solid_Colors(channel_framebuffers[0], led_channels, 0, 0, 255);
+  HAL_Delay(500);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
