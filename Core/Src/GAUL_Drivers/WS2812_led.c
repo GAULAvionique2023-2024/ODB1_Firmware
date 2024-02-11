@@ -19,8 +19,8 @@
  *
  */
 
+#include <GAUL_Drivers/WS2812_led.h>
 #include <string.h>
-#include "GAUL_Drivers/ws2812_led.h"
 
 TIM_HandleTypeDef htimer2;
 DMA_HandleTypeDef hdma_tim2_update;

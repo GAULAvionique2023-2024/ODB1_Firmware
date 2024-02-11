@@ -17,13 +17,17 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include <main.h>
+#include <GAUL_Drivers/WS2812_led.h>
+#include "main.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
 #include "string.h"
 #include "stdio.h"
 #include "stdbool.h"
 #include "GAUL_Drivers/BMP280.h"
 #include "GAUL_Drivers/ICM20602.h"
-#include "GAUL_Drivers/ws2812_led.h"
+#include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,7 +54,6 @@ ADC_HandleTypeDef hadc1;
 CRC_HandleTypeDef hcrc;
 
 SPI_HandleTypeDef hspi1;
-SPI_HandleTypeDef hspi2;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
@@ -67,15 +70,17 @@ DMA_HandleTypeDef hdma_usart2_rx;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_SPI1_Init(void);
-static void MX_SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM3_Init(void);
+static void MX_TIM2_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
 /* USER CODE BEGIN PFP */
+static void SPI2_Init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -83,7 +88,6 @@ static void MX_CRC_Init(void);
 struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
 struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
 /* USER CODE END 0 */
-
 
 /**
   * @brief  The application entry point.
@@ -101,7 +105,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  SPI2_Init();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -113,32 +117,33 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_SPI1_Init();
-  MX_SPI2_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_TIM3_Init();
+  MX_TIM2_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
 
   /* USER CODE BEGIN 2 */
-  BMP280 bmp;
-  ICM20602 icm;
+  //BMP280 bmp;
+  //ICM20602 icm;
 
-  uint8_t status = 0;
+  //uint8_t status = 0;
 
 
 
   printf(" Starting \n");
 
-  status = ICM20602_Init(&icm, &hspi2, ICM_CS_Pin, ICM_CS_GPIO_Port);
-  if(status == 0){printf("ICM20602 DETECT!\n");}
-  else{printf("status = %d \n", status);}
+  //status = ICM20602_Init(&icm, &hspi2, ICM_CS_Pin, ICM_CS_GPIO_Port);
+  //if(status == 0){printf("ICM20602 DETECT!\n");}
+  //else{printf("status = %d \n", status);}
 
-  status = BMP280_Init(&bmp, &hspi2, BMP_CS_Pin, BMP_CS_GPIO_Port);
-  if(status == 0){printf("BMP280 DETECT!\n");}
-  else {printf("status = %d \n", status);}
+  //status = BMP280_Init(&bmp, &hspi2, BMP_CS_Pin, BMP_CS_GPIO_Port);
+  //if(status == 0){printf("BMP280 DETECT!\n");}
+  //else {printf("status = %d \n", status);}
 
   memset(led_channels, 0, sizeof(led_channels));
 
@@ -149,24 +154,16 @@ int main(void)
 
   /* USER CODE END 2 */
 
+  /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-  WS2812_Solid_Colors(channel_framebuffers[0], led_channels, 0, 255, 0);
-  HAL_Delay(500);
-  WS2812_Solid_Colors(channel_framebuffers[0], led_channels, 255, 0, 0);
-  HAL_Delay(500);
-  WS2812_Solid_Colors(channel_framebuffers[0], led_channels, 0, 0, 255);
-  HAL_Delay(500);
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
-
-
-
-
 
 /**
   * @brief System Clock Configuration
@@ -326,40 +323,47 @@ static void MX_SPI1_Init(void)
 }
 
 /**
-  * @brief SPI2 Initialization Function
+  * @brief TIM2 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_SPI2_Init(void)
+static void MX_TIM2_Init(void)
 {
 
-  /* USER CODE BEGIN SPI2_Init 0 */
+  /* USER CODE BEGIN TIM2_Init 0 */
 
-  /* USER CODE END SPI2_Init 0 */
+  /* USER CODE END TIM2_Init 0 */
 
-  /* USER CODE BEGIN SPI2_Init 1 */
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  /* USER CODE END SPI2_Init 1 */
-  /* SPI2 parameter configuration*/
-  hspi2.Instance = SPI2;
-  hspi2.Init.Mode = SPI_MODE_MASTER;
-  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi2.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi2) != HAL_OK)
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 14400;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 65535;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN SPI2_Init 2 */
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
 
-  /* USER CODE END SPI2_Init 2 */
+  /* USER CODE END TIM2_Init 2 */
 
 }
 
@@ -522,6 +526,22 @@ static void MX_USART3_UART_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -567,14 +587,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : CAM_ON_Pin LED_STATUS_Pin ICM_CS_Pin PYRO_ON0_Pin
-                           PYRO_ON1_Pin */
-  GPIO_InitStruct.Pin = CAM_ON_Pin|LED_STATUS_Pin|ICM_CS_Pin|PYRO_ON0_Pin
-                          |PYRO_ON1_Pin;
+  /*Configure GPIO pins : CAM_ON_Pin ICM_CS_Pin PYRO_ON0_Pin PYRO_ON1_Pin */
+  GPIO_InitStruct.Pin = CAM_ON_Pin|ICM_CS_Pin|PYRO_ON0_Pin|PYRO_ON1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : LED_STATUS_Pin */
+  GPIO_InitStruct.Pin = LED_STATUS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(LED_STATUS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : BUTTON_IN_Pin ICM_INT_Pin */
   GPIO_InitStruct.Pin = BUTTON_IN_Pin|ICM_INT_Pin;
@@ -610,6 +635,24 @@ int _write(int le, char *ptr, int len)
 	return len;
 }
 
+static void SPI2_Init(void)
+{
+  RCC->APB2ENR |= 1;
+  RCC->APB1ENR |= 0x4000;
+
+  init_GP(PB, 12, OUT50, O_GP_PP);
+  init_GP(PB, 13, OUT50, O_GP_PP);
+  init_GP(PB, 14, IN, I_PP);
+  init_GP(PB, 15, OUT50, O_GP_PP);
+
+
+  SPI2->CR1 |= 0x04; //Master mode
+  SPI2->CR1 |= 0x31; //flck / 256
+  SPI2->CR1 |= 0x40; //Enabling SPI
+  SPI2->CR2 |= 0x04;
+
+  W_GP(PB, 12, HIGH);
+}
 /* USER CODE END 4 */
 
 /**

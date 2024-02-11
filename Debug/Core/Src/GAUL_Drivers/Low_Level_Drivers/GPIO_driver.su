@@ -1,0 +1,4 @@
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.c:3:6:init_GP	8	static
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.c:35:5:R_GP	0	static
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.c:57:6:W_GP	0	static
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.c:78:6:toggle_GP	16	static

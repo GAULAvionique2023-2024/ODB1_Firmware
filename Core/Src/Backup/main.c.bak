@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -21,7 +21,13 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "string.h"
+#include "stdio.h"
+#include "stdbool.h"
+#include "GAUL_Drivers/BMP280.h"
+#include "GAUL_Drivers/ICM20602.h"
+#include "GAUL_Drivers/ws2812_led.h"
+#include "GAUL_Drivers/gp_drive.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -32,10 +38,13 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+
+
 
 /* USER CODE END PM */
 
@@ -45,7 +54,6 @@ ADC_HandleTypeDef hadc1;
 CRC_HandleTypeDef hcrc;
 
 SPI_HandleTypeDef hspi1;
-SPI_HandleTypeDef hspi2;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
@@ -64,7 +72,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_SPI1_Init(void);
-static void MX_SPI2_Init(void);
+static void SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
@@ -73,12 +81,12 @@ static void MX_TIM2_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
+struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
 /* USER CODE END 0 */
 
 /**
@@ -111,7 +119,7 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_SPI1_Init();
-  MX_SPI2_Init();
+  SPI2_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
@@ -120,6 +128,29 @@ int main(void)
   MX_ADC1_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
+  //BMP280 bmp;
+  //ICM20602 icm;
+
+  //uint8_t status = 0;
+
+
+
+  printf(" Starting \n");
+
+  //status = ICM20602_Init(&icm, &hspi2, ICM_CS_Pin, ICM_CS_GPIO_Port);
+  //if(status == 0){printf("ICM20602 DETECT!\n");}
+  //else{printf("status = %d \n", status);}
+
+  //status = BMP280_Init(&bmp, &hspi2, BMP_CS_Pin, BMP_CS_GPIO_Port);
+  //if(status == 0){printf("BMP280 DETECT!\n");}
+  //else {printf("status = %d \n", status);}
+
+  memset(led_channels, 0, sizeof(led_channels));
+
+  led_channels[0].framebuffer = channel_framebuffers;
+  led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
+
+  WS2812_Init();
 
   /* USER CODE END 2 */
 
@@ -300,29 +331,59 @@ static void MX_SPI2_Init(void)
 {
 
   /* USER CODE BEGIN SPI2_Init 0 */
+  RCC->APB2ENR |= 1;
+  RCC->APB1ENR |= 0x2000;
 
+  init_GP(PB, 13, OUT50, O_GP_PP);
+  init_GP(PB, 14, IN, I_PP);
+  init_GP(PB, 15, OUT50, O_GP_PP);
+  init_GP(PB, 12, OUT50, O_GP_PP);
+
+  SPI2->CR1 |= 0x04; //Master mode
+  SPI2->CR1 |= 0x31; //flck / 256
+  SPI2->CR1 |= 0x40; //Enabling SPI
+
+  W_GP(PB, 12, HIGH);
   /* USER CODE END SPI2_Init 0 */
+
+ /* LL_SPI_InitTypeDef SPI_InitStruct = {0};
+
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* Peripheral clock enable */
+  //LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_SPI2);
+
+  //LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOB);
+  /**SPI2 GPIO Configuration
+  PB13   ------> SPI2_SCK
+  PB14   ------> SPI2_MISO
+  PB15   ------> SPI2_MOSI
+  */
+/*  GPIO_InitStruct.Pin = LL_GPIO_PIN_13|LL_GPIO_PIN_15;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_14;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
+  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);*/
 
   /* USER CODE BEGIN SPI2_Init 1 */
 
   /* USER CODE END SPI2_Init 1 */
   /* SPI2 parameter configuration*/
-  hspi2.Instance = SPI2;
-  hspi2.Init.Mode = SPI_MODE_MASTER;
-  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi2.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi2) != HAL_OK)
-  {
-    Error_Handler();
-  }
+/*  SPI_InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
+  SPI_InitStruct.Mode = LL_SPI_MODE_MASTER;
+  SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
+  SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
+  SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
+  SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
+  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV16;
+  SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
+  SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
+  SPI_InitStruct.CRCPoly = 10;
+  LL_SPI_Init(SPI2, &SPI_InitStruct);*/
   /* USER CODE BEGIN SPI2_Init 2 */
 
   /* USER CODE END SPI2_Init 2 */
@@ -348,7 +409,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 14400;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 65535;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -632,7 +693,32 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+int _write(int le, char *ptr, int len)
+{
+	int DataIdx;
+	for(DataIdx = 0; DataIdx < len; DataIdx++)
+	{
+		ITM_SendChar(*ptr++);
+	}
+	return len;
+}
 
+static void SPI2_Init(void)
+{
+  RCC->APB2ENR |= 1;
+  RCC->APB1ENR |= 0x2000;
+
+  init_GP(PB, 13, OUT50, O_GP_PP);
+  init_GP(PB, 14, IN, I_PP);
+  init_GP(PB, 15, OUT50, O_GP_PP);
+  init_GP(PB, 12, OUT50, O_GP_PP);
+
+  SPI2->CR1 |= 0x04; //Master mode
+  SPI2->CR1 |= 0x31; //flck / 256
+  SPI2->CR1 |= 0x40; //Enabling SPI
+
+  W_GP(PB, 12, HIGH);
+}
 /* USER CODE END 4 */
 
 /**
