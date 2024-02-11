@@ -17,6 +17,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#include <GAUL_Drivers/WS2812_led.h>
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -26,8 +27,8 @@
 #include "stdbool.h"
 #include "GAUL_Drivers/BMP280.h"
 #include "GAUL_Drivers/ICM20602.h"
-#include "GAUL_Drivers/ws2812_led.h"
-#include "GAUL_Drivers/gp_drive.h"
+#include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
+#include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -72,7 +73,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_SPI1_Init(void);
-static void SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
@@ -105,21 +105,19 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  SPI_Init(2);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_SPI1_Init();
-  SPI2_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
@@ -127,6 +125,7 @@ int main(void)
   MX_TIM2_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
+
   /* USER CODE BEGIN 2 */
   //BMP280 bmp;
   //ICM20602 icm;
@@ -319,74 +318,6 @@ static void MX_SPI1_Init(void)
   /* USER CODE BEGIN SPI1_Init 2 */
 
   /* USER CODE END SPI1_Init 2 */
-
-}
-
-/**
-  * @brief SPI2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI2_Init(void)
-{
-
-  /* USER CODE BEGIN SPI2_Init 0 */
-  RCC->APB2ENR |= 1;
-  RCC->APB1ENR |= 0x2000;
-
-  init_GP(PB, 13, OUT50, O_GP_PP);
-  init_GP(PB, 14, IN, I_PP);
-  init_GP(PB, 15, OUT50, O_GP_PP);
-  init_GP(PB, 12, OUT50, O_GP_PP);
-
-  SPI2->CR1 |= 0x04; //Master mode
-  SPI2->CR1 |= 0x31; //flck / 256
-  SPI2->CR1 |= 0x40; //Enabling SPI
-
-  W_GP(PB, 12, HIGH);
-  /* USER CODE END SPI2_Init 0 */
-
- /* LL_SPI_InitTypeDef SPI_InitStruct = {0};
-
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-  /* Peripheral clock enable */
-  //LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_SPI2);
-
-  //LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOB);
-  /**SPI2 GPIO Configuration
-  PB13   ------> SPI2_SCK
-  PB14   ------> SPI2_MISO
-  PB15   ------> SPI2_MOSI
-  */
-/*  GPIO_InitStruct.Pin = LL_GPIO_PIN_13|LL_GPIO_PIN_15;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_14;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
-  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);*/
-
-  /* USER CODE BEGIN SPI2_Init 1 */
-
-  /* USER CODE END SPI2_Init 1 */
-  /* SPI2 parameter configuration*/
-/*  SPI_InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
-  SPI_InitStruct.Mode = LL_SPI_MODE_MASTER;
-  SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
-  SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
-  SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
-  SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV16;
-  SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
-  SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
-  SPI_InitStruct.CRCPoly = 10;
-  LL_SPI_Init(SPI2, &SPI_InitStruct);*/
-  /* USER CODE BEGIN SPI2_Init 2 */
-
-  /* USER CODE END SPI2_Init 2 */
 
 }
 
@@ -703,22 +634,6 @@ int _write(int le, char *ptr, int len)
 	return len;
 }
 
-static void SPI2_Init(void)
-{
-  RCC->APB2ENR |= 1;
-  RCC->APB1ENR |= 0x2000;
-
-  init_GP(PB, 13, OUT50, O_GP_PP);
-  init_GP(PB, 14, IN, I_PP);
-  init_GP(PB, 15, OUT50, O_GP_PP);
-  init_GP(PB, 12, OUT50, O_GP_PP);
-
-  SPI2->CR1 |= 0x04; //Master mode
-  SPI2->CR1 |= 0x31; //flck / 256
-  SPI2->CR1 |= 0x40; //Enabling SPI
-
-  W_GP(PB, 12, HIGH);
-}
 /* USER CODE END 4 */
 
 /**

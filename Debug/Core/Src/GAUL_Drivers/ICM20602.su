@@ -1,4 +1,1 @@
-../Core/Src/GAUL_Drivers/ICM20602.c:50:19:ICM20602_ReadRegister	16	static
-../Core/Src/GAUL_Drivers/ICM20602.c:64:19:ICM20602_ReadRegisters	24	static
-../Core/Src/GAUL_Drivers/ICM20602.c:78:19:ICM20602_WriteRegister	16	static
-../Core/Src/GAUL_Drivers/ICM20602.c:10:9:ICM20602_Init	24	static
+../Core/Src/GAUL_Drivers/ICM20602.c:10:16:ICM20602_Init	24	static

@@ -4,7 +4,7 @@
  *  Created on: Nov 4, 2023
  *      Author: Luka
  */
-
+/*
 #include "GAUL_Drivers/BMP280.h"
 
 //Initialisation
@@ -121,3 +121,4 @@ HAL_StatusTypeDef BMP280_WriteRegister(BMP280 *dev, uint8_t *data, uint8_t *reg)
 
 	return errorCode;
 }
+*/

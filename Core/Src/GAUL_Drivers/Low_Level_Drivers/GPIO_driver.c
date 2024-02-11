@@ -1,6 +1,6 @@
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 
-void init_GP(unsigned short port, unsigned short pin, unsigned short dir, unsigned short opt)
+void Init_GPIO(unsigned short port, unsigned short pin, unsigned short dir, unsigned short opt)
 {
  volatile unsigned long * CR;
  unsigned short tPIN = pin;
@@ -32,7 +32,7 @@ void init_GP(unsigned short port, unsigned short pin, unsigned short dir, unsign
 		*CR |= ((dir <<(tPIN*4)) | (opt<<(tPIN*4+2))); //// Set up the direction and the option of the PIN
 }
 
-int R_GP(unsigned short port, unsigned short pin)
+int Read_GPIO(unsigned short port, unsigned short pin)
 {
 	volatile unsigned long * IDR;
 	unsigned long offset = 0x02;
@@ -54,7 +54,7 @@ int R_GP(unsigned short port, unsigned short pin)
 	return state;
 }
 
-void W_GP(unsigned short port, unsigned short pin, unsigned short state)
+void Write_GPIO(unsigned short port, unsigned short pin, unsigned short state)
 {
 		volatile unsigned long * ODR;
 		unsigned long offset = 0x03;
@@ -75,15 +75,15 @@ void W_GP(unsigned short port, unsigned short pin, unsigned short state)
 	state ? (*ODR |= (state<<pin)) : (*ODR &= ~(1<<pin));
 }
 
-void toggle_GP(unsigned short port, unsigned short pin)
+void Toggle_GPIO(unsigned short port, unsigned short pin)
 {
-	if (R_GP(port,pin))
+	if (Read_GPIO(port,pin))
 		{
-			W_GP(port,pin,0);
+			Write_GPIO(port,pin,0);
 		}
 	else
 		{
-			W_GP(port,pin,1);
+			Write_GPIO(port,pin,1);
 		}
 }
 

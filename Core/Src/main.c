@@ -17,7 +17,6 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include <GAUL_Drivers/WS2812_led.h>
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -25,9 +24,11 @@
 #include "string.h"
 #include "stdio.h"
 #include "stdbool.h"
-#include "GAUL_Drivers/BMP280.h"
-#include "GAUL_Drivers/ICM20602.h"
+#include <GAUL_Drivers/WS2812_led.h>
+//#include "GAUL_Drivers/BMP280.h"
+//#include "GAUL_Drivers/ICM20602.h"
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
+#include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -53,8 +54,6 @@ ADC_HandleTypeDef hadc1;
 
 CRC_HandleTypeDef hcrc;
 
-SPI_HandleTypeDef hspi1;
-
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
@@ -71,7 +70,6 @@ DMA_HandleTypeDef hdma_usart2_rx;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
@@ -80,7 +78,6 @@ static void MX_TIM2_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
 /* USER CODE BEGIN PFP */
-static void SPI2_Init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -105,20 +102,18 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  SPI2_Init();
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  SPI_Init(2);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_SPI1_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
@@ -126,7 +121,6 @@ int main(void)
   MX_TIM2_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
-
   /* USER CODE BEGIN 2 */
   //BMP280 bmp;
   //ICM20602 icm;
@@ -281,44 +275,6 @@ static void MX_CRC_Init(void)
   /* USER CODE BEGIN CRC_Init 2 */
 
   /* USER CODE END CRC_Init 2 */
-
-}
-
-/**
-  * @brief SPI1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI1_Init(void)
-{
-
-  /* USER CODE BEGIN SPI1_Init 0 */
-
-  /* USER CODE END SPI1_Init 0 */
-
-  /* USER CODE BEGIN SPI1_Init 1 */
-
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI1_Init 2 */
-
-  /* USER CODE END SPI1_Init 2 */
 
 }
 
@@ -635,24 +591,6 @@ int _write(int le, char *ptr, int len)
 	return len;
 }
 
-static void SPI2_Init(void)
-{
-  RCC->APB2ENR |= 1;
-  RCC->APB1ENR |= 0x4000;
-
-  init_GP(PB, 12, OUT50, O_GP_PP);
-  init_GP(PB, 13, OUT50, O_GP_PP);
-  init_GP(PB, 14, IN, I_PP);
-  init_GP(PB, 15, OUT50, O_GP_PP);
-
-
-  SPI2->CR1 |= 0x04; //Master mode
-  SPI2->CR1 |= 0x31; //flck / 256
-  SPI2->CR1 |= 0x40; //Enabling SPI
-  SPI2->CR2 |= 0x04;
-
-  W_GP(PB, 12, HIGH);
-}
 /* USER CODE END 4 */
 
 /**

@@ -43,13 +43,13 @@
 
 
 
-void init_GP(unsigned short port, unsigned short pin, unsigned short dir, unsigned short opt);
+void Init_GPIO(unsigned short port, unsigned short pin, unsigned short dir, unsigned short opt);
 
-int R_GP(unsigned short port, unsigned short pin);
+int Read_GPIO(unsigned short port, unsigned short pin);
 
-void W_GP(unsigned short port, unsigned short pin, unsigned short state);
+void Write_GPIO(unsigned short port, unsigned short pin, unsigned short state);
 
-void toggle_GP(unsigned short port, unsigned short pin);
+void Toggle_GP(unsigned short port, unsigned short pin);
 
 
 #endif /* INC_GAUL_DRIVERS_GP_DRIVE_H_ */
