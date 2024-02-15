@@ -26,7 +26,7 @@
 #include "stdbool.h"
 #include <GAUL_Drivers/WS2812_led.h>
 //#include "GAUL_Drivers/BMP280.h"
-//#include "GAUL_Drivers/ICM20602.h"
+#include "GAUL_Drivers/ICM20602.h"
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 /* USER CODE END Includes */
@@ -68,7 +68,6 @@ DMA_HandleTypeDef hdma_usart2_rx;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
@@ -108,11 +107,10 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  SPI_Init(2);
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
@@ -122,16 +120,14 @@ int main(void)
   MX_ADC1_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
+
+  SPI_Init(2);
   //BMP280 bmp;
-  //ICM20602 icm;
-
-  //uint8_t status = 0;
-
-
+  ICM20602 icm;
 
   printf(" Starting \n");
 
-  //status = ICM20602_Init(&icm, &hspi2, ICM_CS_Pin, ICM_CS_GPIO_Port);
+  ICM20602_Init(&icm);
   //if(status == 0){printf("ICM20602 DETECT!\n");}
   //else{printf("status = %d \n", status);}
 
@@ -141,10 +137,11 @@ int main(void)
 
   memset(led_channels, 0, sizeof(led_channels));
 
-  led_channels[0].framebuffer = channel_framebuffers;
-  led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
+  //led_channels[0].framebuffer = channel_framebuffers;
+  //led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
 
   WS2812_Init();
+
 
   /* USER CODE END 2 */
 
@@ -153,7 +150,8 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  ICM20602_Update(&icm);
+	  HAL_Delay(500);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -495,89 +493,6 @@ static void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
 
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, MUL_S0_Pin|MUL_S1_Pin|MUL_S2_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(BATT3S2_ON_GPIO_Port, BATT3S2_ON_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, SDC_CS_Pin|BMP_CS_Pin|NPYRO_TEST_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, CAM_ON_Pin|PYRO_ON0_Pin|PYRO_ON1_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LED_STATUS_Pin|ICM_CS_Pin|NMUL_E_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pins : MUL_S0_Pin MUL_S1_Pin MUL_S2_Pin */
-  GPIO_InitStruct.Pin = MUL_S0_Pin|MUL_S1_Pin|MUL_S2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : BATT3S2_ON_Pin SDC_CS_Pin BMP_CS_Pin NPYRO_TEST_Pin */
-  GPIO_InitStruct.Pin = BATT3S2_ON_Pin|SDC_CS_Pin|BMP_CS_Pin|NPYRO_TEST_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : CAM_ON_Pin ICM_CS_Pin PYRO_ON0_Pin PYRO_ON1_Pin */
-  GPIO_InitStruct.Pin = CAM_ON_Pin|ICM_CS_Pin|PYRO_ON0_Pin|PYRO_ON1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : LED_STATUS_Pin */
-  GPIO_InitStruct.Pin = LED_STATUS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(LED_STATUS_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : BUTTON_IN_Pin ICM_INT_Pin */
-  GPIO_InitStruct.Pin = BUTTON_IN_Pin|ICM_INT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : NMUL_E_Pin */
-  GPIO_InitStruct.Pin = NMUL_E_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(NMUL_E_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : CHECK12V_Pin */
-  GPIO_InitStruct.Pin = CHECK12V_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(CHECK12V_GPIO_Port, &GPIO_InitStruct);
-
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */

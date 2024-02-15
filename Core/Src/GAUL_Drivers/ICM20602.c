@@ -6,11 +6,11 @@
  */
 
 #include "GAUL_Drivers/ICM20602.h"
+#include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
+#include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 
-unsigned short ICM20602_Init(ICM20602 *dev, unsigned char spi)
+uint8_t ICM20602_Init(ICM20602 *dev)
 {
-	dev->SPI = 	spi;
-
 	dev->girX = 		0.0f;
 	dev->girY = 		0.0f;
 	dev->girZ = 		0.0f;
@@ -19,31 +19,109 @@ unsigned short ICM20602_Init(ICM20602 *dev, unsigned char spi)
 	dev->accY = 		0.0f;
 	dev->accZ = 		0.0f;
 
-	unsigned short errorCount = 0;
+	uint8_t errorCount = 0;
+	uint8_t test = 0;
+	uint8_t rxData[1];
+
+	// Reset ICM20602
+	ICM20602_Write(ICM20602_REG_PWR_MGMT_1, 0x80);
+	HAL_Delay(50);
+
+	// Lock SPI communication
+	ICM20602_Write(ICM20602_REG_I2C_IF, 0x40);
+	HAL_Delay(50);
+
+	// Enable temperature sensor
+	ICM20602_Write(ICM20602_REG_PWR_MGMT_1, 0x01);
+	HAL_Delay(50);
+
+	// Set sample rate to 1000Hz and apply a software filter
+	ICM20602_Write(ICM20602_REG_SMPLRT_DIV, 0x00);
+	HAL_Delay(50);
+
+	// Gyro LPF fc 20Hz(bit2:0-100) at 1kHz sample rate
+	ICM20602_Write(ICM20602_REG_CONFIG, 0x05);
+	HAL_Delay(50);
+
+	// ACCEL_CONFIG 0x1C
+	ICM20602_Write(ICM20602_REG_ACCEL_CONFIG, 0x18); // Acc sensitivity 16g
+	HAL_Delay(50);
+
+	// ACCEL_CONFIG2 0x1D
+	ICM20602_Write(ICM20602_REG_ACCEL_CONFIG2, 0x03); // Acc FCHOICE 1kHz(bit3-0), DLPF fc 44.8Hz(bit2:0-011)
+	HAL_Delay(50);
 
 
-	unsigned short regData = 0x40;
-	unsigned short address = ICM20602_REG_I2C_IF;
+
+	ICM20602_Read(ICM20602_REG_WHO_AM_I, rxData, 1);
+	if(rxData[0] == 0x12){test = 1;}else{test = 0;}
+	printf("ICM20602_REG_WHO_AM_I: %x : %d \n", rxData[0], test);
+
+	ICM20602_Read(ICM20602_REG_I2C_IF, rxData, 1);
+	if(rxData[0] == 0x40){test = 1;}else{test = 0;}
+	printf("ICM20602_REG_I2C_IF: %x : %d \n", rxData[0], test);
+
+	ICM20602_Read(ICM20602_REG_PWR_MGMT_1, rxData, 1);
+	if(rxData[0] == 0x01){test = 1;}else{test = 0;}
+	printf("ICM20602_REG_PWR_MGMT_1: %x : %d \n", rxData[0], test);
+
+	ICM20602_Read(ICM20602_REG_SMPLRT_DIV, rxData, 1);
+	if(rxData[0] == 0x00){test = 1;}else{test = 0;}
+	printf("ICM20602_REG_SMPLRT_DIV: %x : %d \n", rxData[0], test);
+
+	ICM20602_Read(ICM20602_REG_CONFIG, rxData, 1);
+	if(rxData[0] == 0x05){test = 1;}else{test = 0;}
+	printf("ICM20602_REG_CONFIG: %x : %d \n", rxData[0], test);
+
+	ICM20602_Read(ICM20602_REG_ACCEL_CONFIG, rxData, 1);
+	if(rxData[0] == 0x18){test = 1;}else{test = 0;}
+	printf("ICM20602_REG_ACCEL_CONFIG: %x : %d \n", rxData[0], test);
+
+	ICM20602_Read(ICM20602_REG_ACCEL_CONFIG2, rxData, 1);
+	if(rxData[0] == 0x03){test = 1;}else{test = 0;}
+	printf("ICM20602_REG_ACCEL_CONFIG2: %x : %d \n", rxData[0], test);
 
 
-	status = ICM20602_WriteRegister(dev, &regData, &address);
-	errorCount += (status != HAL_OK);
 
-	//check device ID = 0x12
-	address = ICM20602_REG_WHOAMI;
-	status = ICM20602_ReadRegister(dev, &regData, &address);
-	errorCount += (status != HAL_OK);
 
-	if(regData != ICM20602_VAL_WHOAMI)
-	{
-		return 255;
-	}
+
+
+
 
 	return errorCount;
 }
 
-char ICM20602_Read(ICM20602 *dev)
+void ICM20602_Update(ICM20602 *dev)
 {
+	uint8_t rxData[6];
+	uint16_t gyro[3];
 
+	ICM20602_Read(ICM20602_REG_TEMP_OUT_H, rxData, 2);
+
+	gyro[0] = ((uint16_t)rxData[0] << 8) | rxData[1];
+	gyro[1] = ((uint16_t)rxData[2] << 8) | rxData[3];
+	gyro[2] = ((uint16_t)rxData[4] << 8) | rxData[5];
+
+	//printf("X:%d, Y:%d, Z:%d \n", gyro[0], gyro[1], gyro[2]);
+	printf("Temp:%d \n", gyro[0]);
 }
+
+void ICM20602_Read(uint8_t address, uint8_t rxData[], uint8_t size)
+{
+	address |= 0x80;  // read operation
+
+	Write_GPIO(PB, 12, LOW);
+	SPI2_TX(&address, 1);  // send address
+	SPI2_RX(rxData, size);  // receive 6 bytes data
+	Write_GPIO(PB, 12, HIGH);
+}
+
+void ICM20602_Write(uint8_t address, uint8_t value)
+{
+	Write_GPIO(PB, 12, LOW);
+	SPI2_TX(&address, 1);  // send address
+	SPI2_TX(&value, 1);  // send value
+	Write_GPIO(PB, 12, HIGH);
+}
+
 

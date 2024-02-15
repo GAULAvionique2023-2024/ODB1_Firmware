@@ -27,7 +27,9 @@ Core/Src/GAUL_Drivers/ICM20602.o: ../Core/Src/GAUL_Drivers/ICM20602.c \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
+ ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h \
+ ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/SPI_driver.h
 ../Core/Inc/GAUL_Drivers/ICM20602.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
@@ -57,3 +59,5 @@ Core/Src/GAUL_Drivers/ICM20602.o: ../Core/Src/GAUL_Drivers/ICM20602.c \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
+../Core/Inc/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h:
+../Core/Inc/GAUL_Drivers/Low_Level_Drivers/SPI_driver.h:

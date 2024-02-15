@@ -1,1 +1,4 @@
-../Core/Src/GAUL_Drivers/ICM20602.c:10:16:ICM20602_Init	2
+../Core/Src/GAUL_Drivers/ICM20602.c:109:6:ICM20602_Read	1
+../Core/Src/GAUL_Drivers/ICM20602.c:94:6:ICM20602_Update	1
+../Core/Src/GAUL_Drivers/ICM20602.c:119:6:ICM20602_Write	1
+../Core/Src/GAUL_Drivers/ICM20602.c:12:9:ICM20602_Init	8

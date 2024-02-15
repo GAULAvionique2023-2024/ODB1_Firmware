@@ -11,7 +11,10 @@
 
 void SPI_Init(unsigned short spi);
 
-void SPI1_TX_Char(char tx_char);
-void SPI2_TX_Char(char tx_char);
+void SPI1_TX(uint8_t *data, int size);
+void SPI2_TX(uint8_t *data, int size);
+
+void SPI1_RX(uint8_t *data, int size);
+void SPI2_RX(uint8_t *data, int size);
 
 #endif /* SRC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_SPI_DRIVER_H_ */

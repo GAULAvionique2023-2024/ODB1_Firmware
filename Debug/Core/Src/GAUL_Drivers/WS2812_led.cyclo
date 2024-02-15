@@ -1,4 +1,6 @@
 ../Core/Src/GAUL_Drivers/WS2812_led.c:184:13:fill_dma_buffer	1
-../Core/Src/GAUL_Drivers/WS2812_led.c:202:6:WS2812_Refresh	12
+../Core/Src/GAUL_Drivers/WS2812_led.c:74:13:ws2812_dma_start	1
+../Core/Src/GAUL_Drivers/WS2812_led.c:38:13:ws2812_timer2_init	1
+../Core/Src/GAUL_Drivers/WS2812_led.c:202:6:WS2812_Refresh	14
 ../Core/Src/GAUL_Drivers/WS2812_led.c:302:6:WS2812_Init	1
 ../Core/Src/GAUL_Drivers/WS2812_led.c:315:6:WS2812_Solid_Colors	2
