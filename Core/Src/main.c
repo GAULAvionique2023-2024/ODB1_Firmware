@@ -149,8 +149,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  float temp = icm.temperatureC;
     /* USER CODE END WHILE */
-	  ICM20602_Update(&icm);
+	  ICM20602_Update_All(&icm);
+	  printf("Temperature: %f \n", temp);
 	  HAL_Delay(500);
     /* USER CODE BEGIN 3 */
   }

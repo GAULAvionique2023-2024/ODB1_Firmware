@@ -11,13 +11,15 @@
 
 uint8_t ICM20602_Init(ICM20602 *dev)
 {
-	dev->girX = 		0.0f;
-	dev->girY = 		0.0f;
-	dev->girZ = 		0.0f;
+	dev->gyroXRaw = 			0.0f;
+	dev->gyroYRaw = 			0.0f;
+	dev->gyroZRaw = 			0.0f;
 
-	dev->accX = 		0.0f;
-	dev->accY = 		0.0f;
-	dev->accZ = 		0.0f;
+	dev->accXRaw = 				0.0f;
+	dev->accYRaw = 				0.0f;
+	dev->accZRaw = 				0.0f;
+
+	dev->temperatureC = 		0.0f;
 
 	uint8_t errorCount = 0;
 	uint8_t test = 0;
@@ -91,19 +93,26 @@ uint8_t ICM20602_Init(ICM20602 *dev)
 	return errorCount;
 }
 
-void ICM20602_Update(ICM20602 *dev)
+void ICM20602_Update_All(ICM20602 *dev)
 {
-	uint8_t rxData[6];
-	uint16_t gyro[3];
+	uint8_t 	rxData[14];
 
-	ICM20602_Read(ICM20602_REG_TEMP_OUT_H, rxData, 2);
+	ICM20602_Read(ICM20602_REG_ACCEL_XOUT_H, rxData, 14);
 
-	gyro[0] = ((uint16_t)rxData[0] << 8) | rxData[1];
-	gyro[1] = ((uint16_t)rxData[2] << 8) | rxData[3];
-	gyro[2] = ((uint16_t)rxData[4] << 8) | rxData[5];
+	dev->accXRaw = ((uint16_t)rxData[0] << 8) | rxData[1];
+	dev->accYRaw = ((uint16_t)rxData[2] << 8) | rxData[3];
+	dev->accZRaw = ((uint16_t)rxData[4] << 8) | rxData[5];
 
-	//printf("X:%d, Y:%d, Z:%d \n", gyro[0], gyro[1], gyro[2]);
-	printf("Temp:%d \n", gyro[0]);
+	dev->temperatureC = (((uint16_t)rxData[6] << 8) | rxData[7])/326.8f + 25;
+
+	dev->gyroXRaw = ((uint16_t)rxData[ 8] << 8) | rxData[ 9];
+	dev->gyroYRaw = ((uint16_t)rxData[10] << 8) | rxData[11];
+	dev->gyroZRaw = ((uint16_t)rxData[12] << 8) | rxData[13];
+}
+
+void ICM20602_Raw_To_Real(ICM20602 *dev)
+{
+	dev->temperatureC = (dev->temperatureC/326.8) + 25;
 }
 
 void ICM20602_Read(uint8_t address, uint8_t rxData[], uint8_t size)

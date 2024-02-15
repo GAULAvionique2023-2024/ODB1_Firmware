@@ -1,4 +1,5 @@
-../Core/Src/GAUL_Drivers/ICM20602.c:109:6:ICM20602_Read	24	static
-../Core/Src/GAUL_Drivers/ICM20602.c:94:6:ICM20602_Update	24	static
-../Core/Src/GAUL_Drivers/ICM20602.c:119:6:ICM20602_Write	16	static
+../Core/Src/GAUL_Drivers/ICM20602.c:113:6:ICM20602_Raw_To_Real	8	static
+../Core/Src/GAUL_Drivers/ICM20602.c:118:6:ICM20602_Read	24	static
+../Core/Src/GAUL_Drivers/ICM20602.c:96:6:ICM20602_Update_All	24	static
+../Core/Src/GAUL_Drivers/ICM20602.c:128:6:ICM20602_Write	16	static
 ../Core/Src/GAUL_Drivers/ICM20602.c:12:9:ICM20602_Init	16	static

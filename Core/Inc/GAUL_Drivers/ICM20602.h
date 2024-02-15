@@ -83,19 +83,22 @@
 typedef struct{
 
 	//data
-	float 				girX;
-	float 				girY;
-	float 				girZ;
+	float 	gyroXRaw;
+	float 	gyroYRaw;
+	float 	gyroZRaw;
 
-	float 				accX;
-	float 				accY;
-	float 				accZ;
+	float 	accXRaw;
+	float 	accYRaw;
+	float 	accZRaw;
+
+	float 	temperatureC;
 
 }ICM20602;
 
 uint8_t ICM20602_Init(ICM20602 *dev);
 
-void ICM20602_Update(ICM20602 *dev);
+void ICM20602_Update_All(ICM20602 *dev);
+void ICM20602_Raw_To_Real(ICM20602 *dev);
 
 //Low level fonctions
 void ICM20602_Read(uint8_t address, uint8_t rxData[], uint8_t size);
