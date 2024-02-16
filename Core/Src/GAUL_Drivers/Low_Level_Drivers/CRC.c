@@ -19,7 +19,6 @@ void CRC32_Init(CRC32 *crc) {
 
     // Activation du calcul CRC
     *((uint32_t *)(CRC_REG_OFFS_CR + CRC_REG_OFFS_CR)) |= 1;
-    HAL_CRC_Calculate()
 }
 
 // Fonction de réinitialisation
@@ -35,8 +34,9 @@ void CRC32_AddData(CRC32 *crc, uint8_t data) {
 }
 
 // Fonction de récupération du CRC calculé
-uint32_t CRC32_GetCRC(CRC32 *crc) {
+uint32_t CRC32_GetCRC(CRC32 *crc, uint8_t *data, uint32_t size) {
 
+	CRC32_Calculation(crc->crc, data, sizeof(data));
     return crc->crc;
 }
 

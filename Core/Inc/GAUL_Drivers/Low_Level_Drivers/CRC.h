@@ -37,6 +37,8 @@ void CRC32_Init(CRC32 *crc);
 void CRC32_Reset(CRC32 *crc);
 void CRC32_AddData(CRC32 *crc, uint8_t data);
 
+uint32_t CRC32_GetCRC(CRC32 *crc, uint8_t *data, uint32_t size);
+
 uint32_t CRC32_Calculation(CRC32 *crc, uint8_t *data, uint32_t size);
 
 #endif /* INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_CRC_H_ */
