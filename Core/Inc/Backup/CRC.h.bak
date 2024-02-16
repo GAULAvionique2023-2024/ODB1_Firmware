@@ -5,8 +5,8 @@
  *      Author: gagno
  */
 
-#ifndef INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_CRC_H_
-#define INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_CRC_H_
+#ifndef INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_CRC_H_BAK_
+#define INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_CRC_H_BAK_
 
 #define CRC_REG_BASE 0x40023000
 #define CRC_REG_OFFS_DR 0x00 // Stocke les données à traiter et le résultat du calcul CRC
@@ -41,4 +41,4 @@ uint32_t CRC32_GetCRC(CRC32 *crc, uint8_t *data, uint32_t size);
 
 uint32_t CRC32_Calculation(CRC32 *crc, uint8_t *data, uint32_t size);
 
-#endif /* INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_CRC_H_ */
+#endif /* INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_CRC_H_BAK_ */
