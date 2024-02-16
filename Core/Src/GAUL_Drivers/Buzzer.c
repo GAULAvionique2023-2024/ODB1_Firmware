@@ -1,0 +1,45 @@
+/*
+ * buzzer.h
+ *
+ *  Created on: 04 Feb, 2024
+ *      Author: Nath et Sam
+ */
+
+//include
+#include <Buzzer.h>
+
+static const buzzParametres_t buzzParams[] = {
+
+    {2, 200, 190, 10, 300},    // STOP
+    {10, 280, 270, 15, 300},   // START
+    {1, 280, 230, 100, 1000},  // PENDING
+    {3, 280, 230, 100, 1000},  // ARMED
+    {1, 280, 279, 3000, 10}    // CRASH
+};
+
+void Buzz(TIM_HandleTypeDef *htim, uint32_t channel, buzzRoutines_t routine){
+
+	HAL_TIM_PWM_Start(htim, channel);
+
+	const buzzParametres_t *params = &buzzParams[routine];
+
+	uint8_t counter = params->nbBips;
+	int freq;
+
+	while (counter > 0)
+	{
+		for(freq = params->frequencyStart; freq > params->frequencyEnd; freq--)
+		{
+		  __HAL_TIM_SET_AUTORELOAD(htim, freq);
+		  __HAL_TIM_SET_COMPARE(htim, channel, freq);
+		  HAL_Delay(params->delayModulation);
+		}
+		__HAL_TIM_SET_AUTORELOAD(htim, 0);
+		__HAL_TIM_SET_COMPARE(htim, channel, 0);
+		HAL_Delay(params->delayPause);
+		counter--;
+	}
+
+	HAL_TIM_PWM_Stop(htim, channel);
+}
+
