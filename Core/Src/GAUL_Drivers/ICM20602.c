@@ -45,8 +45,12 @@ uint8_t ICM20602_Init(ICM20602 *dev)
 	ICM20602_Write(ICM20602_REG_CONFIG, 0x05);
 	HAL_Delay(50);
 
-	// ACCEL_CONFIG 0x1C
-	ICM20602_Write(ICM20602_REG_ACCEL_CONFIG, 0x18); // Acc sensitivity 16g
+	// Gyro 2000DPS
+	ICM20602_Write(ICM20602_REG_GYRO_CONFIG, 0x018);
+	HAL_Delay(50);
+
+	// Accel sensitivity 16g
+	ICM20602_Write(ICM20602_REG_ACCEL_CONFIG, 0x18);
 	HAL_Delay(50);
 
 	// ACCEL_CONFIG2 0x1D
@@ -99,15 +103,15 @@ void ICM20602_Update_All(ICM20602 *dev)
 
 	ICM20602_Read(ICM20602_REG_ACCEL_XOUT_H, rxData, 14);
 
-	dev->accXRaw = ((uint16_t)rxData[0] << 8) | rxData[1];
-	dev->accYRaw = ((uint16_t)rxData[2] << 8) | rxData[3];
-	dev->accZRaw = ((uint16_t)rxData[4] << 8) | rxData[5];
+	dev->accXRaw = (((uint16_t)rxData[0] << 8) | rxData[1]) / 16.4f;
+	dev->accYRaw = (((uint16_t)rxData[2] << 8) | rxData[3]) / 16.4f;
+	dev->accZRaw = (((uint16_t)rxData[4] << 8) | rxData[5]) / 16.4f;
 
 	dev->temperatureC = (((uint16_t)rxData[6] << 8) | rxData[7])/326.8f + 25;
 
-	dev->gyroXRaw = ((uint16_t)rxData[ 8] << 8) | rxData[ 9];
-	dev->gyroYRaw = ((uint16_t)rxData[10] << 8) | rxData[11];
-	dev->gyroZRaw = ((uint16_t)rxData[12] << 8) | rxData[13];
+	dev->gyroXRaw = (((uint16_t)rxData[ 8] << 8) | rxData[ 9]) / 2000.0f;
+	dev->gyroYRaw = (((uint16_t)rxData[10] << 8) | rxData[11]) / 2000.0f;
+	dev->gyroZRaw = (((uint16_t)rxData[12] << 8) | rxData[13]) / 2000.0f;
 }
 
 void ICM20602_Raw_To_Real(ICM20602 *dev)

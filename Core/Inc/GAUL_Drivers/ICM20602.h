@@ -77,6 +77,7 @@
 #define ICM20602_REG_ZA_OFFSET_H			0x7D
 #define ICM20602_REG_ZA_OFFSET_L			0x7E
 
+
 #define ICM20602_VAL_WHO_AM_I 				0x12
 
 //Sensor struct

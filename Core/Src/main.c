@@ -150,10 +150,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  float temp = icm.temperatureC;
     /* USER CODE END WHILE */
 	  ICM20602_Update_All(&icm);
-	  printf("Temperature: %f \n", temp);
+	  printf("Temperature: %.2f		AccX: %.2f AccY: %.2f AccZ: %.2f 		GX: %.2f GY: %.2f GZ: %.2f \n",
+			  icm.temperatureC, icm.accXRaw, icm.accYRaw, icm.accZRaw, icm.gyroXRaw, icm.gyroYRaw, icm.gyroZRaw);
 	  HAL_Delay(500);
     /* USER CODE BEGIN 3 */
   }
