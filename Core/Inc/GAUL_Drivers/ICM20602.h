@@ -80,17 +80,26 @@
 
 #define ICM20602_VAL_WHO_AM_I 				0x12
 
-//Sensor struct
+// Sensor struct
 typedef struct{
 
-	//data
-	float 	gyroXRaw;
-	float 	gyroYRaw;
-	float 	gyroZRaw;
+	// Raw data
+	int16_t 	gyroXRaw;
+	int16_t 	gyroYRaw;
+	int16_t 	gyroZRaw;
 
-	float 	accXRaw;
-	float 	accYRaw;
-	float 	accZRaw;
+	int16_t 	accXRaw;
+	int16_t 	accYRaw;
+	int16_t 	accZRaw;
+
+	// Real data
+	float 	gyroX;
+	float 	gyroY;
+	float 	gyroZ;
+
+	float 	accX;
+	float 	accY;
+	float 	accZ;
 
 	float 	temperatureC;
 
@@ -99,7 +108,6 @@ typedef struct{
 uint8_t ICM20602_Init(ICM20602 *dev);
 
 void ICM20602_Update_All(ICM20602 *dev);
-void ICM20602_Raw_To_Real(ICM20602 *dev);
 
 //Low level fonctions
 void ICM20602_Read(uint8_t address, uint8_t rxData[], uint8_t size);

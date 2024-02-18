@@ -6,7 +6,7 @@
  */
 
 //include
-#include <Buzzer.h>
+#include <GAUL_Drivers\Buzzer.h>
 
 static const buzzParametres_t buzzParams[] = {
 

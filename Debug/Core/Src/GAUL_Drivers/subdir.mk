@@ -6,16 +6,19 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Core/Src/GAUL_Drivers/BMP280.c \
+../Core/Src/GAUL_Drivers/Buzzer.c \
 ../Core/Src/GAUL_Drivers/ICM20602.c \
 ../Core/Src/GAUL_Drivers/WS2812_led.c 
 
 OBJS += \
 ./Core/Src/GAUL_Drivers/BMP280.o \
+./Core/Src/GAUL_Drivers/Buzzer.o \
 ./Core/Src/GAUL_Drivers/ICM20602.o \
 ./Core/Src/GAUL_Drivers/WS2812_led.o 
 
 C_DEPS += \
 ./Core/Src/GAUL_Drivers/BMP280.d \
+./Core/Src/GAUL_Drivers/Buzzer.d \
 ./Core/Src/GAUL_Drivers/ICM20602.d \
 ./Core/Src/GAUL_Drivers/WS2812_led.d 
 
@@ -27,7 +30,7 @@ Core/Src/GAUL_Drivers/%.o Core/Src/GAUL_Drivers/%.su Core/Src/GAUL_Drivers/%.cyc
 clean: clean-Core-2f-Src-2f-GAUL_Drivers
 
 clean-Core-2f-Src-2f-GAUL_Drivers:
-	-$(RM) ./Core/Src/GAUL_Drivers/BMP280.cyclo ./Core/Src/GAUL_Drivers/BMP280.d ./Core/Src/GAUL_Drivers/BMP280.o ./Core/Src/GAUL_Drivers/BMP280.su ./Core/Src/GAUL_Drivers/ICM20602.cyclo ./Core/Src/GAUL_Drivers/ICM20602.d ./Core/Src/GAUL_Drivers/ICM20602.o ./Core/Src/GAUL_Drivers/ICM20602.su ./Core/Src/GAUL_Drivers/WS2812_led.cyclo ./Core/Src/GAUL_Drivers/WS2812_led.d ./Core/Src/GAUL_Drivers/WS2812_led.o ./Core/Src/GAUL_Drivers/WS2812_led.su
+	-$(RM) ./Core/Src/GAUL_Drivers/BMP280.cyclo ./Core/Src/GAUL_Drivers/BMP280.d ./Core/Src/GAUL_Drivers/BMP280.o ./Core/Src/GAUL_Drivers/BMP280.su ./Core/Src/GAUL_Drivers/Buzzer.cyclo ./Core/Src/GAUL_Drivers/Buzzer.d ./Core/Src/GAUL_Drivers/Buzzer.o ./Core/Src/GAUL_Drivers/Buzzer.su ./Core/Src/GAUL_Drivers/ICM20602.cyclo ./Core/Src/GAUL_Drivers/ICM20602.d ./Core/Src/GAUL_Drivers/ICM20602.o ./Core/Src/GAUL_Drivers/ICM20602.su ./Core/Src/GAUL_Drivers/WS2812_led.cyclo ./Core/Src/GAUL_Drivers/WS2812_led.d ./Core/Src/GAUL_Drivers/WS2812_led.o ./Core/Src/GAUL_Drivers/WS2812_led.su
 
 .PHONY: clean-Core-2f-Src-2f-GAUL_Drivers
 

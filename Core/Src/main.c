@@ -84,6 +84,8 @@ static void MX_CRC_Init(void);
 /* USER CODE BEGIN 0 */
 struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
 struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
+
+ICM20602 icm;
 /* USER CODE END 0 */
 
 /**
@@ -124,7 +126,7 @@ int main(void)
 
   SPI_Init(2);
   //BMP280 bmp;
-  ICM20602 icm;
+
 
   printf(" Starting \n");
 
@@ -153,8 +155,8 @@ int main(void)
     /* USER CODE END WHILE */
 	  ICM20602_Update_All(&icm);
 	  printf("Temperature: %.2f		AccX: %.2f AccY: %.2f AccZ: %.2f 		GX: %.2f GY: %.2f GZ: %.2f \n",
-			  icm.temperatureC, icm.accXRaw, icm.accYRaw, icm.accZRaw, icm.gyroXRaw, icm.gyroYRaw, icm.gyroZRaw);
-	  HAL_Delay(500);
+			  icm.temperatureC, icm.accX, icm.accY, icm.accZ, icm.gyroX, icm.gyroY, icm.gyroZ);
+	  HAL_Delay(50);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

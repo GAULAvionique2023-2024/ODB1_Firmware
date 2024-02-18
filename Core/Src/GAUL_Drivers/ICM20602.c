@@ -21,9 +21,9 @@ uint8_t ICM20602_Init(ICM20602 *dev)
 
 	dev->temperatureC = 		0.0f;
 
-	uint8_t errorCount = 0;
-	uint8_t test = 0;
-	uint8_t rxData[1];
+	int8_t errorCount = 0;
+	int8_t test = 0;
+	int8_t rxData[1];
 
 	// Reset ICM20602
 	ICM20602_Write(ICM20602_REG_PWR_MGMT_1, 0x80);
@@ -99,24 +99,29 @@ uint8_t ICM20602_Init(ICM20602 *dev)
 
 void ICM20602_Update_All(ICM20602 *dev)
 {
-	uint8_t 	rxData[14];
+	uint8_t rxData[14];
 
 	ICM20602_Read(ICM20602_REG_ACCEL_XOUT_H, rxData, 14);
 
-	dev->accXRaw = (((uint16_t)rxData[0] << 8) | rxData[1]) / 16.4f;
-	dev->accYRaw = (((uint16_t)rxData[2] << 8) | rxData[3]) / 16.4f;
-	dev->accZRaw = (((uint16_t)rxData[4] << 8) | rxData[5]) / 16.4f;
+	dev->accXRaw = (rxData[0] << 8) | rxData[1];
+	dev->accYRaw = (rxData[2] << 8) | rxData[3];
+	dev->accZRaw = (rxData[4] << 8) | rxData[5];
 
-	dev->temperatureC = (((uint16_t)rxData[6] << 8) | rxData[7])/326.8f + 25;
+	dev->temperatureC = ((rxData[6] << 8) | rxData[7])/326.8f + 25;
 
-	dev->gyroXRaw = (((uint16_t)rxData[ 8] << 8) | rxData[ 9]) / 2000.0f;
-	dev->gyroYRaw = (((uint16_t)rxData[10] << 8) | rxData[11]) / 2000.0f;
-	dev->gyroZRaw = (((uint16_t)rxData[12] << 8) | rxData[13]) / 2000.0f;
-}
+	dev->gyroXRaw = (rxData[ 8] << 8) | rxData[ 9];
+	dev->gyroYRaw = (rxData[10] << 8) | rxData[11];
+	dev->gyroZRaw = (rxData[12] << 8) | rxData[13];
 
-void ICM20602_Raw_To_Real(ICM20602 *dev)
-{
-	dev->temperatureC = (dev->temperatureC/326.8) + 25;
+	dev->gyroX = dev->gyroXRaw * 2000.f / 32768.f;
+	dev->gyroY = dev->gyroYRaw * 2000.f / 32768.f;
+	dev->gyroZ = dev->gyroZRaw * 2000.f / 32768.f;
+
+	dev->accX = dev->accXRaw * 32.f / 32768.f;
+	dev->accY = dev->accYRaw * 32.f / 32768.f;
+	dev->accZ = dev->accZRaw * 32.f / 32768.f;
+
+
 }
 
 void ICM20602_Read(uint8_t address, uint8_t rxData[], uint8_t size)
