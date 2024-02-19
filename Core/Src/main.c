@@ -153,10 +153,14 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  ICM20602_Update_All(&icm);
-	  printf("Temperature: %.2f		AccX: %.2f AccY: %.2f AccZ: %.2f 		GX: %.2f GY: %.2f GZ: %.2f \n",
-			  icm.temperatureC, icm.accX, icm.accY, icm.accZ, icm.gyroX, icm.gyroY, icm.gyroZ);
-	  HAL_Delay(50);
+	  if(ICM20602_Data_Ready())
+	  {
+		  ICM20602_Update_All(&icm);
+		  printf("Temperature: %.2f		AccX: %.2f AccY: %.2f AccZ: %.2f 		GX: %.2f GY: %.2f GZ: %.2f \n",
+		  			  icm.temperatureC, icm.accX, icm.accY, icm.accZ, icm.gyroX, icm.gyroY, icm.gyroZ);
+	  }
+
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
