@@ -18,27 +18,12 @@
 
 typedef struct {
 
-    uint32_t 	polynomial;
-    uint32_t 	initialValue;
-    uint32_t 	crc;
-
-    CRC_STATUS 	status;
+	CRC_HandleTypeDef CRC_Handle;
 
 } CRC32;
 
-typedef enum {
-
-    CRC_STATUS_OK = 	0,
-    CRC_STATUS_ERROR = 	1,
-
-} CRC_STATUS;
-
-void CRC32_Init(CRC32 *crc);
-void CRC32_Reset(CRC32 *crc);
-void CRC32_AddData(CRC32 *crc, uint8_t data);
-
-uint32_t CRC32_GetCRC(CRC32 *crc, uint8_t *data, uint32_t size);
-
-uint32_t CRC32_Calculation(CRC32 *crc, uint8_t *data, uint32_t size);
+// Low level CRC functions
+void CRC32_Init(CRC32 *hcrc);
+uint32_t CRC32_GetCRC(CRC32 *hcrc, uint32_t *addressData, uint32_t length);
 
 #endif /* INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_CRC_H_BAK_ */
