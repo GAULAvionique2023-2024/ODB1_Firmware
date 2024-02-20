@@ -5,6 +5,7 @@
  *      Author: Luka
  */
 
+#include "math.h"
 #include "GAUL_Drivers/ICM20602.h"
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
@@ -22,7 +23,7 @@ uint8_t ICM20602_Init(ICM20602 *dev)
 
 	int8_t errorCount = 0;
 	int8_t test = 		0;
-	int8_t rxData[1];
+	uint8_t rxData[1];
 
 	// Reset ICM20602
 	ICM20602_Write(ICM20602_REG_PWR_MGMT_1, 0x80);
@@ -110,6 +111,9 @@ void ICM20602_Update_All(ICM20602 *dev)
 	dev->accX = dev->accXRaw * 16.f / 32768.f;
 	dev->accY = dev->accYRaw * 16.f / 32768.f;
 	dev->accZ = dev->accZRaw * 16.f / 32768.f;
+
+	dev->angleRoll = atan(dev->accY/sqrt(dev->accX*dev->accX+dev->accZ*dev->accZ))*1/(3.142/180);
+	dev->anglePitch = -atan(dev->accX/sqrt(dev->accY*dev->accY+dev->accZ*dev->accZ))*1/(3.142/180);
 
 }
 

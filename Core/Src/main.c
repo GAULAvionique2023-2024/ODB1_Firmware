@@ -24,6 +24,7 @@
 #include "string.h"
 #include "stdio.h"
 #include "stdbool.h"
+#include "GAUL_Drivers/KalmanFilter.h"
 #include <GAUL_Drivers/WS2812_led.h>
 //#include "GAUL_Drivers/BMP280.h"
 #include "GAUL_Drivers/ICM20602.h"
@@ -40,13 +41,10 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
-
 
 /* USER CODE END PM */
 
@@ -85,7 +83,6 @@ static void MX_CRC_Init(void);
 struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
 struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
 
-ICM20602 icm;
 /* USER CODE END 0 */
 
 /**
@@ -125,25 +122,18 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   SPI_Init(2);
-  //BMP280 bmp;
+  WS2812_Init();
 
+  ICM20602 icm;
+  //BMP280 bmp;
 
   printf(" Starting \n");
 
   ICM20602_Init(&icm);
-  //if(status == 0){printf("ICM20602 DETECT!\n");}
-  //else{printf("status = %d \n", status);}
 
-  //status = BMP280_Init(&bmp, &hspi2, BMP_CS_Pin, BMP_CS_GPIO_Port);
-  //if(status == 0){printf("BMP280 DETECT!\n");}
-  //else {printf("status = %d \n", status);}
-
-  memset(led_channels, 0, sizeof(led_channels));
-
+  //memset(led_channels, 0, sizeof(led_channels));
   //led_channels[0].framebuffer = channel_framebuffers;
   //led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
-
-  WS2812_Init();
 
 
   /* USER CODE END 2 */
@@ -156,8 +146,10 @@ int main(void)
 	  if(ICM20602_Data_Ready())
 	  {
 		  ICM20602_Update_All(&icm);
-		  printf("Temperature: %.2f		AccX: %.2f AccY: %.2f AccZ: %.2f 		GX: %.2f GY: %.2f GZ: %.2f \n",
-		  			  icm.temperatureC, icm.accX, icm.accY, icm.accZ, icm.gyroX, icm.gyroY, icm.gyroZ);
+		  getRollPitch(&icm);
+		  //printf("Roll: %.2f	Pitch: %.2f \n", icm.angleRoll, icm.anglePitch);
+		  printf("Roll: %.2f	Pitch: %.2f \n", icm.kalmanAngleRoll, icm.kalmanAnglePitch);
+
 	  }
 
 
