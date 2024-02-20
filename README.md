@@ -79,12 +79,12 @@ typedef struct{
 	int16_t 	accZRaw;
 
 	// Real data
-  // In degree per second
+ 	 // In degree per second
 	float 	gyroX;
 	float 	gyroY;
 	float 	gyroZ;
 
-  // In G force
+  	// In G force
 	float 	accX;
 	float 	accY;
 	float 	accZ;
@@ -94,7 +94,7 @@ typedef struct{
 	float	angleRoll;
 	float	anglePitch;
 
-  // The angle with the kalman filter
+  	// The angle with the kalman filter
 	float	kalmanAngleRoll;
 	float	kalmanAnglePitch;
 
