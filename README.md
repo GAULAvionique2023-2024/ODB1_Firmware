@@ -79,7 +79,7 @@ typedef struct{
 	int16_t 	accZRaw;
 
 	// Real data
- 	 // In degree per second
+	// In degree per second
 	float 	gyroX;
 	float 	gyroY;
 	float 	gyroZ;
