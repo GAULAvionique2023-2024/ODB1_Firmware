@@ -1,6 +1,6 @@
-../Core/Src/GAUL_Drivers/ICM20602.c:149:9:ICM20602_Data_Ready	1
-../Core/Src/GAUL_Drivers/ICM20602.c:154:6:ICM20602_Read	1
-../Core/Src/GAUL_Drivers/ICM20602.c:91:6:ICM20602_Update_All	1
-../Core/Src/GAUL_Drivers/ICM20602.c:164:6:ICM20602_Write	1
-../Core/Src/GAUL_Drivers/ICM20602.c:120:6:ICM20602_Remove_DC_Offset	2
-../Core/Src/GAUL_Drivers/ICM20602.c:13:9:ICM20602_Init	8
+../Core/Src/GAUL_Drivers/ICM20602.c:152:9:ICM20602_Data_Ready	1
+../Core/Src/GAUL_Drivers/ICM20602.c:157:6:ICM20602_Read	1
+../Core/Src/GAUL_Drivers/ICM20602.c:92:6:ICM20602_Update_All	1
+../Core/Src/GAUL_Drivers/ICM20602.c:167:6:ICM20602_Write	1
+../Core/Src/GAUL_Drivers/ICM20602.c:123:6:ICM20602_Remove_DC_Offset	2
+../Core/Src/GAUL_Drivers/ICM20602.c:14:9:ICM20602_Init	8

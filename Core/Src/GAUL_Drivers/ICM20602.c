@@ -7,6 +7,7 @@
 
 #include "math.h"
 #include "GAUL_Drivers/ICM20602.h"
+#include "GAUL_Drivers/KalmanFilter.h"
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 
@@ -114,6 +115,8 @@ void ICM20602_Update_All(ICM20602 *dev)
 
 	dev->angleRoll = atan(dev->accY/sqrt(dev->accX*dev->accX+dev->accZ*dev->accZ))*1/(3.142/180);
 	dev->anglePitch = -atan(dev->accX/sqrt(dev->accY*dev->accY+dev->accZ*dev->accZ))*1/(3.142/180);
+
+	getRollPitch(dev);
 
 }
 

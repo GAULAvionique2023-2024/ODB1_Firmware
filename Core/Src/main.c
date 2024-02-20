@@ -24,7 +24,7 @@
 #include "string.h"
 #include "stdio.h"
 #include "stdbool.h"
-#include "GAUL_Drivers/KalmanFilter.h"
+
 #include <GAUL_Drivers/WS2812_led.h>
 //#include "GAUL_Drivers/BMP280.h"
 #include "GAUL_Drivers/ICM20602.h"
@@ -146,7 +146,7 @@ int main(void)
 	  if(ICM20602_Data_Ready())
 	  {
 		  ICM20602_Update_All(&icm);
-		  getRollPitch(&icm);
+
 		  //printf("Roll: %.2f	Pitch: %.2f \n", icm.angleRoll, icm.anglePitch);
 		  printf("Roll: %.2f	Pitch: %.2f \n", icm.kalmanAngleRoll, icm.kalmanAnglePitch);
 
