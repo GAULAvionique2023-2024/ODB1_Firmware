@@ -22,6 +22,8 @@ uint8_t ICM20602_Init(ICM20602 *dev)
 
 	dev->temperatureC = 0.0f;
 
+	Init_GPIO(PA,  10, IN, I_PP); // Init GPIO for the interrupt
+
 	int8_t errorCount = 0;
 	int8_t test = 		0;
 	uint8_t rxData[1];
