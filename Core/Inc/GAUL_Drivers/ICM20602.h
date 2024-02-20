@@ -103,6 +103,11 @@ typedef struct{
 
 	float 	temperatureC;
 
+	float	angleRoll;
+	float	anglePitch;
+	float	kalmanAngleRoll;
+	float	kalmanAnglePitch;
+
 }ICM20602;
 
 uint8_t ICM20602_Init(ICM20602 *dev);
@@ -110,6 +115,7 @@ uint8_t ICM20602_Init(ICM20602 *dev);
 void 	ICM20602_Update_All(ICM20602 *dev);
 void 	ICM20602_Remove_DC_Offset(ICM20602 *dev, uint8_t mean);
 int8_t  ICM20602_Data_Ready();
+
 //Low level fonctions
 void 	ICM20602_Read(uint8_t address, uint8_t rxData[], uint8_t size);
 void 	ICM20602_Write(uint8_t address, uint8_t value);

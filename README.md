@@ -42,3 +42,61 @@ The now we only need to call WS2812_Solid_Colors to set a color. the firt 2 para
   //Blue
   WS2812_Solid_Colors(channel_framebuffers[0], led_channels, 0, 0, 255);
   ```
+
+### ICM 20602 Driver
+
+To use the ICM driver you need to declare to struc in the main and use the Init fonction like so:
+
+```C
+    ICM20602 icm;
+    ICM20602_Init(&icm);
+```
+
+Then all you need is to check if the data is ready and use the fonction to update all the data.
+```C
+	  if(ICM20602_Data_Ready())
+	  {
+		  ICM20602_Update_All(&icm);
+
+		  //printf("Roll: %.2f	Pitch: %.2f \n", icm.angleRoll, icm.anglePitch);
+		  printf("Roll: %.2f	Pitch: %.2f \n", icm.kalmanAngleRoll, icm.kalmanAnglePitch);
+
+	  }
+```
+
+Here all the data you get:
+```C
+// Sensor struct
+typedef struct{
+
+	// Raw data
+	int16_t 	gyroXRaw;
+	int16_t 	gyroYRaw;
+	int16_t 	gyroZRaw;
+
+	int16_t 	accXRaw;
+	int16_t 	accYRaw;
+	int16_t 	accZRaw;
+
+	// Real data
+	// In degree per second
+	float 	gyroX;
+	float 	gyroY;
+	float 	gyroZ;
+
+  	// In G force
+	float 	accX;
+	float 	accY;
+	float 	accZ;
+
+	float 	temperatureC;
+  
+	float	angleRoll;
+	float	anglePitch;
+
+  	// The angle with the kalman filter
+	float	kalmanAngleRoll;
+	float	kalmanAnglePitch;
+
+}ICM20602;
+```
