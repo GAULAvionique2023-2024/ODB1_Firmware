@@ -16,26 +16,26 @@
 #define GPIO_C          (*((volatile unsigned long *) 0x40011000))
 
 /// List of Ports
-#define PA 1
-#define PB 2
-#define PC 3
+#define PA 1		// Port A
+#define PB 2		// Port B
+#define PC 3		// Port C
 
 /// Directions
-#define IN 0
-#define OUT10 1
-#define OUT2  2
-#define OUT50 3
+#define IN 0 		// Indique que la broche gpio est configurée comme entrée
+#define OUT10 1 	// "" comme sortie (10MHz)
+#define OUT2  2		// "" comme sortie (2MHz)
+#define OUT50 3		// "" comme sortie (50MHz)
 
 /// Direction options for input
-#define I_AN 0
-#define I_F  1
-#define I_PP 2
+#define I_AN 0		// Indique que la broche gpio est configurée comme entrée analogique
+#define I_F  1		// "" comme entrée numérique avec détection des deux fronts (montant et descendant)
+#define I_PP 2		// "" comme entrée numérique avec une configuration push-pull
 
 /// Direction options for output
-#define O_GP_PP 0
-#define O_GP_OD 1
-#define O_AF_PP 2
-#define O_AF_OD 3
+#define O_GP_PP 0	// Indique que la broche gpio est configurée comme sortie avec une configuration push-pull
+#define O_GP_OD 1	// "" comme sortie à drain ouvert
+#define O_AF_PP 2	// "" comme sortie push-pull en mode alternatif
+#define O_AF_OD 3	// "" comme sortie à drain ouvert en mode alternatif
 
 /// State definition
 #define LOW  0
