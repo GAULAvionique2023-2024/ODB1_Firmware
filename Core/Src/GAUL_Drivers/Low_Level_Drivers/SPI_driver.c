@@ -21,7 +21,7 @@ void SPI_Init(unsigned short spi)
 		Init_GPIO(PA, 4, OUT50, O_GP_PP); //CS
 		Init_GPIO(PA, 5, OUT50, O_AF_PP); //CLK
 		Init_GPIO(PA, 6,    IN,    I_PP); //MISO SPI1
-		Init_GPIO(PA, 7, OUT50, O_AF_PP);
+		Init_GPIO(PA, 7, OUT50, O_AF_PP); //MOSI SPI1
 
 		Write_GPIO(PA,  4, HIGH);
 

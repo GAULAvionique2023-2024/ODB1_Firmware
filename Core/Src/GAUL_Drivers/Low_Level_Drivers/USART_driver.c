@@ -6,7 +6,7 @@
  */
 
 #include "main.h"
-#include <GAUL_Drivers/Low_Level_Drivers/USART_driver.h>
+#include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 
 void USART_Init(unsigned short usart)
@@ -53,33 +53,33 @@ void USART_TX(unsigned short usart, uint8_t *data, int size) {
 		int i = 0;
 		while (i < size)
 		{
-			while (!(USART1->SR & USART_SR_TXE));
+			while (!(USART1->SR & USART_SR_TXE)); // Vérifie si le buffer de transmission est vide
 			USART1->DR = data[i];
 			i++;
 		}
-		while (!(USART1->SR & USART_SR_TC));
+		while (!(USART1->SR & USART_SR_TC)); // Vérifie si la transmission est termine
 	}
 	else if(usart == 2)
 	{
 		int i = 0;
 		while (i < size)
 		{
-			while (!(USART2->SR & USART_SR_TXE));
+			while (!(USART2->SR & USART_SR_TXE)); // Vérifie si le buffer de transmission est vide
 			USART2->DR = data[i];
 			i++;
 		}
-		while (!(USART2->SR & USART_SR_TC));
+		while (!(USART2->SR & USART_SR_TC)); // Vérifie si la transmission est termine
 	}
 	else if(usart == 3)
 	{
 		int i = 0;
 		while (i < size)
 		{
-			while (!(USART3->SR & USART_SR_TXE));
+			while (!(USART3->SR & USART_SR_TXE)); // Vérifie si le buffer de transmission est vide
 			USART3->DR = data[i];
 			i++;
 		}
-		while (!(USART3->SR & USART_SR_TC));
+		while (!(USART3->SR & USART_SR_TC)); // Vérifie si la transmission est termine
 	}
 }
 
@@ -90,7 +90,7 @@ void USART_RX(unsigned short usart, uint8_t *data, int size) {
 		int i = 0;
 		while (i < size)
 		{
-			while (!(USART1->SR & USART_SR_RXNE));
+			while (!(USART1->SR & USART_SR_RXNE)); // Vérifie si le buffer de réception n'est pas vide
 			data[i] = USART1->DR;
 			i++;
 		}
@@ -100,7 +100,7 @@ void USART_RX(unsigned short usart, uint8_t *data, int size) {
 		int i = 0;
 		while (i < size)
 		{
-			while (!(USART2->SR & USART_SR_RXNE));
+			while (!(USART2->SR & USART_SR_RXNE)); // Vérifie si le buffer de réception n'est pas vide
 			data[i] = USART2->DR;
 			i++;
 		}
@@ -110,7 +110,7 @@ void USART_RX(unsigned short usart, uint8_t *data, int size) {
 		int i = 0;
 		while (i < size)
 		{
-			while (!(USART3->SR & USART_SR_RXNE));
+			while (!(USART3->SR & USART_SR_RXNE)); // Vérifie si le buffer de réception n'est pas vide
 			data[i] = USART3->DR;
 			i++;
 		}
