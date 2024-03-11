@@ -14,47 +14,63 @@ uint8_t RFD900_Init(RFD900 *dev) {
 
 }
 
-void RFD900_BufferSensorUpdate(RFD900 *devRFD, ICM20602 *devICM) {
+void RFD900_DataArray_Update(RFD900 *devRFD, ICM20602 *devICM) {
 
-	//GPS
+	// GPS
 
 
-	//Gyro/Acc
-	devRFD->data[3] = (uint8_t)devICM->gyroX;
-	devRFD->data[4] = (uint8_t)devICM->gyroY;
-	devRFD->data[5] = (uint8_t)devICM->gyroZ;
-	devRFD->data[6] = (uint8_t)devICM->accX;
-	devRFD->data[7] = (uint8_t)devICM->accY;
-	devRFD->data[8] = (uint8_t)devICM->accZ;
-	devRFD->data[9] = (uint8_t)devICM->temperatureC;
+	// Gyro/Acc
+	//uint16_t gyroX = RFD900_ReverseByte16();
 
-	//Barometre
+	devRFD->data[6] = (uint8_t)(devICM->gyroX) >> 8;
+	devRFD->data[7] = (uint8_t)(devICM->gyroX) & 0xFF;
+	devRFD->data[8] = (uint8_t)(devICM->gyroY) >> 8;
+	devRFD->data[9] = (uint8_t)(devICM->gyroY) & 0xFF;
+	devRFD->data[10] = (uint8_t)(devICM->gyroZ) >> 8;
+	devRFD->data[11] = (uint8_t)(devICM->gyroZ) & 0xFF;
+
+	devRFD->data[12] = (uint8_t)(devICM->accX) >> 8;
+	devRFD->data[13] = (uint8_t)(devICM->accX) & 0xFF;
+	devRFD->data[14] = (uint8_t)(devICM->accY) >> 8;
+	devRFD->data[15] = (uint8_t)(devICM->accY) & 0xFF;
+	devRFD->data[16] = (uint8_t)(devICM->accZ) >> 8;
+	devRFD->data[17] = (uint8_t)(devICM->accZ) & 0xFF;
+
+	devRFD->data[18] = (uint8_t)(devICM->temperatureC) >> 8;
+	devRFD->data[19] = (uint8_t)(devICM->temperatureC) & 0xFF;
+
+	devRFD->data[20] = (uint8_t)(devICM->kalmanAngleRoll) >> 8;
+	devRFD->data[21] = (uint8_t)(devICM->kalmanAngleRoll) & 0xFF;
+	devRFD->data[22] = (uint8_t)(devICM->kalmanAnglePitch) >> 8;
+	devRFD->data[23] = (uint8_t)(devICM->kalmanAnglePitch) & 0xFF;
+
+	// Barometre
 
 }
 
-void RFD900_CreatePacket(RFD900 *dev, uint8_t data[], uint8_t size) {
+void RFD900_CreatePacket(RFD900 *dev, uint8_t data[]) {
 
-	//size = sizeof(data) / 8)
+	// size = sizeof(data) / 8) = 28
 	int i = 0;
-	while (i < size)
+	while (i < 27)
 	{
-		dev->packetToSend[14 - i] = Reverse_Byte(data[i]); // packetToSend[14-2] reste 1-0
+		dev->packetToSend[27 - i] = data[i]; // packetToSend[29-2] reste 1-0
 	}
 }
 
-void RFD900_Transmit_RFD_TX(RFD900 *dev, uint8_t size) {
+void RFD900_Transmit_RFDTX(RFD900 *dev) {
 
 
 }
 
-uint8_t Reverse_Byte(uint8_t bytes) {
+uint8_t RFD900_ReverseByte16(uint16_t value) {
 
-	uint8_t invertedByte = 0;
+	uint16_t invertedByte = 0;
 
 	int i;
-	for(i = 0; i < 8; ++i)
+	for(i = 0; i < 16; ++i)
 	{
-		invertedByte |= ((bytes >> i) & 1) << (7 - i);
+		invertedByte |= ((value >> i) & 1) << (15 - i);
 	}
 
 	return invertedByte;
