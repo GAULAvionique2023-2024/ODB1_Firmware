@@ -9,9 +9,13 @@
 #include "GAUL_Drivers/Low_Level_Drivers/CRC_driver.h"
 
 
-uint32_t CRC32_Calculate(CRC_HandleTypeDef hcrc, uint32_t inputBuffer[], uint32_t length) {
 
-	return HAL_CRC_Calculate(&hcrc, inputBuffer, length);
+uint32_t CRC32_Calculate(CRC_HandleTypeDef *hcrc, uint32_t inputBuffer[], uint32_t length) {
+
+	CRC->CR = CRC_CR_RESET;
+	CRC->DR = 0xFFFFFFFF;
+
+	return HAL_CRC_Calculate(hcrc, inputBuffer, length);
 }
 
 
