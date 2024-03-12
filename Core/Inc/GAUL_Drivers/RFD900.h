@@ -11,6 +11,8 @@
 #define DATA_ARRAY_SIZE 28
 #define PACKET_ARRAY_SIZE 30
 
+#define RFD_USART_PORT 1
+
 #include "stdint.h"
 #include "GAUL_Drivers/ICM20602.h"
 #include "GAUL_Drivers/BMP280.h"

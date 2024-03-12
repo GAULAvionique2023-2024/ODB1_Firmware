@@ -5,11 +5,10 @@
  *      Author: gagno
  */
 
-#include <stdint.h>
-
-
 #ifndef INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_USART_DRIVER_H_
 #define INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_USART_DRIVER_H_
+
+#include <stdint.h>
 
 void USART_Init(unsigned short usart);
 

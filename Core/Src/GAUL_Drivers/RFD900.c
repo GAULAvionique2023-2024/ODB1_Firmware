@@ -17,7 +17,7 @@ uint8_t RFD900_Init(RFD900 *dev) {
 void RFD900_DataArray_Update(RFD900 *devRFD, ICM20602 *devICM) {
 
 	// GPS
-
+	//Passer message dans buffer GPS_RX dans NMEA_Convert_DataFormat(NMEA *dev, char *nmeaSentence) avant split en 8bits
 
 	// Gyro/Acc
 	devRFD->data[6] = (uint8_t)(devICM->gyroX) >> 8;
@@ -46,17 +46,16 @@ void RFD900_DataArray_Update(RFD900 *devRFD, ICM20602 *devICM) {
 
 
 	// CRC
-	devRFD->validationCRC = CRC16_Calculate(devRFD->data, 28);
+	devRFD->validationCRC = CRC16_Calculate(devRFD->data, DATA_ARRAY_SIZE);
 
 }
 
 void RFD900_CreatePacket(RFD900 *devRFD, uint8_t data[]) {
 
-	// size = sizeof(data) / 8) = 28
 	devRFD->validationCRC = 0x0000;
 
 	int i = 0;
-	while (i < 28)
+	while (i < DATA_ARRAY_SIZE)
 	{
 		devRFD->packetToSend[i] = data[i]; // packetToSend[0-27] reste 1-0
 	}
@@ -67,6 +66,6 @@ void RFD900_CreatePacket(RFD900 *devRFD, uint8_t data[]) {
 
 void RFD900_Transmit_RFDTX(RFD900 *devRFD) {
 
-
+	USART_TX(RFD_USART_PORT, devRFD->packetToSend, PACKET_ARRAY_SIZE);
 }
 
