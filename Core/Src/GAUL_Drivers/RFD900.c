@@ -20,8 +20,6 @@ void RFD900_DataArray_Update(RFD900 *devRFD, ICM20602 *devICM) {
 
 
 	// Gyro/Acc
-	//uint16_t gyroX = RFD900_ReverseByte16();
-
 	devRFD->data[6] = (uint8_t)(devICM->gyroX) >> 8;
 	devRFD->data[7] = (uint8_t)(devICM->gyroX) & 0xFF;
 	devRFD->data[8] = (uint8_t)(devICM->gyroY) >> 8;
@@ -46,33 +44,29 @@ void RFD900_DataArray_Update(RFD900 *devRFD, ICM20602 *devICM) {
 
 	// Barometre
 
+
+	// CRC
+	devRFD->validationCRC = CRC16_Calculate(devRFD->data, 28);
+
 }
 
-void RFD900_CreatePacket(RFD900 *dev, uint8_t data[]) {
+void RFD900_CreatePacket(RFD900 *devRFD, uint8_t data[]) {
 
 	// size = sizeof(data) / 8) = 28
+	devRFD->validationCRC = 0x0000;
+
 	int i = 0;
-	while (i < 27)
+	while (i < 28)
 	{
-		dev->packetToSend[27 - i] = data[i]; // packetToSend[29-2] reste 1-0
-	}
-}
-
-void RFD900_Transmit_RFDTX(RFD900 *dev) {
-
-
-}
-
-uint8_t RFD900_ReverseByte16(uint16_t value) {
-
-	uint16_t invertedByte = 0;
-
-	int i;
-	for(i = 0; i < 16; ++i)
-	{
-		invertedByte |= ((value >> i) & 1) << (15 - i);
+		devRFD->packetToSend[i] = data[i]; // packetToSend[0-27] reste 1-0
 	}
 
-	return invertedByte;
+	devRFD->packetToSend[30] = (uint8_t)(devRFD->validationCRC) >> 8;
+	devRFD->packetToSend[31] = (uint8_t)(devRFD->validationCRC) & 0xFF;
+}
+
+void RFD900_Transmit_RFDTX(RFD900 *devRFD) {
+
+
 }
 

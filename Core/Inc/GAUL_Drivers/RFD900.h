@@ -61,9 +61,8 @@ typedef struct {
 uint8_t RFD900_Init(RFD900 *dev);
 
 void RFD900_DataArray_Update(RFD900 *devRFD, ICM20602 *devICM);
-uint8_t RFD900_ReverseByte16(uint8_t value);
-void RFD900_CreatePacket(RFD900 *dev, uint8_t data[]);
+void RFD900_CreatePacket(RFD900 *devRFD, uint8_t data[]);
 
-void RFD900_Transmit_RFDTX(RFD900 *dev); // Envoit donnees dans le buffer RFD_TX pour que le modem envoit les donnees par lui-meme
+void RFD900_Transmit_RFDTX(RFD900 *devRFD); // Envoit donnees dans le buffer RFD_TX pour que le modem envoit les donnees par lui-meme
 
 #endif /* INC_GAUL_DRIVERS_RFD900_H_ */
