@@ -8,64 +8,31 @@
 #include "GAUL_Drivers/Low_Level_Drivers/NMEA.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+
+// Structures for parsed data
+NMEA_GPSData *GPSData;                   // Data from GNSS sentences
+NMEA_PMTK_Commands *PMTKData;            // Data from PMTK sentences
 
 
-void NMEA_Convert_DataFormat(NMEA *dev, char *nmeaSentence) {
+void NMEA_Init(void) {
 
-	const char outer_delimiters[] = ",";
-	const char inner_delimiters[] = ".";
+	memset(GPSData, 0, 7);
+	memset(PMTKData, 0, 4);
 
-	char* token;
-	char* outer_saveptr = NULL;
-	char* inner_saveptr = NULL;
-
-	token = strtok_r(nmeaSentence, outer_delimiters, &outer_saveptr);
-
-	int i = 0;
-	while (token != NULL)
-	{
-		char* inner_token = strtok_r(token, inner_delimiters, &inner_saveptr);
-
-		while (inner_token != NULL)
-		{
-			if(i == 1)
-			{
-				dev->latitudeHigh = atoi(inner_token);
-			}
-			else if(i == 2)
-			{
-				dev->latitudeLow = atoi(inner_token);
-			}
-			else if(i == 3)
-			{
-				char *output;
-				dev->latIndicator = strtol(inner_token, &output, 10) + 1;
-			}
-			else if(i == 4)
-			{
-				dev->longitudeHigh = atoi(inner_token);
-			}
-			else if(i == 5)
-			{
-				dev->longitudeLow = atoi(inner_token);
-			}
-			else if(i == 6)
-			{
-				char *output;
-				dev->latIndicator = strtol(inner_token, &output, 10) + 1;
-			}
-			else if(i == 7)
-			{
-				dev->utcTime = atoi(inner_token);
-			}
-
-			inner_token = strtok_r(NULL, inner_delimiters, &inner_saveptr);
-
-			i++;
-		}
-
-		token = strtok_r(NULL, outer_delimiters, &outer_saveptr);
-	}
 }
 
+void NMEA_ParseData(uint8_t *buffer) {
 
+	int size = 0;
+	char *ptr = buffer;
+
+	memcpy(GPSData->type, ptr, 6);
+	ptr += 7;
+
+	// Longueur du data Field
+	if(GPSData->type == 0x244750524D43) //$GPRMC
+	{
+		//size =
+	}
+}
