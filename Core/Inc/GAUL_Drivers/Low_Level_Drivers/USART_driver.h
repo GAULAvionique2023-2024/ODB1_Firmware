@@ -8,7 +8,13 @@
 #ifndef INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_USART_DRIVER_H_
 #define INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_USART_DRIVER_H_
 
+#include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
+
 #include <stdint.h>
+
+#define RFD_USART_PORT 1
+#define GPS_USART_PORT 2
+#define BT_USART_PORT  3
 
 void USART_Init(unsigned short usart);
 

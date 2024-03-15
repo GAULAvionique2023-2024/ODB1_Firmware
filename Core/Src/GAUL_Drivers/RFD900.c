@@ -6,8 +6,6 @@
  */
 
 #include "GAUL_Drivers/RFD900.h"
-#include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
-#include "GAUL_Drivers/Low_Level_Drivers/CRC_driver.h"
 
 uint8_t RFD900_Init(RFD900 *dev) {
 

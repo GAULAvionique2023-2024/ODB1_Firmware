@@ -11,12 +11,14 @@
 #define DATA_ARRAY_SIZE 28
 #define PACKET_ARRAY_SIZE 30
 
-#define RFD_USART_PORT 1
-
-#include "stdint.h"
 #include "GAUL_Drivers/ICM20602.h"
 #include "GAUL_Drivers/BMP280.h"
-//#include "GAUL_Driver/L76LM33"
+#include "GAUL_Drivers/L76LM33.h"
+#include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
+#include "GAUL_Drivers/Low_Level_Drivers/CRC_driver.h"
+
+#include <stdint.h>
+
 
 /*  Structure RFD900 format packet
  *	Array		Type			Size(bits)			Sensor				Interface

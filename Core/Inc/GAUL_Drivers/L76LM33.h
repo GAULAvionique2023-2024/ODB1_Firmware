@@ -8,27 +8,38 @@
 #ifndef INC_GAUL_DRIVERS_L76LM33_H_
 #define INC_GAUL_DRIVERS_L76LM33_H_
 
+#include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
+
+#include <string.h>
+
+// Types commandes PMTK
+typedef enum {
+
+	NMEA_STARTUP_INDICATOR,		// Permet de recevoir un message a l'activation du GPS
+	NMEA_SETRMSGLL,	// Set le type de message NMEA a GLL + RMS (speed)
+	NMEA_RESET, 	// Reset le type de message NMEA configure
+	NMEA_START_SEARCHSATELLITE,	// Active la recherche de GPS seulement
+	NMEA_NAVMODE,		// 0 : Normal (10000m) ; 2 : Aviation +acc (10000m) ; 3 : Ballon +hauteur (80000m) ; 4 : Stationary
+
+} NMEA_PMTKCommands;
 
 typedef struct {
 
-	// $GNGLL,3150.7856,N,11711.9479,E,102243.000,A,D*4B<CR><LF> (57 bytes)
-	// Message a envoyer : 3150 7856 N 11711 9479 E 102243 (25 bytes)
-	// Format : 		   uint8 des chiffre hex donc doit reconvertir byte en hex et convertir hex en char
+	char *command;
 
-	//Real data
-	int16_t latitudeHigh;
-	int16_t latitudeLow;
-	uint8_t latIndicator;
-	int16_t longitudeHigh;
-	int16_t longitudeLow;
-	uint8_t longIndicator;
+} NMEA_PMTKCommands_TypeDef;
 
-	uint8_t hTime;
-	uint8_t mTime;
-	uint8_t sTime;
+
+typedef struct {
+
+	char *message;
 
 } L76LM33;
 
-void L76LM33_Init(void);
+// Initialisation
+void L76LM33_Init(NMEA_PMTKCommands command);
+
+void RFD900_Transmit_GPSTX(L76LM33 *devGPS);
+void RFD900_Receive_GPSRX(L76LM33 *devGPS); // Envoyer des commandes au GPS
 
 #endif /* INC_GAUL_DRIVERS_L76LM33_H_ */

@@ -8,6 +8,9 @@
 #ifndef INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_NMEA_H_
 #define INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_NMEA_H_
 
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
 
 // NMEA est en ASCII [57]
@@ -24,9 +27,6 @@
 
 typedef struct {
 
-	//Type
-	uint8_t type;
-
 	// GPS Data
 	int32_t latitude;
 	uint8_t latIndicator;
@@ -38,26 +38,10 @@ typedef struct {
 	int8_t mTime;
 	int8_t sTime;
 
-} NMEA_GPSData;
-
-typedef struct {
-
-	uint8_t  PMTK_BOOT;           // 1 when "$PMTK011,MTKGPS*08" sentence parsed
-	uint8_t  PMTK010;             // Last parsed $PMTK010 sentence:
-	                              //   0 = unknown
-	                              //   1 = startup
-	                              //   2 = notification for the host aiding EPO
-	                              //   3 = notification for the transition to normal mode is successfully done
-	uint16_t PMTK001_CMD;         // CMD field from last parsed $PMTK001 sentence
-	uint8_t  PMTK001_FLAG;        // FLAG field from last parsed $PMTK001 sentence:
-	                              //   0 = invalid packet
-	                              //   1 = unsupported packet type
-	                              //   2 = valid packet, but action failed
-	                              //   3 = valid packet, action succeeded
-} NMEA_PMTK_Commands;
+} NMEA_GPSData;					// Variables importantes dans le Data field (entre $ - *)
 
 // Initialisation
-void NMEA_Init(void);
+void NMEA_Reset(void);
 
 // Functions
 void NMEA_ParseData(uint8_t *buffer);

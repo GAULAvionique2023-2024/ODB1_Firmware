@@ -5,9 +5,8 @@
  *      Author: gagno
  */
 
-#include "main.h"
 #include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
-#include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
+#include "main.h"
 
 void USART_Init(unsigned short usart)
 {

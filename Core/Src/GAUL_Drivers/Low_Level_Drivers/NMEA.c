@@ -6,33 +6,42 @@
  */
 
 #include "GAUL_Drivers/Low_Level_Drivers/NMEA.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 // Structures for parsed data
 NMEA_GPSData *GPSData;                   // Data from GNSS sentences
-NMEA_PMTK_Commands *PMTKData;            // Data from PMTK sentences
 
+// Lors de la réception des paquets, on devra convertir les bytes en hex et les hex en char pour revoir la forme initiale du message NMEA
+// La methode permettra de réduire  1/2 la quatité de bytes a transmettre
 
-void NMEA_Init(void) {
+uint16_t charToHex(char *buffer) {
 
-	memset(GPSData, 0, 7);
-	memset(PMTKData, 0, 4);
-
+	// Convertir char -> hex
 }
 
+uint16_t digitToHex(char *buffer) {
+
+	// Convertir digit -> hex
+}
+
+uint8_t hexToBytechar(char *buffer) {
+
+	// Convertir hex -> byte
+}
+
+void NMEA_Reset(void) {
+
+	memset(GPSData, 0, 7);
+
+	// Reset delim
+}
+
+void GetStatusNMEA(char *buffer) {
+
+	char *start = buffer;
+}
+
+// Mettre données dans un tableau afin de le s transmettre au RFD900x (Modifier buffer ou retourner tableau?)
 void NMEA_ParseData(uint8_t *buffer) {
 
-	int size = 0;
-	char *ptr = buffer;
 
-	memcpy(GPSData->type, ptr, 6);
-	ptr += 7;
-
-	// Longueur du data Field
-	if(GPSData->type == 0x244750524D43) //$GPRMC
-	{
-		//size =
-	}
 }
