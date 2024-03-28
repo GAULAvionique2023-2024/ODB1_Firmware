@@ -12,33 +12,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <ctype.h>
 
-// NMEA est en ASCII [57]
-// PMTK commandes AT de contrôle
 
-// --GLL
-/* $				GNGLL	,	3150.7856,N		,	11711.9479,E	,		102243.000	,	A		,	D				*				4B			<CR><LF>
- *
- * Start Message	Type		Latitude,Indicator	Longitude,Indicator		UTCTime			Data Valid	Position Mode	End Data field	CheckSum	End Message
- * 					GLL			ddmm.mmmmm	N/S		dddmm.mmmmm	 E/W		hhmmss.sss		V=Invalid	N=No fix						CRC
- * 								degree / minute		""""									A=Valid		A=Auto GNSS
- * 																										D=Diff GNSS
-*/
+// NMEA est en ASCII
+// PMTK commandes de contrôle
 
-typedef struct {
-
-	// GPS Data
-	int32_t latitude;
-	uint8_t latIndicator;
-	int32_t longitude;
-	uint8_t longIndicator;
-
-	// UTC Time
-	int8_t hTime;
-	int8_t mTime;
-	int8_t sTime;
-
-} NMEA_GPSData;					// Variables importantes dans le Data field (entre $ - *)
+/* --RMS
+ * $GPRMC,140146.000,A,3150.863861,N,11711.928739,E,0.00,183.85,211019,,,A,V*13<CR><LF>
+ */
 
 // Initialisation
 void NMEA_Reset(void);
