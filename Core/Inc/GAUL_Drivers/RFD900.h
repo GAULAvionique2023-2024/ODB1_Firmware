@@ -44,10 +44,10 @@
 typedef struct {
 
 	//uint8_t time;					// Temps à laquelle l'acquisition des donnees a ete effectuee
-	uint8_t data[28];				// Array se trouvant dans un buffer contenant toutes les données des sensors a envoyer
+	uint8_t data[DATA_ARRAY_SIZE];				// Array se trouvant dans un buffer contenant toutes les données des sensors a envoyer
 	uint16_t validationCRC;			// Paquet se trouvant dans le buffer du CRC après convertion (16bits)
 
-	uint8_t packetToSend[30]; 		//0-29
+	uint8_t packetToSend[PACKET_ARRAY_SIZE]; 		//0-29
 
 } RFD900;
 
@@ -59,7 +59,7 @@ typedef struct {
  * 4. j'envoie après le tout dans buffer RFD_TX par UART via l'interface USART1 par iteration de 8bits
  */
 
-// Taille fixe : size = data[28] et packetToSend[30]
+// Taille fixe : size = data[DATA_ARRAY_SIZE] et packetToSend[PACKET_ARRAY_SIZE]
 
 // Initialisation
 uint8_t RFD900_Init(RFD900 *dev);

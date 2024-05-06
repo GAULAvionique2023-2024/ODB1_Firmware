@@ -31,6 +31,8 @@
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 #include "GAUL_Drivers/Buzzer.h"
+#include "GAUL_Drivers/RFD900.h"
+#include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -136,10 +138,21 @@ int main(void)
   //led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
 
 
+  USART_Init(1);
+  uint8_t tx_buff[35] = "Hello\n\r";
+  uint8_t rx_buff[35] = {0};
+  USART_TX(RFD_USART_PORT, tx_buff, sizeof(tx_buff));
+  HAL_Delay(100);
+  printf("%s\n", rx_buff);
+  HAL_UART_Receive(RFD_USART_PORT, rx_buff, 35, 100);
+  printf("%s\n", rx_buff);
+  HAL_Delay(500);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
   while (1)
   {
     /* USER CODE END WHILE */
@@ -149,7 +162,6 @@ int main(void)
 
 		  //printf("Roll: %.2f	Pitch: %.2f \n", icm.angleRoll, icm.anglePitch);
 		  printf("Roll: %.2f	Pitch: %.2f \n", icm.kalmanAngleRoll, icm.kalmanAnglePitch);
-
 	  }
 
 
@@ -397,7 +409,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;

@@ -37,7 +37,7 @@ uint8_t hexToByte(char *buffer) {
 
 void NMEA_Reset(void) {
 
-	memset(GPSData, 0, 7);
+	//memset(GPSData, 0, 7);
 
 	// Reset delim
 }

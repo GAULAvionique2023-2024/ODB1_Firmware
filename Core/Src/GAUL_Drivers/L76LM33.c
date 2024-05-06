@@ -19,7 +19,6 @@ static const NMEA_PMTKCommands_TypeDef PMTKCommandsInit[] = {
 
 void L76LM33_Init() {
 
-
 	USART_TX(GPS_USART_PORT, (uint8_t*)NMEA_STARTUP_INDICATOR, 26);
 	USART_TX(GPS_USART_PORT, (uint8_t*)NMEA_SETRMS, 63);
 	USART_TX(GPS_USART_PORT, (uint8_t*)NMEA_START_SEARCHSATELLITE, 29);
@@ -28,12 +27,12 @@ void L76LM33_Init() {
 
 void L76LM33_Reset(void) {
 
-	USART_TX(HPS_USART_PORT, (uint8_t*)NMEA_RESET, 22);
+	USART_TX(GPS_USART_PORT, (uint8_t*)NMEA_RESET, 22);
 }
 
 void L76LM33_Transmit_GPS_TX(NMEA_PMTKCommands command) {
 
-	USART_TX(GPS_USART_PORT, (uint8_t*)command, strlen(command));
+	// USART_TX(GPS_USART_PORT, (uint8_t*)command, strlen(command));
 }
 
 void L76LM33_Receive_GPSRX(L76LM33 *devGPS) {

@@ -33,8 +33,7 @@ typedef struct {
 
 typedef struct {
 
-
-	//Ajouter "+/-" char
+	// Ajouter "+/-" char
 	uint8_t latitude;
 	uint8_t latIndicator;
 	uint8_t longitude;
