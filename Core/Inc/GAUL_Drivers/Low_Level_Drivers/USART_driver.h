@@ -18,7 +18,7 @@
 
 void USART_Init(unsigned short usart);
 
-void USART_TX(unsigned short usart, uint8_t *data, int size); // data 8bits
+void USART_TX(unsigned short usart, const uint8_t *data, int size); // data 8bits
 void USART_RX(unsigned short usart, uint8_t *data, int size); // data 8bits
 
 #endif /* INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_USART_DRIVER_H_ */

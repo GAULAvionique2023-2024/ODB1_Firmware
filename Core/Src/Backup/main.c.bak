@@ -24,11 +24,15 @@
 #include "string.h"
 #include "stdio.h"
 #include "stdbool.h"
+
 #include <GAUL_Drivers/WS2812_led.h>
 //#include "GAUL_Drivers/BMP280.h"
 #include "GAUL_Drivers/ICM20602.h"
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
+#include "GAUL_Drivers/Buzzer.h"
+#include "GAUL_Drivers/RFD900.h"
+#include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -39,13 +43,10 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
-
 
 /* USER CODE END PM */
 
@@ -68,7 +69,6 @@ DMA_HandleTypeDef hdma_usart2_rx;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
@@ -84,6 +84,7 @@ static void MX_CRC_Init(void);
 /* USER CODE BEGIN 0 */
 struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
 struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
+
 /* USER CODE END 0 */
 
 /**
@@ -112,7 +113,6 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
@@ -124,36 +124,27 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   SPI_Init(2);
-  //BMP280 bmp;
+  WS2812_Init();
+
   ICM20602 icm;
+  //BMP280 bmp;
 
   printf(" Starting \n");
 
   ICM20602_Init(&icm);
-  //if(status == 0){printf("ICM20602 DETECT!\n");}
-  //else{printf("status = %d \n", status);}
 
-  //status = BMP280_Init(&bmp, &hspi2, BMP_CS_Pin, BMP_CS_GPIO_Port);
-  //if(status == 0){printf("BMP280 DETECT!\n");}
-  //else {printf("status = %d \n", status);}
-
-  memset(led_channels, 0, sizeof(led_channels));
-
+  //memset(led_channels, 0, sizeof(led_channels));
   //led_channels[0].framebuffer = channel_framebuffers;
   //led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
-
-  WS2812_Init();
-
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
   while (1)
   {
     /* USER CODE END WHILE */
-
-	  HAL_Delay(500);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -398,7 +389,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -495,89 +486,6 @@ static void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
 
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, MUL_S0_Pin|MUL_S1_Pin|MUL_S2_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(BATT3S2_ON_GPIO_Port, BATT3S2_ON_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, SDC_CS_Pin|BMP_CS_Pin|NPYRO_TEST_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, CAM_ON_Pin|PYRO_ON0_Pin|PYRO_ON1_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LED_STATUS_Pin|ICM_CS_Pin|NMUL_E_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pins : MUL_S0_Pin MUL_S1_Pin MUL_S2_Pin */
-  GPIO_InitStruct.Pin = MUL_S0_Pin|MUL_S1_Pin|MUL_S2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : BATT3S2_ON_Pin SDC_CS_Pin BMP_CS_Pin NPYRO_TEST_Pin */
-  GPIO_InitStruct.Pin = BATT3S2_ON_Pin|SDC_CS_Pin|BMP_CS_Pin|NPYRO_TEST_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : CAM_ON_Pin ICM_CS_Pin PYRO_ON0_Pin PYRO_ON1_Pin */
-  GPIO_InitStruct.Pin = CAM_ON_Pin|ICM_CS_Pin|PYRO_ON0_Pin|PYRO_ON1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : LED_STATUS_Pin */
-  GPIO_InitStruct.Pin = LED_STATUS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(LED_STATUS_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : BUTTON_IN_Pin ICM_INT_Pin */
-  GPIO_InitStruct.Pin = BUTTON_IN_Pin|ICM_INT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : NMUL_E_Pin */
-  GPIO_InitStruct.Pin = NMUL_E_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(NMUL_E_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : CHECK12V_Pin */
-  GPIO_InitStruct.Pin = CHECK12V_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(CHECK12V_GPIO_Port, &GPIO_InitStruct);
-
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */

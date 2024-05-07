@@ -7,48 +7,39 @@
 
 #include "GAUL_Drivers/Low_Level_Drivers/NMEA.h"
 
-// Lors de la réception des paquets, on devra convertir les bytes en hex et les hex en char pour revoir la forme initiale du message NMEA
-// La methode permettra de réduire  1/2 la quatité de bytes a transmettre
+int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 
-uint16_t charToHex(char *buffer) {
+    char *token;
+    // Créer une copie de la trame
+    char *copy = strdup(nmea_sentence);
+    if (!copy) {
+        return -1;
+    }
 
-	// Convertir char -> hex
-	int tail = strlen(buffer) - 11;
+    // Type Trame (ignore)
+    token = strtok(copy, ",");
+    if (token == NULL || strcmp(token, "$GPRMC") != 0) {
+        free(copy);
+        return -1;
+    }
 
+    char *fields[8] = {gps_data->time, NULL, gps_data->latitude, NULL, gps_data->longitude, NULL, gps_data->speed_knots, gps_data->track_angle};
 
-	for(int i = 0; i < tail; i++)
-	{
-		// Premier char -> $ (delim start)
-		if(isdigit(buffer[i]))
-		{
-
+	int i = 0;
+	while ((token = strtok(NULL, ",")) != NULL && i < 8) {
+		if (fields[i] != NULL) {
+			strncpy(fields[i], token, sizeof(fields[i]) - 1);
 		}
-		else if(isalpha(buffer[i]))
-		{
-
-		}
+		i++;
 	}
+	// Indicateur de validite
+	gps_data->data_valid = fields[1][0];
+	// Indicateur de latitude
+	gps_data->latitude_indicator = fields[3][0];
+	// Indicateur longitude
+	gps_data->longitude_indicator = fields[5][0];
+
+	free(copy);
+	return 0; // Succès du décodage
 }
 
-uint8_t hexToByte(char *buffer) {
-
-	// Convertir hex -> byte
-}
-
-void NMEA_Reset(void) {
-
-	//memset(GPSData, 0, 7);
-
-	// Reset delim
-}
-
-void GetStatusNMEA(char *buffer) {
-
-	char *start = buffer;
-}
-
-// Mettre données dans un tableau afin de les transmettre au RFD900x (Modifier buffer ou retourner tableau?)
-void NMEA_ParseData(uint8_t *buffer) {
-
-
-}

@@ -1,5 +1,1 @@
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/NMEA.c:13:10:charToHex	8	static
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/NMEA.c:33:9:hexToByte	0	static
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/NMEA.c:38:6:NMEA_Reset	0	static
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/NMEA.c:45:6:GetStatusNMEA	0	static
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/NMEA.c:51:6:NMEA_ParseData	0	static
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/NMEA.c:10:5:NMEA_Decode_GPRMC	16	static

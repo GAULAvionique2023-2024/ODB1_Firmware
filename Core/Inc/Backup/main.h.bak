@@ -29,16 +29,15 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_ll_spi.h"
+#include "stm32f1xx_ll_system.h"
+#include "stm32f1xx_ll_gpio.h"
+#include "stm32f1xx_ll_exti.h"
 #include "stm32f1xx_ll_bus.h"
 #include "stm32f1xx_ll_cortex.h"
 #include "stm32f1xx_ll_rcc.h"
-#include "stm32f1xx_ll_system.h"
 #include "stm32f1xx_ll_utils.h"
 #include "stm32f1xx_ll_pwr.h"
-#include "stm32f1xx_ll_gpio.h"
 #include "stm32f1xx_ll_dma.h"
-
-#include "stm32f1xx_ll_exti.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -70,51 +69,51 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define MUL_S0_Pin GPIO_PIN_13
+#define MUL_S0_Pin LL_GPIO_PIN_13
 #define MUL_S0_GPIO_Port GPIOC
-#define MUL_S1_Pin GPIO_PIN_14
+#define MUL_S1_Pin LL_GPIO_PIN_14
 #define MUL_S1_GPIO_Port GPIOC
-#define MUL_S2_Pin GPIO_PIN_15
+#define MUL_S2_Pin LL_GPIO_PIN_15
 #define MUL_S2_GPIO_Port GPIOC
-#define BATT3S2_ON_Pin GPIO_PIN_1
+#define BATT3S2_ON_Pin LL_GPIO_PIN_1
 #define BATT3S2_ON_GPIO_Port GPIOA
-#define GPS_TX_Pin GPIO_PIN_2
+#define GPS_TX_Pin LL_GPIO_PIN_2
 #define GPS_TX_GPIO_Port GPIOA
-#define GPS_RX_Pin GPIO_PIN_3
+#define GPS_RX_Pin LL_GPIO_PIN_3
 #define GPS_RX_GPIO_Port GPIOA
-#define SDC_CS_Pin GPIO_PIN_4
+#define SDC_CS_Pin LL_GPIO_PIN_4
 #define SDC_CS_GPIO_Port GPIOA
-#define CAM_ON_Pin GPIO_PIN_0
+#define CAM_ON_Pin LL_GPIO_PIN_0
 #define CAM_ON_GPIO_Port GPIOB
-#define BUZZER_ON_Pin GPIO_PIN_1
+#define BUZZER_ON_Pin LL_GPIO_PIN_1
 #define BUZZER_ON_GPIO_Port GPIOB
-#define LED_STATUS_Pin GPIO_PIN_2
+#define LED_STATUS_Pin LL_GPIO_PIN_2
 #define LED_STATUS_GPIO_Port GPIOB
-#define BT_TX_Pin GPIO_PIN_10
+#define BT_TX_Pin LL_GPIO_PIN_10
 #define BT_TX_GPIO_Port GPIOB
-#define BT_RX_Pin GPIO_PIN_11
+#define BT_RX_Pin LL_GPIO_PIN_11
 #define BT_RX_GPIO_Port GPIOB
-#define ICM_CS_Pin GPIO_PIN_12
+#define ICM_CS_Pin LL_GPIO_PIN_12
 #define ICM_CS_GPIO_Port GPIOB
-#define BMP_CS_Pin GPIO_PIN_8
+#define BMP_CS_Pin LL_GPIO_PIN_8
 #define BMP_CS_GPIO_Port GPIOA
-#define BUTTON_IN_Pin GPIO_PIN_9
+#define BUTTON_IN_Pin LL_GPIO_PIN_9
 #define BUTTON_IN_GPIO_Port GPIOA
-#define ICM_INT_Pin GPIO_PIN_10
+#define ICM_INT_Pin LL_GPIO_PIN_10
 #define ICM_INT_GPIO_Port GPIOA
-#define NPYRO_TEST_Pin GPIO_PIN_15
+#define NPYRO_TEST_Pin LL_GPIO_PIN_15
 #define NPYRO_TEST_GPIO_Port GPIOA
-#define PYRO_ON0_Pin GPIO_PIN_4
+#define PYRO_ON0_Pin LL_GPIO_PIN_4
 #define PYRO_ON0_GPIO_Port GPIOB
-#define PYRO_ON1_Pin GPIO_PIN_5
+#define PYRO_ON1_Pin LL_GPIO_PIN_5
 #define PYRO_ON1_GPIO_Port GPIOB
-#define RFD_TX_Pin GPIO_PIN_6
+#define RFD_TX_Pin LL_GPIO_PIN_6
 #define RFD_TX_GPIO_Port GPIOB
-#define RFD_RX_Pin GPIO_PIN_7
+#define RFD_RX_Pin LL_GPIO_PIN_7
 #define RFD_RX_GPIO_Port GPIOB
-#define NMUL_E_Pin GPIO_PIN_8
+#define NMUL_E_Pin LL_GPIO_PIN_8
 #define NMUL_E_GPIO_Port GPIOB
-#define CHECK12V_Pin GPIO_PIN_9
+#define CHECK12V_Pin LL_GPIO_PIN_9
 #define CHECK12V_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */

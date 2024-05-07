@@ -93,6 +93,7 @@ struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -137,17 +138,6 @@ int main(void)
   //led_channels[0].framebuffer = channel_framebuffers;
   //led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
 
-
-  USART_Init(1);
-  uint8_t tx_buff[35] = "Hello\n\r";
-  uint8_t rx_buff[35] = {0};
-  USART_TX(RFD_USART_PORT, tx_buff, sizeof(tx_buff));
-  HAL_Delay(100);
-  printf("%s\n", rx_buff);
-  HAL_UART_Receive(RFD_USART_PORT, rx_buff, 35, 100);
-  printf("%s\n", rx_buff);
-  HAL_Delay(500);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -156,14 +146,6 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  if(ICM20602_Data_Ready())
-	  {
-		  ICM20602_Update_All(&icm);
-
-		  //printf("Roll: %.2f	Pitch: %.2f \n", icm.angleRoll, icm.anglePitch);
-		  printf("Roll: %.2f	Pitch: %.2f \n", icm.kalmanAngleRoll, icm.kalmanAnglePitch);
-	  }
-
 
     /* USER CODE BEGIN 3 */
   }
