@@ -138,15 +138,33 @@ int main(void)
   //led_channels[0].framebuffer = channel_framebuffers;
   //led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
 
+  const char *nmea_sentence = "$GPRMC,140146.000,A,3150.863861,N,11711.928739,E,0.00,183.85,211019,,,A,V*13";
+
+  // Structure pour stocker les données GPS extraites
+  GPS_Data gps_data;
+
+  // Décodage de la trame NMEA GPRMC
+  NMEA_Decode_GPRMC(nmea_sentence, &gps_data);
+	printf("Time: %s\n", gps_data.time);
+	printf("Latitude: %s\n", gps_data.latitude);
+	printf("Latitude Indicator: %c\n", gps_data.latitude_indicator);
+	printf("Longitude: %s\n", gps_data.longitude);
+	printf("Longitude Indicator: %c\n", gps_data.longitude_indicator);
+	printf("Vitesse : %s\n", gps_data.speed_knots);
+	printf("Angle: %s\n", gps_data.track_angle);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  //USART_Init(1);
+  uint8_t Test[] = "Hello World\r\n";
 
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  HAL_UART_Transmit(&huart1, Test, sizeof(Test), 10);
+	  HAL_Delay(1000);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

@@ -22,17 +22,15 @@
 
 typedef struct {
 
-    char 	time[10]; // Heure (format HHMMSS.SSS)
+    char 	time[12]; // Heure (format HHMMSS.SSS)
 
-    char	data_valid; // Validite du message (V = invalide ; A = valide)
-
-    char  	latitude[9]; // Latitude
+    char  	latitude[10]; // Latitude (format dddmm.mmmm)
     char 	latitude_indicator; // Indicateur de latitude (N ou S)
-    char  	longitude[10]; // Longitude
+    char  	longitude[12]; // Longitude (format dddmm.mmmm)
     char 	longitude_indicator; // Indicateur de longitude (E ou W)
 
-    char  speed_knots[6]; // Vitesse sur le fond en noeuds
-    char  track_angle[7]; // Route sur le fond en degrés
+    char  	speed_knots[6]; // Vitesse sur le fond en noeuds
+    char  	track_angle[7]; // Route sur le fond en degres
 } GPS_Data;
 
 int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data);
