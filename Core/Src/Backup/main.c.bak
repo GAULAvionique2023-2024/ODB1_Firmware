@@ -163,7 +163,6 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  //USART_TX(1, &data, sizeof(data));
 	  HAL_UART_Transmit(&huart1, Test, sizeof(Test), 10);
 	  HAL_Delay(1000);
     /* USER CODE BEGIN 3 */

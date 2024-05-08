@@ -61,7 +61,6 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
-DMA_HandleTypeDef hdma_usart2_rx;
 
 /* USER CODE BEGIN PV */
 
@@ -69,7 +68,6 @@ DMA_HandleTypeDef hdma_usart2_rx;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_DMA_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
@@ -114,7 +112,6 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_DMA_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
@@ -138,33 +135,15 @@ int main(void)
   //led_channels[0].framebuffer = channel_framebuffers;
   //led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
 
-  const char *nmea_sentence = "$GPRMC,140146.000,A,3150.863861,N,11711.928739,E,0.00,183.85,211019,,,A,V*13";
-
-  // Structure pour stocker les données GPS extraites
-  GPS_Data gps_data;
-
-  // Décodage de la trame NMEA GPRMC
-  NMEA_Decode_GPRMC(nmea_sentence, &gps_data);
-	printf("Time: %s\n", gps_data.time);
-	printf("Latitude: %s\n", gps_data.latitude);
-	printf("Latitude Indicator: %c\n", gps_data.latitude_indicator);
-	printf("Longitude: %s\n", gps_data.longitude);
-	printf("Longitude Indicator: %c\n", gps_data.longitude_indicator);
-	printf("Vitesse : %s\n", gps_data.speed_knots);
-	printf("Angle: %s\n", gps_data.track_angle);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  //USART_Init(1);
-  uint8_t Test[] = "Hello World\r\n";
 
   while (1)
   {
     /* USER CODE END WHILE */
-	  HAL_UART_Transmit(&huart1, Test, sizeof(Test), 10);
-	  HAL_Delay(1000);
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -489,22 +468,6 @@ static void MX_USART3_UART_Init(void)
   /* USER CODE BEGIN USART3_Init 2 */
 
   /* USER CODE END USART3_Init 2 */
-
-}
-
-/**
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void)
-{
-
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
-
-  /* DMA interrupt init */
-  /* DMA1_Channel6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
 
 }
 

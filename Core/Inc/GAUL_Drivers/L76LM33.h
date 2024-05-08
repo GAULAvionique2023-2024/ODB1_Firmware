@@ -13,49 +13,19 @@
 
 #include <string.h>
 
-// Types commandes PMTK
-typedef enum {
+#define L76LM33_RX_BUFFER 128
 
-	NMEA_STARTUP_INDICATOR,		// Permet de recevoir un message a l'activation du GPS
-	NMEA_SETRMS,				// Set le type de message NMEA a RMS
-	NMEA_RESET, 				// Reset le type de message NMEA configure
-	NMEA_START_SEARCHSATELLITE,	// Active la recherche de GPS seulement
-	NMEA_NAVMODE,				// 0 : Normal (10000m) ; 2 : Aviation +acc (10000m) ; 3 : Ballon +hauteur (80000m) ; 4 : Stationary
+/*
+NMEA_STARTUP_INDICATOR = "$PMTK011,MTKGPS*08<CR><LF>",		// Permet de recevoir un message a l'activation du GPS
+NMEA_SETRMS = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*35<CR><LF>",				// Set le type de message NMEA a RMS
+NMEA_RESET = "$PMTK314,-1*04<CR><LF>", 				// Reset le type de message NMEA configure
+NMEA_START_SEARCHSATELLITE = "$PMTK353,1,0,0,0,0*2A<CR><LF>",	// Active la recherche de GPS seulement
+NMEA_NAVMODE = "PMTK886,2*2A<CR><LF>",				// 0 : Normal (10000m) ; 2 : Aviation +acc (10000m) ; 3 : Ballon +hauteur (80000m) ; 4 : Stationary
+*/
 
-} NMEA_PMTKCommands;
+void L76LM33_Init();
+void L76LM33_Reset();
 
-typedef struct {
-
-	char *command;
-
-} NMEA_PMTKCommands_TypeDef;
-
-
-typedef struct {
-
-	// Ajouter "+/-" char
-	uint8_t latitude;
-	uint8_t latIndicator;
-	uint8_t longitude;
-	uint8_t longIndicator;
-
-	uint8_t speed;
-
-	// UTC Time
-	uint8_t hTime;
-	uint8_t mTime;
-	uint8_t sTime;
-
-} L76LM33;
-
-
-
-// Initialisation
-void L76LM33_Init(void);
-void L76LM33_Reset(void);
-void L76LM33_ParseData(void);
-
-void RFD900_Transmit_GPSTX(NMEA_PMTKCommands command);
-void RFD900_Receive_GPSRX(L76LM33 *devGPS); // Envoyer des commandes au GPS
+void L76LM33_Read();
 
 #endif /* INC_GAUL_DRIVERS_L76LM33_H_ */

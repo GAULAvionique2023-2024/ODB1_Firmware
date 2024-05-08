@@ -6,36 +6,43 @@
  */
 
 #include "GAUL_Drivers/L76LM33.h"
+#include "GAUL_Drivers/Low_Level_Drivers/NMEA.h"
+#include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
 #include <string.h>
 
-static const NMEA_PMTKCommands_TypeDef PMTKCommandsInit[] = {
+/*
+NMEA_STARTUP_INDICATOR = "$PMTK011,MTKGPS*08<CR><LF>",		// Permet de recevoir un message a l'activation du GPS
+NMEA_SETRMS = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*35<CR><LF>",				// Set le type de message NMEA a RMS
+NMEA_RESET = "$PMTK314,-1*04<CR><LF>", 				// Reset le type de message NMEA configure
+NMEA_GPSSEARCHONLY = "$PMTK353,1,0,0,0,0*2A<CR><LF>",	// Active la recherche de GPS seulement
+NMEA_NAVMODE = "PMTK886,2*2A<CR><LF>",				// 0 : Normal (10000m) ; 2 : Aviation +acc (10000m) ; 3 : Ballon +hauteur (80000m) ; 4 : Stationary
+*/
 
-    "$PMTK011,MTKGPS*08<CR><LF>",
-	"$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*35<CR><LF>",
-    "$PMTK314,-1*04<CR><LF>",
-	"$PMTK353,1,0,0,0,0*2A<CR><LF>",
-	"$PMTK886,2*2A<CR><LF>",
-};
+void L76LM33_Init () {
 
-void L76LM33_Init() {
-
-	USART_TX(GPS_USART_PORT, (uint8_t*)NMEA_STARTUP_INDICATOR, 26);
-	USART_TX(GPS_USART_PORT, (uint8_t*)NMEA_SETRMS, 63);
-	USART_TX(GPS_USART_PORT, (uint8_t*)NMEA_START_SEARCHSATELLITE, 29);
-	USART_TX(GPS_USART_PORT, (uint8_t*)NMEA_NAVMODE, 21);
+	uint8_t NMEA_STARTUP_INDICATOR[] = "$PMTK011,MTKGPS*08<CR><LF>";
+	uint8_t NMEA_SETRMS[] = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*35<CR><LF>";
+	uint8_t NMEA_GPSSEARCHONLY[] = "$PMTK353,1,0,0,0,0*2A<CR><LF>";
+	uint8_t NMEA_NAVMODE[] = "PMTK886,2*2A<CR><LF>";
+	USART_TX(GPS_USART_PORT, NMEA_STARTUP_INDICATOR, sizeof(NMEA_STARTUP_INDICATOR));
+	USART_TX(GPS_USART_PORT, NMEA_SETRMS, sizeof(NMEA_SETRMS));
+	USART_TX(GPS_USART_PORT, NMEA_GPSSEARCHONLY, sizeof(NMEA_GPSSEARCHONLY));
+	USART_TX(GPS_USART_PORT, NMEA_NAVMODE, sizeof(NMEA_NAVMODE));
 }
 
-void L76LM33_Reset(void) {
+void L76LM33_Reset() {
 
-	USART_TX(GPS_USART_PORT, (uint8_t*)NMEA_RESET, 22);
+	uint8_t NMEA_RESET[] = "$PMTK314,-1*04<CR><LF>";
+	USART_TX(GPS_USART_PORT, NMEA_RESET, sizeof(NMEA_RESET));
 }
 
-void L76LM33_Transmit_GPS_TX(NMEA_PMTKCommands command) {
+// Refaire ne fonctionne pas
+void L76LM33_Read() {
 
-	// USART_TX(GPS_USART_PORT, (uint8_t*)command, strlen(command));
-}
+	char nmea_sentence[L76LM33_RX_BUFFER]; // Verifier si uint8_t ou char
+	USART_RX(GPS_USART_PORT, nmea_sentence, L76LM33_RX_BUFFER);
+	printf("NMEA Sentence receive: %s/n", nmea_sentence);
 
-void L76LM33_Receive_GPSRX(L76LM33 *devGPS) {
-
-	// Convertir avec NMEA
+	GPS_Data gps_data;
+	NMEA_Decode_GPRMC(nmea_sentence, &gps_data);
 }
