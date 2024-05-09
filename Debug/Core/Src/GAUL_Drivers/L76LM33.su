@@ -1,3 +1,2 @@
-../Core/Src/GAUL_Drivers/L76LM33.c:21:6:L76LM33_Init	168	static
-../Core/Src/GAUL_Drivers/L76LM33.c:33:6:L76LM33_Reset	32	static
-../Core/Src/GAUL_Drivers/L76LM33.c:40:6:L76LM33_Read	192	static
+../Core/Src/GAUL_Drivers/L76LM33.c:21:6:L76LM33_Init	136	static
+../Core/Src/GAUL_Drivers/L76LM33.c:32:6:L76LM33_Read	0	static

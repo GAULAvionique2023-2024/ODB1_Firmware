@@ -33,6 +33,7 @@
 #include "GAUL_Drivers/Buzzer.h"
 #include "GAUL_Drivers/RFD900.h"
 #include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
+#include "GAUL_Drivers/L76LM33.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -122,7 +123,9 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   SPI_Init(2);
+  USART_Init(2);
   WS2812_Init();
+  L76LM33_Init();
 
   ICM20602 icm;
   //BMP280 bmp;
@@ -140,11 +143,23 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
+  char Rx_data[42];
+  memset(Rx_data, 0, sizeof(Rx_data));
+
   while (1)
   {
-    /* USER CODE END WHILE */
+      USART_RX(2, (uint8_t*)Rx_data, sizeof(Rx_data));
 
-    /* USER CODE BEGIN 3 */
+      // Affichage des données reçues
+      for(uint8_t j = 0; j < sizeof(Rx_data); j++) {
+          printf("%u RX buffer: %c\n", j, Rx_data[j]);
+      }
+
+      char string[sizeof(Rx_data)]; // Taille de la chaîne ajustée
+      strncpy(string, Rx_data, sizeof(Rx_data));
+      string[sizeof(Rx_data) - 1] = '\0'; // Modification de la dernière position du tableau
+
+      printf("Result: %s\n", string);
   }
   /* USER CODE END 3 */
 }
@@ -454,7 +469,7 @@ static void MX_USART3_UART_Init(void)
 
   /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 115200;
+  huart3.Init.BaudRate = 9600;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;

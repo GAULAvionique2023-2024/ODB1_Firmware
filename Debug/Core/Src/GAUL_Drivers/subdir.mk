@@ -7,6 +7,7 @@
 C_SRCS += \
 ../Core/Src/GAUL_Drivers/BMP280.c \
 ../Core/Src/GAUL_Drivers/Buzzer.c \
+../Core/Src/GAUL_Drivers/HM10_BLE.c \
 ../Core/Src/GAUL_Drivers/ICM20602.c \
 ../Core/Src/GAUL_Drivers/KalmanFilter.c \
 ../Core/Src/GAUL_Drivers/L76LM33.c \
@@ -16,6 +17,7 @@ C_SRCS += \
 OBJS += \
 ./Core/Src/GAUL_Drivers/BMP280.o \
 ./Core/Src/GAUL_Drivers/Buzzer.o \
+./Core/Src/GAUL_Drivers/HM10_BLE.o \
 ./Core/Src/GAUL_Drivers/ICM20602.o \
 ./Core/Src/GAUL_Drivers/KalmanFilter.o \
 ./Core/Src/GAUL_Drivers/L76LM33.o \
@@ -25,6 +27,7 @@ OBJS += \
 C_DEPS += \
 ./Core/Src/GAUL_Drivers/BMP280.d \
 ./Core/Src/GAUL_Drivers/Buzzer.d \
+./Core/Src/GAUL_Drivers/HM10_BLE.d \
 ./Core/Src/GAUL_Drivers/ICM20602.d \
 ./Core/Src/GAUL_Drivers/KalmanFilter.d \
 ./Core/Src/GAUL_Drivers/L76LM33.d \
@@ -39,7 +42,7 @@ Core/Src/GAUL_Drivers/%.o Core/Src/GAUL_Drivers/%.su Core/Src/GAUL_Drivers/%.cyc
 clean: clean-Core-2f-Src-2f-GAUL_Drivers
 
 clean-Core-2f-Src-2f-GAUL_Drivers:
-	-$(RM) ./Core/Src/GAUL_Drivers/BMP280.cyclo ./Core/Src/GAUL_Drivers/BMP280.d ./Core/Src/GAUL_Drivers/BMP280.o ./Core/Src/GAUL_Drivers/BMP280.su ./Core/Src/GAUL_Drivers/Buzzer.cyclo ./Core/Src/GAUL_Drivers/Buzzer.d ./Core/Src/GAUL_Drivers/Buzzer.o ./Core/Src/GAUL_Drivers/Buzzer.su ./Core/Src/GAUL_Drivers/ICM20602.cyclo ./Core/Src/GAUL_Drivers/ICM20602.d ./Core/Src/GAUL_Drivers/ICM20602.o ./Core/Src/GAUL_Drivers/ICM20602.su ./Core/Src/GAUL_Drivers/KalmanFilter.cyclo ./Core/Src/GAUL_Drivers/KalmanFilter.d ./Core/Src/GAUL_Drivers/KalmanFilter.o ./Core/Src/GAUL_Drivers/KalmanFilter.su ./Core/Src/GAUL_Drivers/L76LM33.cyclo ./Core/Src/GAUL_Drivers/L76LM33.d ./Core/Src/GAUL_Drivers/L76LM33.o ./Core/Src/GAUL_Drivers/L76LM33.su ./Core/Src/GAUL_Drivers/RFD900.cyclo ./Core/Src/GAUL_Drivers/RFD900.d ./Core/Src/GAUL_Drivers/RFD900.o ./Core/Src/GAUL_Drivers/RFD900.su ./Core/Src/GAUL_Drivers/WS2812_led.cyclo ./Core/Src/GAUL_Drivers/WS2812_led.d ./Core/Src/GAUL_Drivers/WS2812_led.o ./Core/Src/GAUL_Drivers/WS2812_led.su
+	-$(RM) ./Core/Src/GAUL_Drivers/BMP280.cyclo ./Core/Src/GAUL_Drivers/BMP280.d ./Core/Src/GAUL_Drivers/BMP280.o ./Core/Src/GAUL_Drivers/BMP280.su ./Core/Src/GAUL_Drivers/Buzzer.cyclo ./Core/Src/GAUL_Drivers/Buzzer.d ./Core/Src/GAUL_Drivers/Buzzer.o ./Core/Src/GAUL_Drivers/Buzzer.su ./Core/Src/GAUL_Drivers/HM10_BLE.cyclo ./Core/Src/GAUL_Drivers/HM10_BLE.d ./Core/Src/GAUL_Drivers/HM10_BLE.o ./Core/Src/GAUL_Drivers/HM10_BLE.su ./Core/Src/GAUL_Drivers/ICM20602.cyclo ./Core/Src/GAUL_Drivers/ICM20602.d ./Core/Src/GAUL_Drivers/ICM20602.o ./Core/Src/GAUL_Drivers/ICM20602.su ./Core/Src/GAUL_Drivers/KalmanFilter.cyclo ./Core/Src/GAUL_Drivers/KalmanFilter.d ./Core/Src/GAUL_Drivers/KalmanFilter.o ./Core/Src/GAUL_Drivers/KalmanFilter.su ./Core/Src/GAUL_Drivers/L76LM33.cyclo ./Core/Src/GAUL_Drivers/L76LM33.d ./Core/Src/GAUL_Drivers/L76LM33.o ./Core/Src/GAUL_Drivers/L76LM33.su ./Core/Src/GAUL_Drivers/RFD900.cyclo ./Core/Src/GAUL_Drivers/RFD900.d ./Core/Src/GAUL_Drivers/RFD900.o ./Core/Src/GAUL_Drivers/RFD900.su ./Core/Src/GAUL_Drivers/WS2812_led.cyclo ./Core/Src/GAUL_Drivers/WS2812_led.d ./Core/Src/GAUL_Drivers/WS2812_led.o ./Core/Src/GAUL_Drivers/WS2812_led.su
 
 .PHONY: clean-Core-2f-Src-2f-GAUL_Drivers
 

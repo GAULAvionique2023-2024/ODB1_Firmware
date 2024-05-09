@@ -7,11 +7,6 @@
 
 #include "GAUL_Drivers/RFD900.h"
 
-uint8_t RFD900_Init(RFD900 *dev) {
-
-
-}
-
 void RFD900_DataArray_Update(RFD900 *devRFD, ICM20602 *devICM) {
 
 	// GPS

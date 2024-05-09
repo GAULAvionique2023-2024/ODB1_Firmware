@@ -39,6 +39,11 @@
 
 	data[24] : 	pressure_Pa 		X			(Barometre BMP280)		SPI2
 	data[26] : 	temp_C 				X			(Barometre BMP280)		SPI2
+	data[x]  :  etat (check problem)
+	data[x]  :  etat (check problem)
+	data[x]  :  etat (check problem)
+
+	Arrondir a multiple 1 octet
  */
 //Struct RFD900x
 typedef struct {

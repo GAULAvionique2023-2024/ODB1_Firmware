@@ -19,6 +19,9 @@ void USART_Init(unsigned short usart)
 		USART1->CR1 |= USART_CR1_UE; // Activer USART (0x0C)
 		USART1->CR1 |= USART_CR1_TE; // Activer la transmission
 		USART1->CR1 |= USART_CR1_RE; // Activer la réception
+
+		// Activation des interruptions globales pour USART1
+		NVIC_EnableIRQ(USART1_IRQn);
 	}
 	else if(usart == 2) {
 		RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
@@ -29,6 +32,9 @@ void USART_Init(unsigned short usart)
 		USART2->CR1 |= USART_CR1_UE; // Activer USART (0x10)
 		USART2->CR1 |= USART_CR1_TE; // Activer la transmission
 		USART2->CR1 |= USART_CR1_RE; // Activer la réception
+
+		// Activation des interruptions globales pour USART2
+		NVIC_EnableIRQ(USART2_IRQn);
 	}
 	else if(usart == 3) {
 		RCC->APB1ENR |= RCC_APB1ENR_USART3EN ;
@@ -39,6 +45,9 @@ void USART_Init(unsigned short usart)
 		USART3->CR1 |= USART_CR1_UE; // Activer USART (0x14)
 		USART3->CR1 |= USART_CR1_TE; // Activer la transmission
 		USART3->CR1 |= USART_CR1_RE; // Activer la réception
+
+		// Activation des interruptions globales pour USART3
+		NVIC_EnableIRQ(USART3_IRQn);
 	}
 }
 
@@ -47,27 +56,30 @@ void USART_TX(unsigned short usart, const uint8_t *data, int size) {
 	if(usart == 1) {
 		int i = 0;
 		while (i < size) {
-			while (!(USART1->SR & USART_SR_TXE)); // Vérifie si le buffer de transmission est vide
-			USART1->DR = data[i];
-			i++;
+			if (USART1->SR & USART_SR_TXE) {
+				USART1->DR = data[i];
+				i++;
+			}
 		}
 		while (!(USART1->SR & USART_SR_TC)); // Vérifie si la transmission est termine
 	}
 	else if(usart == 2) {
 		int i = 0;
 		while (i < size) {
-			while (!(USART2->SR & USART_SR_TXE)); // Vérifie si le buffer de transmission est vide
-			USART2->DR = data[i];
-			i++;
+			if (USART2->SR & USART_SR_TXE) {
+				USART2->DR = data[i];
+				i++;
+			}
 		}
 		while (!(USART2->SR & USART_SR_TC)); // Vérifie si la transmission est termine
 	}
 	else if(usart == 3) {
 		int i = 0;
 		while (i < size) {
-			while (!(USART3->SR & USART_SR_TXE)); // Vérifie si le buffer de transmission est vide
-			USART3->DR = data[i];
-			i++;
+			if (USART3->SR & USART_SR_TXE) {
+				USART3->DR = data[i];
+				i++;
+			}
 		}
 		while (!(USART3->SR & USART_SR_TC)); // Vérifie si la transmission est termine
 	}
@@ -78,25 +90,28 @@ void USART_RX(unsigned short usart, uint8_t *data, int size) {
 	if(usart == 1) {
 		int i = 0;
 		while (i < size) {
-			while (!(USART1->SR & USART_SR_RXNE)); // Vérifie si le buffer de réception n'est pas vide
-			data[i] = USART1->DR;
-			i++;
+			if(USART1->SR & USART_SR_RXNE){
+				data[i] = USART1->DR;
+				i++;
+			}
 		}
 	}
 	else if(usart == 2) {
 		int i = 0;
 		while (i < size) {
-			while (!(USART2->SR & USART_SR_RXNE)); // Vérifie si le buffer de réception n'est pas vide
-			data[i] = USART2->DR;
-			i++;
+			if(USART2->SR & USART_SR_RXNE){
+				data[i] = USART2->DR;
+				i++;
+			}
 		}
 	}
 	else if(usart == 3) {
 		int i = 0;
 		while (i < size) {
-			while (!(USART3->SR & USART_SR_RXNE)); // Vérifie si le buffer de réception n'est pas vide
-			data[i] = USART3->DR;
-			i++;
+			if(USART3->SR & USART_SR_RXNE){
+				data[i] = USART3->DR;
+				i++;
+			}
 		}
 	}
 }

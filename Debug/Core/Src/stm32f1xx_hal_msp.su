@@ -6,5 +6,5 @@
 ../Core/Src/stm32f1xx_hal_msp.c:196:6:HAL_TIM_Base_MspInit	8	static
 ../Core/Src/stm32f1xx_hal_msp.c:223:6:HAL_TIM_MspPostInit	32	static
 ../Core/Src/stm32f1xx_hal_msp.c:253:6:HAL_TIM_Base_MspDeInit	0	static
-../Core/Src/stm32f1xx_hal_msp.c:286:6:HAL_UART_MspInit	48	static
-../Core/Src/stm32f1xx_hal_msp.c:381:6:HAL_UART_MspDeInit	8	static
+../Core/Src/stm32f1xx_hal_msp.c:286:6:HAL_UART_MspInit	56	static
+../Core/Src/stm32f1xx_hal_msp.c:390:6:HAL_UART_MspDeInit	8	static

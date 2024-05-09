@@ -1,5 +1,6 @@
 "./Core/Src/GAUL_Drivers/BMP280.o"
 "./Core/Src/GAUL_Drivers/Buzzer.o"
+"./Core/Src/GAUL_Drivers/HM10_BLE.o"
 "./Core/Src/GAUL_Drivers/ICM20602.o"
 "./Core/Src/GAUL_Drivers/KalmanFilter.o"
 "./Core/Src/GAUL_Drivers/L76LM33.o"
