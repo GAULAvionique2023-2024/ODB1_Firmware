@@ -1,2 +1,2 @@
-../Core/Src/GAUL_Drivers/L76LM33.c:21:6:L76LM33_Init	1
-../Core/Src/GAUL_Drivers/L76LM33.c:32:6:L76LM33_Read	1
+../Core/Src/GAUL_Drivers/L76LM33.c:18:6:L76LM33_Init	1
+../Core/Src/GAUL_Drivers/L76LM33.c:28:6:L76LM33_Read	1

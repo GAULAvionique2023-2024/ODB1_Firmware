@@ -16,6 +16,7 @@
 #define GPS_USART_PORT 2
 #define BT_USART_PORT  3
 
+
 void USART_Init(unsigned short usart);
 
 void USART_TX(unsigned short usart, const uint8_t *data, int size); // data 8bits
