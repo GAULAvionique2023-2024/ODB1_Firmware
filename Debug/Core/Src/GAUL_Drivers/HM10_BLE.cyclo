@@ -1,0 +1,4 @@
+../Core/Src/GAUL_Drivers/HM10_BLE.c:10:6:HM10BLE_Init	1
+../Core/Src/GAUL_Drivers/HM10_BLE.c:15:6:HM10BLE_SendCommand	1
+../Core/Src/GAUL_Drivers/HM10_BLE.c:19:6:HM10BLE_Read	1
+../Core/Src/GAUL_Drivers/HM10_BLE.c:25:6:HM10BLE_Send	1

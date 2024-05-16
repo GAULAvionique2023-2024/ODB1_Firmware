@@ -19,7 +19,7 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 
 	// Extraire le type de trame NMEA
 	token = strtok(copy, ",");
-	if (token == NULL || (strcmp(token, "$GPRMC") != 0 && strchr(nmea_sentence, '\n') == NULL && strchr(nmea_sentence, '\r') == NULL)) {
+	if (token == NULL || strcmp(token, "$GPRMC") != 0) {
 	    free(copy);
 	    return -1;
 	}
@@ -31,7 +31,9 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 		return -1;
 	} else {
 		strncpy(gps_data->time, token, 11);
+		gps_data->time[11] = '\0';
 	}
+
 
 	// Vérifier caractere de validite
 	token = strtok(NULL, ",");
@@ -43,17 +45,17 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	// Extraire latitude
 	token = strtok(NULL, ",");
 	if (token == NULL) {
-		free(copy);
+		strncpy(gps_data->latitude, "00000.000", 10);
 		return -1;
 	} else {
-		strncpy(gps_data->latitude, token, 9);
-		gps_data->latitude[9] = '\0';
+		strncpy(gps_data->latitude, token, 10);
 	}
+	gps_data->latitude[10] = '\0';
 
 	// Extraire l'indicateur de latitude (N ou S)
 	token = strtok(NULL, ",");
 	if (token == NULL) {
-		free(copy);
+		strcpy(gps_data->latitude_indicator, "V");
 		return -1;
 	} else {
 		gps_data->latitude_indicator = token[0];
@@ -62,17 +64,17 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	// Extraire longitude
 	token = strtok(NULL, ",");
 	if (token == NULL) {
-		free(copy);
+		strncpy(gps_data->longitude, "000000.000", 11);
 		return -1;
 	} else {
 		strncpy(gps_data->longitude, token, 11);
-		gps_data->longitude[11] = '\0';
 	}
+	gps_data->longitude[11] = '\0';
 
 	// Extraire l'indicateur de longitude (E ou W)
 	token = strtok(NULL, ",");
 	if (token == NULL) {
-		free(copy);
+		strcpy(gps_data->longitude_indicator, "V");
 		return -1;
 	} else {
 		gps_data->longitude_indicator = token[0];
@@ -81,22 +83,23 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	// Extraire vitesse
 	token = strtok(NULL, ",");
 	if (token == NULL) {
-		free(copy);
+		strncpy(gps_data->speed_knots, "000.00", 6);
 		return -1;
 	} else {
 		strncpy(gps_data->speed_knots, token, 6);
 	}
+	gps_data->speed_knots[6] = '\0';
 
 	// Extraire angle
 	token = strtok(NULL, ",");
 	if (token == NULL) {
-		free(copy);
+		strncpy(gps_data->track_angle, "0000.00", 7);
 		return -1;
 	} else {
 		strncpy(gps_data->track_angle, token, 7);
 	}
+	gps_data->track_angle[7] = '\0';
 
 	free(copy);
 	return 0;
 }
-

@@ -1,0 +1,2 @@
+../Core/Src/GAUL_Drivers/Pyros.c:10:6:Pyro_Armed	8	static
+../Core/Src/GAUL_Drivers/Pyros.c:24:6:Pyro_Fire	8	static

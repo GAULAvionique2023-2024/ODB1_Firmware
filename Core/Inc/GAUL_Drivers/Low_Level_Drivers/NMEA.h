@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#define NMEA_TRAME_RMC_SIZE 88
+
 
 // NMEA est en ASCII
 // PMTK commandes de contrôle
@@ -22,16 +24,15 @@
  */
 
 typedef struct {
-
     char 	time[12]; // Heure (format HHMMSS.SSS)
 
-    char  	latitude[10]; // Latitude (format dddmm.mmmm)
+    char  	latitude[11]; // Latitude (format dddmm.mmmm)
     char 	latitude_indicator; // Indicateur de latitude (N ou S)
     char  	longitude[12]; // Longitude (format dddmm.mmmm)
     char 	longitude_indicator; // Indicateur de longitude (E ou W)
 
-    char  	speed_knots[6]; // Vitesse sur le fond en noeuds
-    char  	track_angle[7]; // Route sur le fond en degres
+    char  	speed_knots[7]; // Vitesse sur le fond en noeuds
+    char  	track_angle[8]; // Route sur le fond en degres
 } GPS_Data;
 
 int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data);

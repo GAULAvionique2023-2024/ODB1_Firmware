@@ -34,6 +34,7 @@
 #include "GAUL_Drivers/RFD900.h"
 #include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
 #include "GAUL_Drivers/L76LM33.h"
+#include "GAUL_Drivers/HM10_BLE.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -123,6 +124,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   SPI_Init(2);
+  USART_Init(1);
   USART_Init(2);
   WS2812_Init();
   L76LM33_Init();
@@ -142,23 +144,11 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-  char Rx_data[88];
-  GPS_Data gps_data;
-  //GPS_Data gps_data;
-
   while (1)
   {
-	  memset(Rx_data, 0, sizeof(Rx_data));
-	  USART_RX(2, (uint8_t*)Rx_data, sizeof(Rx_data));
-	  // Affichage de la trame NMEA reçue
-	  printf("NMEA sentence: %s", Rx_data);
-	  NMEA_Decode_GPRMC(Rx_data, &gps_data);
-	  printf("Time: %s\n", gps_data.time);
-	  printf("Latitude: %s %c\n", gps_data.latitude, gps_data.latitude_indicator);
-	  printf("Longitude: %s %c\n", gps_data.longitude, gps_data.longitude_indicator);
-	  printf("Vitesse: %s\n", gps_data.speed_knots);
-	  printf("Angle: %s\n", gps_data.track_angle);
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
