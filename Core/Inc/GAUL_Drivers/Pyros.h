@@ -12,7 +12,7 @@
 #include <stdbool.h>
 
 bool Pyro_Armed();
-void Pyro_Fire();
+void Pyro_Fire(bool armed);
 
 
 #endif /* INC_GAUL_DRIVERS_PYROS_H_ */

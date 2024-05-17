@@ -32,7 +32,6 @@ void L76LM33_SendCommand(char *command) {
 
 void L76LM33_Read(char *rx_data, GPS_Data *gps_data) {
 
-	/*
 	memset(rx_data, 0, sizeof(rx_data));
 	USART_RX(2, (uint8_t*)rx_data, sizeof(rx_data));
 	// Affichage de la trame NMEA reçue
@@ -44,7 +43,6 @@ void L76LM33_Read(char *rx_data, GPS_Data *gps_data) {
 		printf("Vitesse: %s\n", gps_data->speed_knots);
 		printf("Angle: %s\n", gps_data->track_angle);
 	}
-	*/
 }
 
 void charToUint8 () {

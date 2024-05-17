@@ -32,7 +32,8 @@ Core/Src/GAUL_Drivers/RFD900.o: ../Core/Src/GAUL_Drivers/RFD900.c \
  ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/USART_driver.h \
  ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h \
  ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/NMEA.h \
- ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/CRC_driver.h
+ ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/CRC_driver.h \
+ ../Core/Inc/GAUL_Drivers/CD74HC4051.h
 ../Core/Inc/GAUL_Drivers/RFD900.h:
 ../Core/Inc/GAUL_Drivers/ICM20602.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
@@ -69,3 +70,4 @@ Core/Src/GAUL_Drivers/RFD900.o: ../Core/Src/GAUL_Drivers/RFD900.c \
 ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h:
 ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/NMEA.h:
 ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/CRC_driver.h:
+../Core/Inc/GAUL_Drivers/CD74HC4051.h:

@@ -32,7 +32,7 @@ void CD74HC4051_Init (ADC_HandleTypeDef *hadc) {
 	HAL_ADCEx_Calibration_Start(hadc);
 }
 
-uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, float vref) {
+uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyro_channel, float vref) {
 
 	if(channel == CHANNEL_1 || channel == CHANNEL_7) {
 		return 0;
@@ -40,26 +40,42 @@ uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, float vref)
 
 	Write_GPIO(PB, 8, HIGH); // MUL_E~ (inverse)
 	Write_GPIO(PA, 15, LOW); // Pyro_Test (inverse)
-	Write_GPIO(PB, 4, HIGH); // Pyro_ON0
-	Write_GPIO(PB, 5, HIGH); // Pyro_ON1
-	// Set channel
-	Write_GPIO(PC, 13, (channel & 0x01) ? HIGH : LOW);
-	Write_GPIO(PC, 14, (channel & 0x02) ? HIGH : LOW);
-	Write_GPIO(PC, 15, (channel & 0x04) ? HIGH : LOW);
-	printf("MULS0: %d\n", Read_GPIO(PC, 13));
-	printf("MULS1: %d\n", Read_GPIO(PC, 14));
-	printf("MULS3: %d\n", Read_GPIO(PC, 15));
-	uint32_t adc_value = ADC_Sampling(hadc);
+	if(channel == CHANNEL_0) {
+		if(pyro_channel == PYRO_CHANNEL_0) {
+			Write_GPIO(PB, 4, HIGH); // Pyro_ON0
+		} else if (pyro_channel == PYRO_CHANNEL_1) {
+			Write_GPIO(PB, 5, HIGH); // Pyro_ON1
+		} else {
+			return 0;
+		}
+	} else {
+		// Set channel
+		Write_GPIO(PC, 13, (channel & 0x01) ? HIGH : LOW);
+		Write_GPIO(PC, 14, (channel & 0x02) ? HIGH : LOW);
+		Write_GPIO(PC, 15, (channel & 0x04) ? HIGH : LOW);
+	}
+	// Reactiver multiplexer pour lecture
+	printf("Pyro_Test avant: %i\n", Read_GPIO(PA, 15));
+	printf("Pyro_ON0 avant: %i\n", Read_GPIO(PB, 4));
+	printf("Pyro_ON1 avant: %i\n", Read_GPIO(PB, 5));
 	Write_GPIO(PB, 8, LOW); // MUL_E~ (inverse)
-	Write_GPIO(PA, 15, HIGH); // Pyro_Test (inverse)
+	// Lecture
+	uint32_t adc_value = ADC_Sampling(hadc);
+	// Desactiver pyros (ordre important)
+	Write_GPIO(PB, 4, LOW); // Pyro_ON0
+	Write_GPIO(PB, 5, LOW); // Pyro_ON1
+	Write_GPIO(PA, 15, HIGH); // Pyro_Test~
+	printf("Pyro_Test apres: %i\n", Read_GPIO(PA, 15));
+	printf("Pyro_ON0 apres: %i\n", Read_GPIO(PB, 4));
+	printf("Pyro_ON1 apres: %i\n", Read_GPIO(PB, 5));
 
-	return (uint16_t)(adc_value * vref / 4096);
+	return (uint16_t)((adc_value * vref / 4096) * 1000); // millivolts
 }
 
 uint32_t ADC_Sampling (ADC_HandleTypeDef *hadc) {
 
 	HAL_ADC_Start(hadc);
-	HAL_ADC_PollForConversion(hadc, 100); // Timeout peut etre ajuste
+	HAL_ADC_PollForConversion(hadc, HAL_MAX_DELAY); // Timeout peut etre ajuste
 	uint32_t adc_value = HAL_ADC_GetValue(hadc);
 	HAL_ADC_Stop(hadc);
 

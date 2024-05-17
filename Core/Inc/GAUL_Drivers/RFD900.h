@@ -17,24 +17,28 @@
 
 #include <stdint.h>
 
-// $Stats(8);V_Batt_Lipo1(16);V_Batt_Lipo2(16);V_Batt_Lipo3 (16);5V_AN (16);Temp (32);Altitude(16);AngleRoll(32);AnglePitch(32)*CRC(16)$ => (28)
-#define MODE_PREFLIGHT_SIZE 28 // mode = 0x00
-// $Stats(8);
-#define MODE_FLIGHT_SIZE // mode = 0x01
-#define MODE_POSTFLIGHT_SIZE // mode = 0x02
+// $Stats(8);V_Batt_Lipo1(16);V_Batt_Lipo2(16);V_Batt_Lipo3(16);5V_AN(16);Temp(32);Altitude(16);AngleRoll(32);AnglePitch(32)*CRC(16)$ => (28)
+#define MODE_PREFLIGHT 0x00
+#define PREFLIGHT_SIZE 28 // mode = 0x00
+// $Stats(8);GPS_Data(416);Gyro_Data(72)*CRC(16)$ => (64)
+#define MODE_FLIGHT 0x01
+#define FLIGHT_SIZE 64 // mode = 0x01
+// $Stats(8);GPS_Data(296);V_Batt_Lipo1(16);V_Batt_Lipo2(16);V_Batt_Lipo3(16);5V_AN(16) => (46)
+#define MODE_POSTFLIGHT 0x02
+#define POSTFLIGHT_SIZE 46 // mode = 0x02
 
 
 typedef struct {
 	uint8_t 	mode; 			// 2bits
-	size_t 		size; 			// depend du mode
-	uint8_t 	stats; 			// 6bits states
-	uint8_t 	*data; 			// Depend du mode
+	uint8_t 	stats; 			// 6bits states + mode
+	uint8_t		data; 			// Depend du mode
 	uint16_t 	validationCRC;
+	size_t 		size; 			// depend du mode
 } RFD900;
 
-uint8_t RFD900_Init(RFD900 *devRFD);
+void RFD900_Init(RFD900 *devRFD, uint8_t mode);
 
-void RFD900_Create(RFD900 *devRFD);
+uint8_t *RFD900_Create(RFD900 *devRFD, uint8_t mode);
 void RFD900_Send(RFD900 *devRFD);
 
 #endif /* INC_GAUL_DRIVERS_RFD900_H_ */

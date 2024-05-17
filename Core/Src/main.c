@@ -35,6 +35,8 @@
 #include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
 #include "GAUL_Drivers/L76LM33.h"
 #include "GAUL_Drivers/HM10_BLE.h"
+#include "GAUL_Drivers/CD74HC4051.h"
+#include "GAUL_Drivers/Pyros.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -128,6 +130,7 @@ int main(void)
   USART_Init(2);
   WS2812_Init();
   L76LM33_Init();
+  CD74HC4051_Init(&hadc1);
 
   ICM20602 icm;
   //BMP280 bmp;
@@ -139,6 +142,10 @@ int main(void)
   //memset(led_channels, 0, sizeof(led_channels));
   //led_channels[0].framebuffer = channel_framebuffers;
   //led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
+
+  bool armed = Pyro_Armed();
+  HAL_Delay(3000);
+  Pyro_Fire(armed);
 
   /* USER CODE END 2 */
 

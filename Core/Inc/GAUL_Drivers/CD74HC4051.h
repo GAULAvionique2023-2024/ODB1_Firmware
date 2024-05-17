@@ -24,9 +24,17 @@
 #define CHANNEL_6 0x00000110
 #define CHANNEL_7 0x00000111
 
+#define PYRO_CHANNEL_DISABLED 0X00
+#define PYRO_CHANNEL_0 0x01
+#define PYRO_CHANNEL_1 0X02
 
-void CD74HC4051_Init (ADC_HandleTypeDef *hadc);
-uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, float vref);
+#define VREF33 3.3
+#define VREF5 5
+#define VREF12 12
+
+
+void CD74HC4051_Init(ADC_HandleTypeDef *hadc);
+uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyro_channel, float vref);
 
 // Implicit
 uint32_t ADC_Sampling (ADC_HandleTypeDef *hadc);

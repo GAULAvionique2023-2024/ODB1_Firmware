@@ -21,11 +21,13 @@ bool Pyro_Armed() {
 	return true;
 }
 
-void Pyro_Fire() {
+void Pyro_Fire(bool armed) {
 
-	if(Pyro_Armed()) {
-		Write_GPIO(PA, 15, HIGH);
+	if(armed == true) {
 		Write_GPIO(PB, 4, HIGH);
 		Write_GPIO(PB, 5, HIGH);
 	}
+	//Write_GPIO(PA, 15, HIGH);
+	//Write_GPIO(PB, 4, LOW);
+	//Write_GPIO(PB, 5, LOW);
 }
