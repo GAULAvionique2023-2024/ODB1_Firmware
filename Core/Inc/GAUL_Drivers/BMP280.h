@@ -50,10 +50,10 @@ typedef struct{
 
 uint8_t BMP280_Init(BMP280 *devBMP);
 
-void BMP280_ReadTemperature(BMP280 *devBMP);
-void BMP280_ReadPressure(BMP280 *devBMP);
+float BMP280_ReadTemperature(BMP280 *devBMP);
+float BMP280_ReadPressure(BMP280 *devBMP);
 
-void BMP280_ReadRegister();
-void BMP280_WriteRegister();
+uint8_t BMP280_ReadRegister();
+uint8_t BMP280_WriteRegister();
 
 #endif /* INC_GAUL_DRIVERS_BMP280_H_ */

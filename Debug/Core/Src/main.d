@@ -42,8 +42,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h \
  ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/SPI_driver.h \
  ../Core/Inc/GAUL_Drivers/Buzzer.h ../Core/Inc/GAUL_Drivers/RFD900.h \
- ../Core/Inc/GAUL_Drivers/L76LM33.h \
- ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/NMEA.h \
+ ../Core/Inc/GAUL_Drivers/L76LM33.h ../Core/Inc/GAUL_Drivers/NMEA.h \
  ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/USART_driver.h \
  ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/CRC_driver.h \
  ../Core/Inc/GAUL_Drivers/HM10_BLE.h \
@@ -95,7 +94,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/GAUL_Drivers/Buzzer.h:
 ../Core/Inc/GAUL_Drivers/RFD900.h:
 ../Core/Inc/GAUL_Drivers/L76LM33.h:
-../Core/Inc/GAUL_Drivers/Low_Level_Drivers/NMEA.h:
+../Core/Inc/GAUL_Drivers/NMEA.h:
 ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/USART_driver.h:
 ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/CRC_driver.h:
 ../Core/Inc/GAUL_Drivers/HM10_BLE.h:

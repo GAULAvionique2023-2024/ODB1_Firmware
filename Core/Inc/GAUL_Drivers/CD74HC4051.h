@@ -33,7 +33,7 @@
 #define VREF12 12
 
 
-void CD74HC4051_Init(ADC_HandleTypeDef *hadc);
+uint8_t CD74HC4051_Init(ADC_HandleTypeDef *hadc);
 uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyro_channel, float vref);
 
 // Implicit

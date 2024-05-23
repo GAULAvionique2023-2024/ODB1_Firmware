@@ -5,7 +5,7 @@
  *      Author: gagno
  */
 
-#include "GAUL_Drivers/Low_Level_Drivers/NMEA.h"
+#include "GAUL_Drivers/NMEA.h"
 
 int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 

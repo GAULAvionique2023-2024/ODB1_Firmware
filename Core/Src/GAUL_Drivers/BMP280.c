@@ -12,17 +12,21 @@ uint8_t BMP280_Init(BMP280 *devBMP) {
 	return 0; // OK
 }
 
-void BMP280_ReadTemperature(BMP280 *devBMP) {
+float BMP280_ReadTemperature(BMP280 *devBMP) {
 
-}
-void BMP280_ReadPressure(BMP280 *devBMP) {
-
-}
-
-void BMP280_ReadRegister() {
 
 }
 
-void BMP280_WriteRegister() {
+float BMP280_ReadPressure(BMP280 *devBMP) {
 
+}
+
+uint8_t BMP280_ReadRegister() {
+
+	return 0; // OK
+}
+
+uint8_t BMP280_WriteRegister() {
+
+	return 0; // OK
 }

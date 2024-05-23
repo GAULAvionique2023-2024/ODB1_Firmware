@@ -15,7 +15,7 @@ NMEA_GPSSEARCHONLY = "$PMTK353,1,0,0,0,0*2A<CR><LF>",	// Active la recherche de 
 NMEA_NAVMODE = "PMTK886,2*2A<CR><LF>",				// 0 : Normal (10000m) ; 2 : Aviation +acc (10000m) ; 3 : Ballon +hauteur (80000m) ; 4 : Stationary
 */
 
-void L76LM33_Init (void) {
+uint8_t L76LM33_Init (void) {
 
 	char PROTOCOL_SETRMS[] = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*35\r\n";
 	char PROTOCOL_GPSSEARCHONLY[] = "$PMTK353,1,0,0,0,0*2A<CR><LF>";
@@ -23,11 +23,15 @@ void L76LM33_Init (void) {
 	L76LM33_SendCommand(PROTOCOL_SETRMS);
 	L76LM33_SendCommand(PROTOCOL_GPSSEARCHONLY);
 	L76LM33_SendCommand(PROTOCOL_NAVMODE);
+
+	return 0;
 }
 
-void L76LM33_SendCommand(char *command) {
+uint8_t L76LM33_SendCommand(char *command) {
 
 	USART_TX(GPS_USART_PORT, (uint8_t*)command, strlen(command));
+
+	return 0;
 }
 /*
 void L76LM33_Read(char *rx_data, GPS_Data *gps_data) {
