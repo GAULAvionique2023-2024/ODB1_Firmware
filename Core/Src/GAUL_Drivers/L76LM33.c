@@ -29,7 +29,7 @@ void L76LM33_SendCommand(char *command) {
 
 	USART_TX(GPS_USART_PORT, (uint8_t*)command, strlen(command));
 }
-
+/*
 void L76LM33_Read(char *rx_data, GPS_Data *gps_data) {
 
 	memset(rx_data, 0, sizeof(rx_data));
@@ -44,7 +44,7 @@ void L76LM33_Read(char *rx_data, GPS_Data *gps_data) {
 		printf("Angle: %s\n", gps_data->track_angle);
 	}
 }
-
+*/
 void charToUint8 () {
 
 }

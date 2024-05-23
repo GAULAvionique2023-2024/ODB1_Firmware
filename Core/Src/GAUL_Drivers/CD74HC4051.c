@@ -6,6 +6,7 @@
  */
 
 #include "GAUL_Drivers/CD74HC4051.h"
+#include "GAUL_Drivers/Pyros.h"
 
 void CD74HC4051_Init (ADC_HandleTypeDef *hadc) {
 
@@ -19,13 +20,7 @@ void CD74HC4051_Init (ADC_HandleTypeDef *hadc) {
 	// Set MUL_E~ (inverse)
 	Write_GPIO(PB, 8, HIGH);
 	// Pyros
-	Init_GPIO(PB, 4, OUT2, O_GP_PP); // PyroON0
-	Init_GPIO(PB, 5, OUT2, O_GP_PP); // PyroON1
-	Init_GPIO(PA, 15, OUT2, O_GP_PP); // Pyro_Test~
-	// Set Pyro_Test~ (inverse) et Pyros_ON LOW
-	Write_GPIO(PA, 15, LOW);
-	Write_GPIO(PB, 4, LOW);
-	Write_GPIO(PB, 5, LOW);
+	Pyro_Init();
 
 	//ADC calibration
 	HAL_ADC_Stop(hadc);
@@ -55,9 +50,6 @@ uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyr
 		Write_GPIO(PC, 15, (channel & 0x04) ? HIGH : LOW);
 	}
 	// Reactiver multiplexer pour lecture
-	printf("Pyro_Test avant: %i\n", Read_GPIO(PA, 15));
-	printf("Pyro_ON0 avant: %i\n", Read_GPIO(PB, 4));
-	printf("Pyro_ON1 avant: %i\n", Read_GPIO(PB, 5));
 	Write_GPIO(PB, 8, LOW); // MUL_E~ (inverse)
 	// Lecture
 	uint32_t adc_value = ADC_Sampling(hadc);
@@ -65,9 +57,6 @@ uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyr
 	Write_GPIO(PB, 4, LOW); // Pyro_ON0
 	Write_GPIO(PB, 5, LOW); // Pyro_ON1
 	Write_GPIO(PA, 15, HIGH); // Pyro_Test~
-	printf("Pyro_Test apres: %i\n", Read_GPIO(PA, 15));
-	printf("Pyro_ON0 apres: %i\n", Read_GPIO(PB, 4));
-	printf("Pyro_ON1 apres: %i\n", Read_GPIO(PB, 5));
 
 	return (uint16_t)((adc_value * vref / 4096) * 1000); // millivolts
 }

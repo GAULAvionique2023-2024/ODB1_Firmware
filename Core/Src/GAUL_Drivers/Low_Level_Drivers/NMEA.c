@@ -45,7 +45,7 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	// Extraire latitude
 	token = strtok(NULL, ",");
 	if (token == NULL) {
-		strncpy(gps_data->latitude, "00000.000", 10);
+		strncpy(gps_data->latitude, DEFAULT_LATITUDE, 10);
 		return -1;
 	} else {
 		strncpy(gps_data->latitude, token, 10);
@@ -55,7 +55,7 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	// Extraire l'indicateur de latitude (N ou S)
 	token = strtok(NULL, ",");
 	if (token == NULL) {
-		strcpy(gps_data->latitude_indicator, "V");
+		strcpy(gps_data->latitude_indicator, DEFAULT_INDICATOR);
 		return -1;
 	} else {
 		gps_data->latitude_indicator = token[0];
@@ -64,7 +64,7 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	// Extraire longitude
 	token = strtok(NULL, ",");
 	if (token == NULL) {
-		strncpy(gps_data->longitude, "000000.000", 11);
+		strncpy(gps_data->longitude, DEFAULT_LATITUDE, 11);
 		return -1;
 	} else {
 		strncpy(gps_data->longitude, token, 11);
@@ -74,7 +74,7 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	// Extraire l'indicateur de longitude (E ou W)
 	token = strtok(NULL, ",");
 	if (token == NULL) {
-		strcpy(gps_data->longitude_indicator, "V");
+		strcpy(gps_data->longitude_indicator, DEFAULT_INDICATOR);
 		return -1;
 	} else {
 		gps_data->longitude_indicator = token[0];
@@ -83,7 +83,7 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	// Extraire vitesse
 	token = strtok(NULL, ",");
 	if (token == NULL) {
-		strncpy(gps_data->speed_knots, "000.00", 6);
+		strncpy(gps_data->speed_knots, DEFAULT_SPEED, 6);
 		return -1;
 	} else {
 		strncpy(gps_data->speed_knots, token, 6);
@@ -93,7 +93,7 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	// Extraire angle
 	token = strtok(NULL, ",");
 	if (token == NULL) {
-		strncpy(gps_data->track_angle, "0000.00", 7);
+		strncpy(gps_data->track_angle, DEFAULT_ANGLE, 7);
 		return -1;
 	} else {
 		strncpy(gps_data->track_angle, token, 7);

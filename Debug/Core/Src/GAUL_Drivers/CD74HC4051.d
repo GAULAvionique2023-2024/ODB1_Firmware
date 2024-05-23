@@ -28,7 +28,8 @@ Core/Src/GAUL_Drivers/CD74HC4051.o: ../Core/Src/GAUL_Drivers/CD74HC4051.c \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
+ ../Core/Inc/GAUL_Drivers/Pyros.h
 ../Core/Inc/GAUL_Drivers/CD74HC4051.h:
 ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
@@ -59,3 +60,4 @@ Core/Src/GAUL_Drivers/CD74HC4051.o: ../Core/Src/GAUL_Drivers/CD74HC4051.c \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
+../Core/Inc/GAUL_Drivers/Pyros.h:

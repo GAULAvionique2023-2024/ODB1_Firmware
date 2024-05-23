@@ -7,7 +7,7 @@
 
 #include "GAUL_Drivers/Pyros.h"
 
-bool Pyro_Armed() {
+void Pyro_Init(void) {
 
 	// Pyros
 	Init_GPIO(PB, 4, OUT2, O_GP_PP); // PyroON0
@@ -17,8 +17,6 @@ bool Pyro_Armed() {
 	Write_GPIO(PA, 15, HIGH);
 	Write_GPIO(PB, 4, LOW);
 	Write_GPIO(PB, 5, LOW);
-
-	return true;
 }
 
 void Pyro_Fire(bool armed) {
@@ -27,7 +25,8 @@ void Pyro_Fire(bool armed) {
 		Write_GPIO(PB, 4, HIGH);
 		Write_GPIO(PB, 5, HIGH);
 	}
-	//Write_GPIO(PA, 15, HIGH);
-	//Write_GPIO(PB, 4, LOW);
-	//Write_GPIO(PB, 5, LOW);
+	HAL_Delay(10);
+	Write_GPIO(PA, 15, HIGH);
+	Write_GPIO(PB, 4, LOW);
+	Write_GPIO(PB, 5, LOW);
 }
