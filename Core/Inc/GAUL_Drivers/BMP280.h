@@ -48,6 +48,13 @@
 //00001000 = 0x08
 #define BMP280_SETTING_CONFIG 0x08
 
+// Const
+#define T0 288.15  		// Temperature mer (kelvin)
+#define alpha 0.0065  	// Taux de temperature (km/h)
+#define P0 101325.0  	// Pression atmospherique mer
+#define beta 5.256  	// Indice temperature
+
+
 typedef struct {
     uint16_t dig_T1;
     int16_t dig_T2;

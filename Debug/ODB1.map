@@ -137,7 +137,7 @@ C:/ST/STM32CubeIDE_1.15.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.external
 C:/ST/STM32CubeIDE_1.15.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.12.3.rel1.win32_1.0.100.202403111256/tools/bin/../lib/gcc/arm-none-eabi/12.3.1/thumb/v7-m/nofp\libgcc.a(_arm_addsubdf3.o)
                               ./Core/Src/GAUL_Drivers/BMP280.o (__aeabi_dsub)
 C:/ST/STM32CubeIDE_1.15.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.12.3.rel1.win32_1.0.100.202403111256/tools/bin/../lib/gcc/arm-none-eabi/12.3.1/thumb/v7-m/nofp\libgcc.a(_arm_muldivdf3.o)
-                              ./Core/Src/GAUL_Drivers/ICM20602.o (__aeabi_ddiv)
+                              ./Core/Src/GAUL_Drivers/BMP280.o (__aeabi_ddiv)
 C:/ST/STM32CubeIDE_1.15.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.12.3.rel1.win32_1.0.100.202403111256/tools/bin/../lib/gcc/arm-none-eabi/12.3.1/thumb/v7-m/nofp\libgcc.a(_arm_cmpdf2.o)
                               C:/ST/STM32CubeIDE_1.15.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.12.3.rel1.win32_1.0.100.202403111256/tools/bin/../lib/gcc/arm-none-eabi/12.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(libc_a-nano-vfprintf_float.o) (__aeabi_dcmpeq)
 C:/ST/STM32CubeIDE_1.15.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.12.3.rel1.win32_1.0.100.202403111256/tools/bin/../lib/gcc/arm-none-eabi/12.3.1/thumb/v7-m/nofp\libgcc.a(_arm_unorddf2.o)
@@ -238,7 +238,7 @@ Discarded input sections
  .data          0x00000000        0x0 ./Core/Src/GAUL_Drivers/BMP280.o
  .bss           0x00000000        0x0 ./Core/Src/GAUL_Drivers/BMP280.o
  .text.BMP280_PressureToAltitude
-                0x00000000       0x50 ./Core/Src/GAUL_Drivers/BMP280.o
+                0x00000000       0x54 ./Core/Src/GAUL_Drivers/BMP280.o
  .text.BMP280_SwapMode
                 0x00000000        0xe ./Core/Src/GAUL_Drivers/BMP280.o
  .group         0x00000000        0xc ./Core/Src/GAUL_Drivers/Buzzer.o
@@ -1159,7 +1159,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x16 ./Core/Src/GAUL_Drivers/RFD900.o
  .debug_macro   0x00000000       0x16 ./Core/Src/GAUL_Drivers/RFD900.o
  .debug_macro   0x00000000      0x146 ./Core/Src/GAUL_Drivers/RFD900.o
- .debug_macro   0x00000000       0x76 ./Core/Src/GAUL_Drivers/RFD900.o
+ .debug_macro   0x00000000       0x8e ./Core/Src/GAUL_Drivers/RFD900.o
  .debug_macro   0x00000000       0x16 ./Core/Src/GAUL_Drivers/RFD900.o
  .debug_macro   0x00000000       0x20 ./Core/Src/GAUL_Drivers/RFD900.o
  .debug_macro   0x00000000       0x16 ./Core/Src/GAUL_Drivers/RFD900.o
@@ -1173,7 +1173,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x22 ./Core/Src/GAUL_Drivers/RFD900.o
  .debug_macro   0x00000000       0x58 ./Core/Src/GAUL_Drivers/RFD900.o
  .debug_line    0x00000000      0xa56 ./Core/Src/GAUL_Drivers/RFD900.o
- .debug_str     0x00000000    0x8d16d ./Core/Src/GAUL_Drivers/RFD900.o
+ .debug_str     0x00000000    0x8d19b ./Core/Src/GAUL_Drivers/RFD900.o
  .comment       0x00000000       0x44 ./Core/Src/GAUL_Drivers/RFD900.o
  .debug_frame   0x00000000       0x40 ./Core/Src/GAUL_Drivers/RFD900.o
  .ARM.attributes
@@ -1911,7 +1911,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x22 ./Core/Src/main.o
  .debug_macro   0x00000000       0x2e ./Core/Src/main.o
  .debug_macro   0x00000000       0x82 ./Core/Src/main.o
- .debug_macro   0x00000000       0x76 ./Core/Src/main.o
+ .debug_macro   0x00000000       0x8e ./Core/Src/main.o
  .debug_macro   0x00000000       0x16 ./Core/Src/main.o
  .debug_macro   0x00000000       0x16 ./Core/Src/main.o
  .debug_macro   0x00000000       0x29 ./Core/Src/main.o
@@ -4621,31 +4621,31 @@ LOAD C:/ST/STM32CubeIDE_1.15.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.ext
 LOAD C:/ST/STM32CubeIDE_1.15.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.12.3.rel1.win32_1.0.100.202403111256/tools/bin/../lib/gcc/arm-none-eabi/12.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libm.a
 LOAD C:/ST/STM32CubeIDE_1.15.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.12.3.rel1.win32_1.0.100.202403111256/tools/bin/../lib/gcc/arm-none-eabi/12.3.1/thumb/v7-m/nofp\libgcc.a
 
-.debug_info     0x00000000     0x635a
- .debug_info    0x00000000      0x8f1 ./Core/Src/GAUL_Drivers/BMP280.o
- .debug_info    0x000008f1      0x8e1 ./Core/Src/GAUL_Drivers/CD74HC4051.o
- .debug_info    0x000011d2      0xaec ./Core/Src/GAUL_Drivers/ICM20602.o
- .debug_info    0x00001cbe      0x1ff ./Core/Src/GAUL_Drivers/L76LM33.o
- .debug_info    0x00001ebd      0x27a ./Core/Src/GAUL_Drivers/Pyros.o
- .debug_info    0x00002137     0x1089 ./Core/Src/GAUL_Drivers/WS2812_led.o
- .debug_info    0x000031c0      0x6a8 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o
- .debug_info    0x00003868      0x24a ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o
- .debug_info    0x00003ab2      0x4e4 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o
- .debug_info    0x00003f96      0x740 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.o
- .debug_info    0x000046d6     0x1c84 ./Core/Src/main.o
+.debug_info     0x00000000     0x6324
+ .debug_info    0x00000000      0x8bb ./Core/Src/GAUL_Drivers/BMP280.o
+ .debug_info    0x000008bb      0x8e1 ./Core/Src/GAUL_Drivers/CD74HC4051.o
+ .debug_info    0x0000119c      0xaec ./Core/Src/GAUL_Drivers/ICM20602.o
+ .debug_info    0x00001c88      0x1ff ./Core/Src/GAUL_Drivers/L76LM33.o
+ .debug_info    0x00001e87      0x27a ./Core/Src/GAUL_Drivers/Pyros.o
+ .debug_info    0x00002101     0x1089 ./Core/Src/GAUL_Drivers/WS2812_led.o
+ .debug_info    0x0000318a      0x6a8 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o
+ .debug_info    0x00003832      0x24a ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o
+ .debug_info    0x00003a7c      0x4e4 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o
+ .debug_info    0x00003f60      0x740 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.o
+ .debug_info    0x000046a0     0x1c84 ./Core/Src/main.o
 
-.debug_abbrev   0x00000000     0x1551
- .debug_abbrev  0x00000000      0x1d5 ./Core/Src/GAUL_Drivers/BMP280.o
- .debug_abbrev  0x000001d5      0x1cd ./Core/Src/GAUL_Drivers/CD74HC4051.o
- .debug_abbrev  0x000003a2      0x1f1 ./Core/Src/GAUL_Drivers/ICM20602.o
- .debug_abbrev  0x00000593      0x112 ./Core/Src/GAUL_Drivers/L76LM33.o
- .debug_abbrev  0x000006a5       0xd3 ./Core/Src/GAUL_Drivers/Pyros.o
- .debug_abbrev  0x00000778      0x34d ./Core/Src/GAUL_Drivers/WS2812_led.o
- .debug_abbrev  0x00000ac5      0x1a8 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o
- .debug_abbrev  0x00000c6d      0x124 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o
- .debug_abbrev  0x00000d91      0x19a ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o
- .debug_abbrev  0x00000f2b      0x211 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.o
- .debug_abbrev  0x0000113c      0x415 ./Core/Src/main.o
+.debug_abbrev   0x00000000     0x152b
+ .debug_abbrev  0x00000000      0x1af ./Core/Src/GAUL_Drivers/BMP280.o
+ .debug_abbrev  0x000001af      0x1cd ./Core/Src/GAUL_Drivers/CD74HC4051.o
+ .debug_abbrev  0x0000037c      0x1f1 ./Core/Src/GAUL_Drivers/ICM20602.o
+ .debug_abbrev  0x0000056d      0x112 ./Core/Src/GAUL_Drivers/L76LM33.o
+ .debug_abbrev  0x0000067f       0xd3 ./Core/Src/GAUL_Drivers/Pyros.o
+ .debug_abbrev  0x00000752      0x34d ./Core/Src/GAUL_Drivers/WS2812_led.o
+ .debug_abbrev  0x00000a9f      0x1a8 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o
+ .debug_abbrev  0x00000c47      0x124 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o
+ .debug_abbrev  0x00000d6b      0x19a ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o
+ .debug_abbrev  0x00000f05      0x211 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.o
+ .debug_abbrev  0x00001116      0x415 ./Core/Src/main.o
 
 .debug_loclists
                 0x00000000      0xc7f
@@ -4721,7 +4721,7 @@ LOAD C:/ST/STM32CubeIDE_1.15.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_rnglists
                 0x000001ab       0x58 ./Core/Src/main.o
 
-.debug_macro    0x00000000    0x18a7b
+.debug_macro    0x00000000    0x18a93
  .debug_macro   0x00000000      0x2c8 ./Core/Src/GAUL_Drivers/BMP280.o
  .debug_macro   0x000002c8      0xaae ./Core/Src/GAUL_Drivers/BMP280.o
  .debug_macro   0x00000d76       0x22 ./Core/Src/GAUL_Drivers/BMP280.o
@@ -4782,73 +4782,73 @@ LOAD C:/ST/STM32CubeIDE_1.15.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_macro   0x00016923       0x16 ./Core/Src/GAUL_Drivers/BMP280.o
  .debug_macro   0x00016939       0x16 ./Core/Src/GAUL_Drivers/BMP280.o
  .debug_macro   0x0001694f      0x146 ./Core/Src/GAUL_Drivers/BMP280.o
- .debug_macro   0x00016a95       0x76 ./Core/Src/GAUL_Drivers/BMP280.o
- .debug_macro   0x00016b0b      0x19b ./Core/Src/GAUL_Drivers/BMP280.o
- .debug_macro   0x00016ca6      0x2ce ./Core/Src/GAUL_Drivers/CD74HC4051.o
- .debug_macro   0x00016f74       0x22 ./Core/Src/GAUL_Drivers/CD74HC4051.o
- .debug_macro   0x00016f96       0x58 ./Core/Src/GAUL_Drivers/CD74HC4051.o
- .debug_macro   0x00016fee      0x292 ./Core/Src/GAUL_Drivers/ICM20602.o
- .debug_macro   0x00017280       0x5b ./Core/Src/GAUL_Drivers/ICM20602.o
- .debug_macro   0x000172db       0x94 ./Core/Src/GAUL_Drivers/ICM20602.o
- .debug_macro   0x0001736f       0x57 ./Core/Src/GAUL_Drivers/ICM20602.o
- .debug_macro   0x000173c6       0x56 ./Core/Src/GAUL_Drivers/ICM20602.o
- .debug_macro   0x0001741c      0x190 ./Core/Src/GAUL_Drivers/ICM20602.o
- .debug_macro   0x000175ac      0x1d2 ./Core/Src/GAUL_Drivers/L76LM33.o
- .debug_macro   0x0001777e       0x16 ./Core/Src/GAUL_Drivers/L76LM33.o
- .debug_macro   0x00017794       0x16 ./Core/Src/GAUL_Drivers/L76LM33.o
- .debug_macro   0x000177aa       0x29 ./Core/Src/GAUL_Drivers/L76LM33.o
- .debug_macro   0x000177d3       0x1c ./Core/Src/GAUL_Drivers/L76LM33.o
- .debug_macro   0x000177ef       0x1c ./Core/Src/GAUL_Drivers/L76LM33.o
- .debug_macro   0x0001780b      0x11f ./Core/Src/GAUL_Drivers/L76LM33.o
- .debug_macro   0x0001792a       0x28 ./Core/Src/GAUL_Drivers/L76LM33.o
- .debug_macro   0x00017952      0x1dd ./Core/Src/GAUL_Drivers/Pyros.o
- .debug_macro   0x00017b2f      0x2b2 ./Core/Src/GAUL_Drivers/WS2812_led.o
- .debug_macro   0x00017de1       0x2e ./Core/Src/GAUL_Drivers/WS2812_led.o
- .debug_macro   0x00017e0f      0x1cb ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o
- .debug_macro   0x00017fda       0x1a ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o
- .debug_macro   0x00017ff4      0x23d ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o
- .debug_macro   0x00018231      0x242 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.o
- .debug_macro   0x00018473      0x404 ./Core/Src/main.o
- .debug_macro   0x00018877      0x196 ./Core/Src/main.o
- .debug_macro   0x00018a0d       0x10 ./Core/Src/main.o
- .debug_macro   0x00018a1d       0x5e ./Core/Src/main.o
+ .debug_macro   0x00016a95       0x8e ./Core/Src/GAUL_Drivers/BMP280.o
+ .debug_macro   0x00016b23      0x19b ./Core/Src/GAUL_Drivers/BMP280.o
+ .debug_macro   0x00016cbe      0x2ce ./Core/Src/GAUL_Drivers/CD74HC4051.o
+ .debug_macro   0x00016f8c       0x22 ./Core/Src/GAUL_Drivers/CD74HC4051.o
+ .debug_macro   0x00016fae       0x58 ./Core/Src/GAUL_Drivers/CD74HC4051.o
+ .debug_macro   0x00017006      0x292 ./Core/Src/GAUL_Drivers/ICM20602.o
+ .debug_macro   0x00017298       0x5b ./Core/Src/GAUL_Drivers/ICM20602.o
+ .debug_macro   0x000172f3       0x94 ./Core/Src/GAUL_Drivers/ICM20602.o
+ .debug_macro   0x00017387       0x57 ./Core/Src/GAUL_Drivers/ICM20602.o
+ .debug_macro   0x000173de       0x56 ./Core/Src/GAUL_Drivers/ICM20602.o
+ .debug_macro   0x00017434      0x190 ./Core/Src/GAUL_Drivers/ICM20602.o
+ .debug_macro   0x000175c4      0x1d2 ./Core/Src/GAUL_Drivers/L76LM33.o
+ .debug_macro   0x00017796       0x16 ./Core/Src/GAUL_Drivers/L76LM33.o
+ .debug_macro   0x000177ac       0x16 ./Core/Src/GAUL_Drivers/L76LM33.o
+ .debug_macro   0x000177c2       0x29 ./Core/Src/GAUL_Drivers/L76LM33.o
+ .debug_macro   0x000177eb       0x1c ./Core/Src/GAUL_Drivers/L76LM33.o
+ .debug_macro   0x00017807       0x1c ./Core/Src/GAUL_Drivers/L76LM33.o
+ .debug_macro   0x00017823      0x11f ./Core/Src/GAUL_Drivers/L76LM33.o
+ .debug_macro   0x00017942       0x28 ./Core/Src/GAUL_Drivers/L76LM33.o
+ .debug_macro   0x0001796a      0x1dd ./Core/Src/GAUL_Drivers/Pyros.o
+ .debug_macro   0x00017b47      0x2b2 ./Core/Src/GAUL_Drivers/WS2812_led.o
+ .debug_macro   0x00017df9       0x2e ./Core/Src/GAUL_Drivers/WS2812_led.o
+ .debug_macro   0x00017e27      0x1cb ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o
+ .debug_macro   0x00017ff2       0x1a ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o
+ .debug_macro   0x0001800c      0x23d ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o
+ .debug_macro   0x00018249      0x242 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.o
+ .debug_macro   0x0001848b      0x404 ./Core/Src/main.o
+ .debug_macro   0x0001888f      0x196 ./Core/Src/main.o
+ .debug_macro   0x00018a25       0x10 ./Core/Src/main.o
+ .debug_macro   0x00018a35       0x5e ./Core/Src/main.o
 
-.debug_line     0x00000000     0x7073
- .debug_line    0x00000000      0xc9d ./Core/Src/GAUL_Drivers/BMP280.o
- .debug_line    0x00000c9d      0x9a5 ./Core/Src/GAUL_Drivers/CD74HC4051.o
- .debug_line    0x00001642      0xc7f ./Core/Src/GAUL_Drivers/ICM20602.o
- .debug_line    0x000022c1      0x6b4 ./Core/Src/GAUL_Drivers/L76LM33.o
- .debug_line    0x00002975      0x7e5 ./Core/Src/GAUL_Drivers/Pyros.o
- .debug_line    0x0000315a      0xd7b ./Core/Src/GAUL_Drivers/WS2812_led.o
- .debug_line    0x00003ed5      0x809 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o
- .debug_line    0x000046de      0x23b ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o
- .debug_line    0x00004919      0xb34 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o
- .debug_line    0x0000544d      0xbcd ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.o
- .debug_line    0x0000601a     0x1059 ./Core/Src/main.o
+.debug_line     0x00000000     0x706b
+ .debug_line    0x00000000      0xc95 ./Core/Src/GAUL_Drivers/BMP280.o
+ .debug_line    0x00000c95      0x9a5 ./Core/Src/GAUL_Drivers/CD74HC4051.o
+ .debug_line    0x0000163a      0xc7f ./Core/Src/GAUL_Drivers/ICM20602.o
+ .debug_line    0x000022b9      0x6b4 ./Core/Src/GAUL_Drivers/L76LM33.o
+ .debug_line    0x0000296d      0x7e5 ./Core/Src/GAUL_Drivers/Pyros.o
+ .debug_line    0x00003152      0xd7b ./Core/Src/GAUL_Drivers/WS2812_led.o
+ .debug_line    0x00003ecd      0x809 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o
+ .debug_line    0x000046d6      0x23b ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o
+ .debug_line    0x00004911      0xb34 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o
+ .debug_line    0x00005445      0xbcd ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.o
+ .debug_line    0x00006012     0x1059 ./Core/Src/main.o
 
-.debug_str      0x00000000    0x943ad
- .debug_str     0x00000000    0x8c1b3 ./Core/Src/GAUL_Drivers/BMP280.o
-                              0x8c637 (size before relaxing)
- .debug_str     0x0008c1b3      0x518 ./Core/Src/GAUL_Drivers/CD74HC4051.o
+.debug_str      0x00000000    0x943d0
+ .debug_str     0x00000000    0x8c1e3 ./Core/Src/GAUL_Drivers/BMP280.o
+                              0x8c667 (size before relaxing)
+ .debug_str     0x0008c1e3      0x518 ./Core/Src/GAUL_Drivers/CD74HC4051.o
                               0x8bf4d (size before relaxing)
- .debug_str     0x0008c6cb      0x9c9 ./Core/Src/GAUL_Drivers/ICM20602.o
+ .debug_str     0x0008c6fb      0x9bc ./Core/Src/GAUL_Drivers/ICM20602.o
                               0x8c5f9 (size before relaxing)
- .debug_str     0x0008d094      0xb68 ./Core/Src/GAUL_Drivers/L76LM33.o
+ .debug_str     0x0008d0b7      0xb68 ./Core/Src/GAUL_Drivers/L76LM33.o
                                0x840b (size before relaxing)
- .debug_str     0x0008dbfc       0x31 ./Core/Src/GAUL_Drivers/Pyros.o
+ .debug_str     0x0008dc1f       0x31 ./Core/Src/GAUL_Drivers/Pyros.o
                               0x88354 (size before relaxing)
- .debug_str     0x0008dc2d      0xe1a ./Core/Src/GAUL_Drivers/WS2812_led.o
+ .debug_str     0x0008dc50      0xe1a ./Core/Src/GAUL_Drivers/WS2812_led.o
                               0x8c374 (size before relaxing)
- .debug_str     0x0008ea47       0x9a ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o
+ .debug_str     0x0008ea6a       0x9a ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o
                               0x8858d (size before relaxing)
- .debug_str     0x0008eae1       0x55 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o
+ .debug_str     0x0008eb04       0x55 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o
                                0x2fb4 (size before relaxing)
- .debug_str     0x0008eb36     0x5045 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o
+ .debug_str     0x0008eb59     0x5045 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o
                               0x8d38a (size before relaxing)
- .debug_str     0x00093b7b       0xca ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.o
+ .debug_str     0x00093b9e       0xca ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.o
                               0x8d6ff (size before relaxing)
- .debug_str     0x00093c45      0x768 ./Core/Src/main.o
-                              0x9329e (size before relaxing)
+ .debug_str     0x00093c68      0x768 ./Core/Src/main.o
+                              0x932cc (size before relaxing)
 
 .comment        0x00000000       0x43
  .comment       0x00000000       0x43 ./Core/Src/GAUL_Drivers/BMP280.o

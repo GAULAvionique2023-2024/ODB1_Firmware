@@ -100,25 +100,17 @@ void BMP280_ReadCalibrationData(BMP280 *devBMP) {
     printf("P7: %i\n", devBMP->calib_data.dig_P7);
     printf("P8: %i\n", devBMP->calib_data.dig_P8);
     printf("P9: %i\n", devBMP->calib_data.dig_P9);
-
 }
 
 uint8_t BMP280_SwapMode(uint8_t mode) {
 
 	BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, mode); // BMP280_SETTING_CTRL_MEAS_NORMAL (0x57) ou BMP280_SETTING_CTRL_MEAS_LOW (0x54)
-
 	return 0;
 }
 
 float BMP280_PressureToAltitude(float pressure) {
 
-	const float T0 = 288.15;  // Temperature mer (kelvin)
-	const float alpha = 0.0065;  // Taux de temperature (km/h)
-	const float P0 = 101325.0;  // Pression atmospherique mer
-	const float beta = 5.256;  // Indice temperature
-
     float altitude = (T0 / alpha) * (1 - pow((pressure / P0), (1 / beta)));
-
     return altitude;
 }
 
