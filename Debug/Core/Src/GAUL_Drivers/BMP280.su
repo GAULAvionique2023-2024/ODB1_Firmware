@@ -1,7 +1,8 @@
-../Core/Src/GAUL_Drivers/BMP280.c:106:7:BMP280_PressureToAltitude	8	static
-../Core/Src/GAUL_Drivers/BMP280.c:118:9:BMP280_ReadRegister	24	static
+../Core/Src/GAUL_Drivers/BMP280.c:113:7:BMP280_PressureToAltitude	8	static
+../Core/Src/GAUL_Drivers/BMP280.c:125:9:BMP280_ReadRegister	24	static
 ../Core/Src/GAUL_Drivers/BMP280.c:34:7:BMP280_ReadTemperature	16	static
 ../Core/Src/GAUL_Drivers/BMP280.c:48:7:BMP280_ReadPressure	24	static
 ../Core/Src/GAUL_Drivers/BMP280.c:72:6:BMP280_ReadCalibrationData	48	static
-../Core/Src/GAUL_Drivers/BMP280.c:128:9:BMP280_WriteRegister	16	static
+../Core/Src/GAUL_Drivers/BMP280.c:135:9:BMP280_WriteRegister	16	static
 ../Core/Src/GAUL_Drivers/BMP280.c:18:9:BMP280_Init	8	static
+../Core/Src/GAUL_Drivers/BMP280.c:106:9:BMP280_SwapMode	8	static

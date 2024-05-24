@@ -103,6 +103,13 @@ void BMP280_ReadCalibrationData(BMP280 *devBMP) {
 
 }
 
+uint8_t BMP280_SwapMode(uint8_t mode) {
+
+	BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, mode); // BMP280_SETTING_CTRL_MEAS_NORMAL (0x57) ou BMP280_SETTING_CTRL_MEAS_LOW (0x54)
+
+	return 0;
+}
+
 float BMP280_PressureToAltitude(float pressure) {
 
 	const float T0 = 288.15;  // Temperature mer (kelvin)

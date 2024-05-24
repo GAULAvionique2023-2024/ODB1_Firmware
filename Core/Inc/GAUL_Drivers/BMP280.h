@@ -26,7 +26,7 @@
 #define BMP280_REG_PRESS_MSB    0xF7
 #define BMP280_REG_CONFIG       0xF5
 #define BMP280_REG_CTRL_MEAS    0xF4
-#define BMP280_REG_STATUS       0xF3
+#define BMP280_REG_STATUS       0xF3	// a implementer
 #define BMP280_REG_RESET        0xE0
 #define BMP280_REG_ID           0xD0
 #define BMP280_REG_CALIB_00 	0x88
@@ -38,6 +38,7 @@
 //Power mode              normal              11  (sleep 00 ; force 01/10 ; normal 11)
 //010;101;11 = 0x57 (normal)
 #define BMP280_SETTING_CTRL_MEAS_NORMAL 0x57
+#define BMP280_SETTING_CTRL_MEAS_LOW 0x54
 
 //Setting config register (date, filter, interfaces options)
 //Stanby time    0.5ms   000
@@ -74,6 +75,7 @@ uint8_t BMP280_Init(BMP280 *devBMP);
 float BMP280_ReadTemperature(BMP280 *devBMP);
 float BMP280_ReadPressure(BMP280 *devBMP);
 
+uint8_t BMP280_SwapMode(uint8_t mode);
 float BMP280_PressureToAltitude(float pressure);
 
 uint8_t BMP280_ReadRegister(uint8_t reg);
