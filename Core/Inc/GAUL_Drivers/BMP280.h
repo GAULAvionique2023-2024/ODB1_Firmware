@@ -30,7 +30,6 @@
 #define BMP280_REG_RESET        0xE0
 #define BMP280_REG_ID           0xD0
 #define BMP280_REG_CALIB_00 	0x88
-#define BMP280_REG_CALIB_25 	0xA1
 
 //Setting ctrl_meas register (data acquisition options -> indoor navigation osrs_p x16, osrs_t x2, irrcoeff 16)
 //Temperature (osrs_t)    17bit resolution    010 (± 0.0025)

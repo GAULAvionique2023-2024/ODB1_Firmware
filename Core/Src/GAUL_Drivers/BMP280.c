@@ -71,7 +71,7 @@ float BMP280_ReadPressure(BMP280 *devBMP) {
 
 void BMP280_ReadCalibrationData(BMP280 *devBMP) {
 
-    uint8_t calib[26];
+    uint8_t calib[26]; // 0x88 a 0xA1
     for (int i = 0; i < 26; i++) {
         calib[i] = BMP280_ReadRegister(BMP280_REG_CALIB_00 + i);
     }
