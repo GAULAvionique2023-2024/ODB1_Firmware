@@ -7,6 +7,7 @@
 
 #include "GAUL_Drivers/CD74HC4051.h"
 #include "GAUL_Drivers/Pyros.h"
+#include "GAUL_Drivers/Low_Level_Drivers/ADC_driver.h"
 
 uint8_t CD74HC4051_Init (ADC_HandleTypeDef *hadc) {
 
@@ -23,8 +24,8 @@ uint8_t CD74HC4051_Init (ADC_HandleTypeDef *hadc) {
 	Pyro_Init();
 
 	//ADC calibration
-	HAL_ADC_Stop(hadc);
-	HAL_ADCEx_Calibration_Start(hadc);
+	ADC_Stop(hadc);
+	ADC_Calibration(hadc);
 
 	return 0; // OK
 }
@@ -34,6 +35,8 @@ uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyr
 	if(channel == CHANNEL_1 || channel == CHANNEL_7) {
 		return 0;
 	}
+
+	ADC_Start(hadc);
 
 	Write_GPIO(PB, 8, HIGH); // MUL_E~ (inverse)
 	Write_GPIO(PA, 15, LOW); // Pyro_Test (inverse)
@@ -61,14 +64,4 @@ uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyr
 	Write_GPIO(PA, 15, HIGH); // Pyro_Test~
 
 	return (uint16_t)((adc_value * vref / 4096) * 1000); // millivolts
-}
-
-uint32_t ADC_Sampling (ADC_HandleTypeDef *hadc) {
-
-	HAL_ADC_Start(hadc);
-	HAL_ADC_PollForConversion(hadc, HAL_MAX_DELAY); // Timeout peut etre ajuste
-	uint32_t adc_value = HAL_ADC_GetValue(hadc);
-	HAL_ADC_Stop(hadc);
-
-	return adc_value;
 }

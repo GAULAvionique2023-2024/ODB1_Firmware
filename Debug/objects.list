@@ -9,6 +9,7 @@
 "./Core/Src/GAUL_Drivers/Pyros.o"
 "./Core/Src/GAUL_Drivers/RFD900.o"
 "./Core/Src/GAUL_Drivers/WS2812_led.o"
+"./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o"
 "./Core/Src/GAUL_Drivers/Low_Level_Drivers/CRC_driver.o"
 "./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o"
 "./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o"

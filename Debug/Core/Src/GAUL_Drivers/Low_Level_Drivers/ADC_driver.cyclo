@@ -1,0 +1,4 @@
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.c:13:9:ADC_Start	1
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.c:20:9:ADC_Calibration	1
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.c:27:9:ADC_Stop	1
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.c:34:10:ADC_Sampling	2

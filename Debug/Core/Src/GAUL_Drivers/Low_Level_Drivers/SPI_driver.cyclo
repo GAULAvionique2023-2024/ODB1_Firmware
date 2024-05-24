@@ -1,5 +1,5 @@
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:13:6:SPI_Init	3
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:54:6:SPI1_TX	5
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:72:6:SPI2_TX	5
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:90:6:SPI1_RX	4
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:102:6:SPI2_RX	4
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:12:6:SPI_Init	3
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:40:6:SPI1_TX	5
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:54:6:SPI2_TX	5
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:68:6:SPI1_RX	4
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:79:6:SPI2_RX	4

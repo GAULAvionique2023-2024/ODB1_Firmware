@@ -143,15 +143,25 @@ int main(void)
   //led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
 
   /* USER CODE END 2 */
-
+  /*
 	char Rx_data[NMEA_TRAME_RMC_SIZE];
 	GPS_Data gps_data;
-
+	*/
+  BMP280 bmp;
+  if (BMP280_Init(&bmp) != 0) {
+	  printf("Il y a une erreur");
+  }
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  float temperature = BMP280_ReadTemperature(&bmp);
+	  float pressure = BMP280_ReadPressure(&bmp);
+	  printf("Temperature: %.2f C\r\n", temperature);
+	  printf("Pressure: %.2f Pa\r\n", pressure);
+	  HAL_Delay(1000);
     /* USER CODE END WHILE */
+	  /*
 	memset(Rx_data, 0, sizeof(Rx_data));
 	USART_RX(2, (uint8_t*)Rx_data, sizeof(Rx_data));
 	// Affichage de la trame NMEA reçue
@@ -162,7 +172,7 @@ int main(void)
 	printf("Longitude: %s %c\n", gps_data.longitude, gps_data.longitude_indicator);
 	printf("Vitesse: %s\n", gps_data.speed_knots);
 	printf("Angle: %s\n", gps_data.track_angle);
-
+	*/
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

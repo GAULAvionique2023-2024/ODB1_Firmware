@@ -1,3 +1,2 @@
-../Core/Src/GAUL_Drivers/CD74HC4051.c:11:9:CD74HC4051_Init	8	static
-../Core/Src/GAUL_Drivers/CD74HC4051.c:66:10:ADC_Sampling	16	static
-../Core/Src/GAUL_Drivers/CD74HC4051.c:32:10:CD74HC4051_AnRead	24	static
+../Core/Src/GAUL_Drivers/CD74HC4051.c:12:9:CD74HC4051_Init	8	static
+../Core/Src/GAUL_Drivers/CD74HC4051.c:33:10:CD74HC4051_AnRead	24	static

@@ -42,7 +42,6 @@
 #define HIGH 1
 
 
-
 void Init_GPIO(unsigned short port, unsigned short pin, unsigned short dir, unsigned short opt);
 
 int Read_GPIO(unsigned short port, unsigned short pin);
@@ -50,6 +49,5 @@ int Read_GPIO(unsigned short port, unsigned short pin);
 void Write_GPIO(unsigned short port, unsigned short pin, unsigned short state);
 
 void Toggle_GPIO(unsigned short port, unsigned short pin);
-
 
 #endif /* INC_GAUL_DRIVERS_GP_DRIVE_H_ */
