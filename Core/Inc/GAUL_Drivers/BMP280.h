@@ -26,7 +26,7 @@
 #define BMP280_REG_PRESS_MSB    0xF7
 #define BMP280_REG_CONFIG       0xF5
 #define BMP280_REG_CTRL_MEAS    0xF4
-#define BMP280_REG_STATUS       0xF3	// a implementer
+#define BMP280_REG_STATUS       0xF3
 #define BMP280_REG_RESET        0xE0
 #define BMP280_REG_ID           0xD0
 #define BMP280_REG_CALIB_00 	0x88
@@ -47,7 +47,6 @@
 //00001000 = 0x08
 #define BMP280_SETTING_CONFIG 0x08
 
-// Const
 #define T0 288.15  		// Temperature mer (kelvin)
 #define alpha 0.0065  	// Taux de temperature (km/h)
 #define P0 101325.0  	// Pression atmospherique mer
@@ -55,25 +54,25 @@
 
 
 typedef struct {
-    uint16_t dig_T1;
-    int16_t dig_T2;
-    int16_t dig_T3;
-    uint16_t dig_P1;
-    int16_t dig_P2;
-    int16_t dig_P3;
-    int16_t dig_P4;
-    int16_t dig_P5;
-    int16_t dig_P6;
-    int16_t dig_P7;
-    int16_t dig_P8;
-    int16_t dig_P9;
+    uint16_t 	dig_T1;
+    int16_t 	dig_T2;
+    int16_t 	dig_T3;
+    uint16_t 	dig_P1;
+    int16_t 	dig_P2;
+    int16_t 	dig_P3;
+    int16_t 	dig_P4;
+    int16_t 	dig_P5;
+    int16_t 	dig_P6;
+    int16_t 	dig_P7;
+    int16_t 	dig_P8;
+    int16_t 	dig_P9;
 } BMP280_CalibData;
 
 typedef struct {
-    float pressure_Pa;
-    float temp_C;
-    BMP280_CalibData calib_data;
-    int32_t t_fine;
+    float 				pressure_Pa;
+    float 				temp_C;
+    BMP280_CalibData 	calib_data;
+    int32_t 			t_fine;
 } BMP280;
 
 uint8_t BMP280_Init(BMP280 *devBMP);

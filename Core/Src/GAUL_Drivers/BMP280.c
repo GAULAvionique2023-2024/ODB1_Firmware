@@ -6,7 +6,6 @@
  */
 
 #include "GAUL_Drivers/BMP280.h"
-#include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 
 #include <math.h>
 
@@ -16,6 +15,9 @@ uint8_t BMP280_WriteRegister(uint8_t reg, uint8_t value);
 void BMP280_ReadCalibrationData(BMP280 *devBMP);
 
 uint8_t BMP280_Init(BMP280 *devBMP) {
+
+	Init_GPIO(PA, 8, OUT10, O_GP_PP);
+	SPI_Init(2);
 
     BMP280_WriteRegister(BMP280_REG_RESET, BMP280_RESET_WORD); // Reset
     // Check ID
@@ -47,6 +49,9 @@ float BMP280_ReadTemperature(BMP280 *devBMP) {
 
 float BMP280_ReadPressure(BMP280 *devBMP) {
 
+	// Verifie si la lecture est possible
+	while((BMP280_ReadRegister(BMP280_REG_STATUS) & 0x04) != 0);
+
     int32_t adc_P = (BMP280_ReadRegister(BMP280_REG_PRESS_MSB) << 12) |
                     (BMP280_ReadRegister(BMP280_REG_PRESS_LSB) << 4) |
                     (BMP280_ReadRegister(BMP280_REG_PRESS_XLSB) >> 4);
@@ -70,6 +75,9 @@ float BMP280_ReadPressure(BMP280 *devBMP) {
 }
 
 void BMP280_ReadCalibrationData(BMP280 *devBMP) {
+
+	// Verifie si la lecture est possible
+	while((BMP280_ReadRegister(BMP280_REG_STATUS) & 0x04) != 0);
 
     uint8_t calib[26]; // 0x88 a 0xA1
     for (int i = 0; i < 26; i++) {

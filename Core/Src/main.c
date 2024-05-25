@@ -37,6 +37,7 @@
 #include "GAUL_Drivers/HM10_BLE.h"
 #include "GAUL_Drivers/CD74HC4051.h"
 #include "GAUL_Drivers/Pyros.h"
+#include "GAUL_Drivers/MEM2067.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -153,12 +154,22 @@ int main(void)
   }
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+  uint8_t data[] = "Hello, SD card!";
+  if(MEM2067_Init() == 1) {
+	  printf("erreur init");
+  }
+  if(MEM2067_WriteFATFS("test.txt", data, sizeof(data)) == 1) {
+  	  printf("erreur write");
+  }
+
   while (1)
   {
 	  float temperature = BMP280_ReadTemperature(&bmp);
 	  float pressure = BMP280_ReadPressure(&bmp);
-	  printf("Temperature: %.2f C\r\n", temperature);
-	  printf("Pressure: %.2f Pa\r\n", pressure);
+	  printf("Temperature: %.4f C\r\n", temperature);
+	  printf("Pressure: %.4f Pa\r\n", pressure);
+	  printf("Altitude: %.4f m\r\n", BMP280_PressureToAltitude(pressure));
 	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 	  /*
