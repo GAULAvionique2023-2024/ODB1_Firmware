@@ -1,8 +1,8 @@
-../Core/Src/GAUL_Drivers/BMP280.c:119:7:BMP280_PressureToAltitude	1
-../Core/Src/GAUL_Drivers/BMP280.c:125:9:BMP280_ReadRegister	1
-../Core/Src/GAUL_Drivers/BMP280.c:36:7:BMP280_ReadTemperature	1
-../Core/Src/GAUL_Drivers/BMP280.c:50:7:BMP280_ReadPressure	3
-../Core/Src/GAUL_Drivers/BMP280.c:77:6:BMP280_ReadCalibrationData	3
-../Core/Src/GAUL_Drivers/BMP280.c:135:9:BMP280_WriteRegister	1
+../Core/Src/GAUL_Drivers/BMP280.c:106:7:BMP280_PressureToAltitude	1
+../Core/Src/GAUL_Drivers/BMP280.c:112:9:BMP280_ReadRegister	1
+../Core/Src/GAUL_Drivers/BMP280.c:35:7:BMP280_ReadTemperature	1
+../Core/Src/GAUL_Drivers/BMP280.c:49:7:BMP280_ReadPressure	3
+../Core/Src/GAUL_Drivers/BMP280.c:76:6:BMP280_ReadCalibrationData	3
+../Core/Src/GAUL_Drivers/BMP280.c:122:9:BMP280_WriteRegister	1
 ../Core/Src/GAUL_Drivers/BMP280.c:17:9:BMP280_Init	2
-../Core/Src/GAUL_Drivers/BMP280.c:113:9:BMP280_SwapMode	1
+../Core/Src/GAUL_Drivers/BMP280.c:100:9:BMP280_SwapMode	1

@@ -25,7 +25,7 @@
 #include "stdio.h"
 #include "stdbool.h"
 
-#include <GAUL_Drivers/WS2812_led.h>
+#include "GAUL_Drivers/WS2812_led.h"
 #include "GAUL_Drivers/BMP280.h"
 #include "GAUL_Drivers/ICM20602.h"
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
@@ -42,33 +42,25 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
-
 CRC_HandleTypeDef hcrc;
-
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
-
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
-
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -87,7 +79,6 @@ static void MX_CRC_Init(void);
 /* USER CODE BEGIN 0 */
 struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
 struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
-
 /* USER CODE END 0 */
 
 /**
@@ -96,27 +87,12 @@ struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
   */
 int main(void)
 {
-
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
-  /* USER CODE BEGIN Init */
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
   SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
@@ -124,68 +100,56 @@ int main(void)
   MX_TIM2_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
-  /* USER CODE BEGIN 2 */
 
+  /* Communications Configuration-------------------------------------------------------- */
+  printf("--------------------------------------------------------Starting--------------------------------------------------------\r\n");
+
+  SPI_Init(1);
   SPI_Init(2);
   USART_Init(1);
   USART_Init(2);
+
+  /* Components Configuration-------------------------------------------------------- */
+  printf("--------------------------------------------------------Components initialization--------------------------------------------------------\r\n");
+  // LED RGB
   WS2812_Init();
-  L76LM33_Init();
-  CD74HC4051_Init(&hadc1);
-
-  ICM20602 icm;
-
-  printf(" Starting \n");
-
-  ICM20602_Init(&icm);
-
-  //memset(led_channels, 0, sizeof(led_channels));
-  //led_channels[0].framebuffer = channel_framebuffers;
-  //led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
-
-  /* USER CODE END 2 */
-  /*
-	char Rx_data[NMEA_TRAME_RMC_SIZE];
-	GPS_Data gps_data;
-	*/
+  printf("+ WS2812 succeed...\r\n");
+  // Multiplexer
+  if (CD74HC4051_Init(&hadc1) != 0) {
+	  printf("- CD74HC4051 error...\r\n");
+  } else {
+	  printf("+ CD74HC4051 succeed...\r\n");
+  }
+  // Barometer
   BMP280 bmp;
   if (BMP280_Init(&bmp) != 0) {
-	  printf("Il y a une erreur");
+	  printf("- BMP280 error...\r\n");
+  } else {
+	  printf("+ BMP280 succeed...\r\n");
   }
+  // Accelerometer
+  ICM20602 icm;
+  if (ICM20602_Init(&icm) != 0) {
+	  printf("- ICM20602 error...\r\n");
+  } else {
+	  printf("+ ICM20602 succeed...\r\n");
+  }
+  // SD Card
+  if (MEM2067_SDCardDetection() == 1) {
+      printf("- No SD card detected in MEM2067...\r\n");
+  } else {
+	  printf("+ SD card detected in MEM2067...\r\n");
+  }
+  /* USER CODE END 2 */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-  uint8_t data[] = "Hello, SD card!";
-  if(MEM2067_Init() == 1) {
-	  printf("erreur init");
-  }
-  if(MEM2067_WriteFATFS("test.txt", data, sizeof(data)) == 1) {
-  	  printf("erreur write");
-  }
-
   while (1)
   {
-	  float temperature = BMP280_ReadTemperature(&bmp);
-	  float pressure = BMP280_ReadPressure(&bmp);
-	  printf("Temperature: %.4f C\r\n", temperature);
-	  printf("Pressure: %.4f Pa\r\n", pressure);
-	  printf("Altitude: %.4f m\r\n", BMP280_PressureToAltitude(pressure));
-	  HAL_Delay(1000);
-    /* USER CODE END WHILE */
-	  /*
-	memset(Rx_data, 0, sizeof(Rx_data));
-	USART_RX(2, (uint8_t*)Rx_data, sizeof(Rx_data));
-	// Affichage de la trame NMEA reçue
-	printf("NMEA sentence: %s", Rx_data);
-	NMEA_Decode_GPRMC(Rx_data, &gps_data);
-	printf("Time: %s\n", gps_data.time);
-	printf("Latitude: %s %c\n", gps_data.latitude, gps_data.latitude_indicator);
-	printf("Longitude: %s %c\n", gps_data.longitude, gps_data.longitude_indicator);
-	printf("Vitesse: %s\n", gps_data.speed_knots);
-	printf("Angle: %s\n", gps_data.track_angle);
-	*/
-    /* USER CODE BEGIN 3 */
+
   }
+  /* USER CODE END WHILE */
+  /* USER CODE BEGIN 3 */
   /* USER CODE END 3 */
 }
 

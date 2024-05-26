@@ -1,2 +1,2 @@
-../Core/Src/GAUL_Drivers/MEM2067.c:10:9:MEM2067_Init	8	static
-../Core/Src/GAUL_Drivers/MEM2067.c:17:9:MEM2067_WriteFATFS	1136	static
+../Core/Src/GAUL_Drivers/MEM2067.c:10:9:MEM2067_WriteFATFS	1136	static
+../Core/Src/GAUL_Drivers/MEM2067.c:58:9:MEM2067_SDCardDetection	8	static

@@ -59,31 +59,24 @@ uint8_t ICM20602_Init(ICM20602 *dev)
 
 	ICM20602_Read(ICM20602_REG_WHO_AM_I, rxData, 1);
 	if(rxData[0] == 0x12){test = 1;}else{test = 0;}
-	printf("ICM20602_REG_WHO_AM_I: %x : %d \n", rxData[0], test);
 
 	ICM20602_Read(ICM20602_REG_I2C_IF, rxData, 1);
 	if(rxData[0] == 0x40){test = 1;}else{test = 0;}
-	printf("ICM20602_REG_I2C_IF: %x : %d \n", rxData[0], test);
 
 	ICM20602_Read(ICM20602_REG_PWR_MGMT_1, rxData, 1);
 	if(rxData[0] == 0x01){test = 1;}else{test = 0;}
-	printf("ICM20602_REG_PWR_MGMT_1: %x : %d \n", rxData[0], test);
 
 	ICM20602_Read(ICM20602_REG_SMPLRT_DIV, rxData, 1);
 	if(rxData[0] == 0x00){test = 1;}else{test = 0;}
-	printf("ICM20602_REG_SMPLRT_DIV: %x : %d \n", rxData[0], test);
 
 	ICM20602_Read(ICM20602_REG_CONFIG, rxData, 1);
 	if(rxData[0] == 0x05){test = 1;}else{test = 0;}
-	printf("ICM20602_REG_CONFIG: %x : %d \n", rxData[0], test);
 
 	ICM20602_Read(ICM20602_REG_ACCEL_CONFIG, rxData, 1);
 	if(rxData[0] == 0x18){test = 1;}else{test = 0;}
-	printf("ICM20602_REG_ACCEL_CONFIG: %x : %d \n", rxData[0], test);
 
 	ICM20602_Read(ICM20602_REG_ACCEL_CONFIG2, rxData, 1);
 	if(rxData[0] == 0x03){test = 1;}else{test = 0;}
-	printf("ICM20602_REG_ACCEL_CONFIG2: %x : %d \n", rxData[0], test);
 
 	ICM20602_Remove_DC_Offset(dev,2);
 

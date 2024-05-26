@@ -16,7 +16,6 @@ void BMP280_ReadCalibrationData(BMP280 *devBMP);
 
 uint8_t BMP280_Init(BMP280 *devBMP) {
 
-	Init_GPIO(PA, 8, OUT10, O_GP_PP);
 	SPI_Init(2);
 
     BMP280_WriteRegister(BMP280_REG_RESET, BMP280_RESET_WORD); // Reset
@@ -96,18 +95,6 @@ void BMP280_ReadCalibrationData(BMP280 *devBMP) {
     devBMP->calib_data.dig_P7 = (calib[19] << 8) | calib[18];
     devBMP->calib_data.dig_P8 = (calib[21] << 8) | calib[20];
     devBMP->calib_data.dig_P9 = (calib[23] << 8) | calib[22];
-    printf("T1: %u\n", devBMP->calib_data.dig_T1);
-    printf("T2: %i\n", devBMP->calib_data.dig_T2);
-    printf("T3: %i\n", devBMP->calib_data.dig_T3);
-    printf("P1: %u\n", devBMP->calib_data.dig_P1);
-    printf("P2: %i\n", devBMP->calib_data.dig_P2);
-    printf("P3: %i\n", devBMP->calib_data.dig_P3);
-    printf("P4: %i\n", devBMP->calib_data.dig_P4);
-    printf("P5: %i\n", devBMP->calib_data.dig_P5);
-    printf("P6: %i\n", devBMP->calib_data.dig_P6);
-    printf("P7: %i\n", devBMP->calib_data.dig_P7);
-    printf("P8: %i\n", devBMP->calib_data.dig_P8);
-    printf("P9: %i\n", devBMP->calib_data.dig_P9);
 }
 
 uint8_t BMP280_SwapMode(uint8_t mode) {
