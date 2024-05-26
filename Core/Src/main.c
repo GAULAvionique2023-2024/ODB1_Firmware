@@ -100,45 +100,58 @@ int main(void)
   MX_TIM2_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
+  MX_FATFS_Init();
 
   /* Communications Configuration-------------------------------------------------------- */
-  printf("--------------------------------------------------------Starting--------------------------------------------------------\r\n");
-
+  printf("|----------Starting----------|\r\n");
   SPI_Init(1);
+  printf("(+) SPI1 succeeded...\r\n");
   SPI_Init(2);
+  printf("(+) SPI2 succeeded...\r\n");
   USART_Init(1);
+  printf("(+) USART1 succeeded...\r\n");
   USART_Init(2);
+  printf("(+) USART2 succeeded...\r\n");
 
   /* Components Configuration-------------------------------------------------------- */
-  printf("--------------------------------------------------------Components initialization--------------------------------------------------------\r\n");
+  printf("|----------Components initialization----------|\r\n");
   // LED RGB
   WS2812_Init();
-  printf("+ WS2812 succeed...\r\n");
+  printf("(+) WS2812 succeeded...\r\n");
   // Multiplexer
   if (CD74HC4051_Init(&hadc1) != 0) {
-	  printf("- CD74HC4051 error...\r\n");
+	  printf("(-) CD74HC4051 failed...\r\n");
   } else {
-	  printf("+ CD74HC4051 succeed...\r\n");
+	  printf("(+) CD74HC4051 succeeded...\r\n");
   }
   // Barometer
   BMP280 bmp;
   if (BMP280_Init(&bmp) != 0) {
-	  printf("- BMP280 error...\r\n");
+	  printf("(-) BMP280 failed...\r\n");
   } else {
-	  printf("+ BMP280 succeed...\r\n");
+	  printf("(+) BMP280 succeeded...\r\n");
   }
   // Accelerometer
   ICM20602 icm;
   if (ICM20602_Init(&icm) != 0) {
-	  printf("- ICM20602 error...\r\n");
+	  printf("(-) ICM20602 failed...\r\n");
   } else {
-	  printf("+ ICM20602 succeed...\r\n");
+	  printf("(+) ICM20602 succeeded...\r\n");
   }
   // SD Card
   if (MEM2067_SDCardDetection() == 1) {
-      printf("- No SD card detected in MEM2067...\r\n");
+      printf("(-) No SD card detected in MEM2067...\r\n");
   } else {
-	  printf("+ SD card detected in MEM2067...\r\n");
+	  printf("(+) SD card detected in MEM2067...\r\n");
+	  // Test d'écriture
+	  const char *filename = "test.txt";
+	  uint8_t data[] = "Hello, SD Card!";
+	  uint16_t size = sizeof(data) - 1;
+	  if (MEM2067_WriteFATFS(filename, data, size) == 0) {
+		  printf("(+) Writing to %s succeeded...\r\n", filename);
+	  } else {
+		  printf("(-) Writing %s failed...\r\n", filename);
+	  }
   }
   /* USER CODE END 2 */
 

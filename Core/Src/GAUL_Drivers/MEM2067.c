@@ -7,62 +7,96 @@
 
 #include "GAUL_Drivers/MEM2067.h"
 
+
+extern FATFS USERFatFS;
+extern char USERPath[4];
+
+// Dedebugging
+const char* FATFS_ErrorToString(FRESULT result) {
+
+    switch (result) {
+        case FR_OK: return "Succeeded";
+        case FR_DISK_ERR: return "A hard error occurred in the low level disk I/O layer";
+        case FR_INT_ERR: return "Assertion failed";
+        case FR_NOT_READY: return "The physical drive cannot work";
+        case FR_NO_FILE: return "Could not find the file";
+        case FR_NO_PATH: return "Could not find the path";
+        case FR_INVALID_NAME: return "The path name format is invalid";
+        case FR_DENIED: return "Access denied due to prohibited access or directory full";
+        case FR_EXIST: return "Access denied due to prohibited access";
+        case FR_INVALID_OBJECT: return "The file/directory object is invalid";
+        case FR_WRITE_PROTECTED: return "The physical drive is write protected";
+        case FR_INVALID_DRIVE: return "The logical drive number is invalid";
+        case FR_NOT_ENABLED: return "The volume has no work area";
+        case FR_NO_FILESYSTEM: return "There is no valid FAT volume";
+        case FR_MKFS_ABORTED: return "The f_mkfs() aborted due to any parameter error";
+        case FR_TIMEOUT: return "Could not get a grant to access the volume within defined period";
+        case FR_LOCKED: return "The operation is rejected according to the file sharing policy";
+        case FR_NOT_ENOUGH_CORE: return "LFN working buffer could not be allocated";
+        case FR_TOO_MANY_OPEN_FILES: return "Number of open files > _FS_SHARE";
+        case FR_INVALID_PARAMETER: return "Given parameter is invalid";
+        default: return "Unknown error";
+    }
+}
+
 uint8_t MEM2067_WriteFATFS(const char *filename, uint8_t *data, uint16_t size) {
 
-	Write_GPIO(PA, 4, LOW);
-	printf("SD Card Selected.\n");
+    Write_GPIO(PA, 4, LOW);
 
-	FATFS fs;
-	FIL file;
-	FRESULT result;
-	UINT bytes_written;
+    FIL file;
+    FRESULT result;
+    UINT bytes_written;
 
-	// Montage de la partition FATFS
-	result = f_mount(&fs, "", 1);
-	if (result != FR_OK) {
-		printf("Error mounting: %d\n", result);
-		return 1;
-	}
-	printf("Filesystem mounted.\n");
+    result = f_mount(&USERFatFS, USERPath, 1);
+    if (result != FR_OK) {
+        printf("Error mounting: %s\n", FATFS_ErrorToString(result));
+        Write_GPIO(PA, 4, HIGH);
+        return 1;
+    }
 
-	// Ouverture fichier
-	result = f_open(&file, filename, FA_WRITE | FA_CREATE_ALWAYS);
-	if (result != FR_OK) {
-		printf("Error opening file: %d\n", result);
-		f_mount(NULL, "", 1); // Démontage si erreur
-		return 1;
-	}
-	printf("File opened: %s\n", filename);
+    result = f_open(&file, filename, FA_WRITE | FA_CREATE_ALWAYS);
+    if (result != FR_OK) {
+        printf("Error opening file: %s\n", FATFS_ErrorToString(result));
+        f_mount(NULL, USERPath, 1);
+        Write_GPIO(PA, 4, HIGH);
+        return 1;
+    }
 
-	// Écriture données
-	result = f_write(&file, data, size, &bytes_written);
-	if (result != FR_OK) {
-		printf("Error writing: %d\n", result);
-		f_close(&file);
-		f_mount(NULL, "", 1); // Démontage si erreur
-		return 1;
-	}
-	printf("Data written: %u bytes\n", bytes_written);
+    result = f_write(&file, data, size, &bytes_written);
+    if (result != FR_OK || bytes_written != size) {
+        printf("Error writing: %s\n", FATFS_ErrorToString(result));
+        f_close(&file);
+        f_mount(NULL, USERPath, 1);
+        Write_GPIO(PA, 4, HIGH);
+        return 1;
+    }
 
-	// Fermeture fichier
-	f_close(&file);
-	printf("File closed.\n");
+    f_close(&file);
+    f_mount(NULL, USERPath, 1);
 
-	// Démontage FATFS
-	f_mount(NULL, "", 1);
-	printf("Unmounted.\n");
+    Write_GPIO(PA, 4, HIGH);
 
-	return 0; // OK
+    return 0;
 }
 
 uint8_t MEM2067_SDCardDetection(void) {
 
-    FRESULT res = f_mount(&USERFatFS, (TCHAR const*)USERPath, 1);
+    Write_GPIO(PA, 4, LOW);
+
+    memset(&USERFatFS, 0, sizeof(USERFatFS));
+    memset(USERPath, 0, sizeof(USERPath));
+
+    FRESULT res = f_mount(&USERFatFS, USERPath, 1);
+    printf(" -> SD card error, result: %s\n", FATFS_ErrorToString(res));
 
     if (res == FR_OK) {
-        f_mount(NULL, (TCHAR const*)"", 1);
-        return 0; // OK
+        f_mount(NULL, USERPath, 1);
+        Write_GPIO(PA, 4, HIGH);
+        printf(" -> SD card detected\r\n");
+        return 0;
     } else {
-        return 1; // Erreur
+        printf(" -> No SD card detected\r\n");
+        Write_GPIO(PA, 4, HIGH);
+        return 1;
     }
 }
