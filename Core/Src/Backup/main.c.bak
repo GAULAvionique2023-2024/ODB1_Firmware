@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "fatfs.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -25,7 +26,7 @@
 #include "stdio.h"
 #include "stdbool.h"
 
-#include <GAUL_Drivers/WS2812_led.h>
+#include "GAUL_Drivers/WS2812_led.h"
 #include "GAUL_Drivers/BMP280.h"
 #include "GAUL_Drivers/ICM20602.h"
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
@@ -37,21 +38,19 @@
 #include "GAUL_Drivers/HM10_BLE.h"
 #include "GAUL_Drivers/CD74HC4051.h"
 #include "GAUL_Drivers/Pyros.h"
+#include "GAUL_Drivers/MEM2067.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -67,7 +66,6 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -86,7 +84,6 @@ static void MX_CRC_Init(void);
 /* USER CODE BEGIN 0 */
 struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
 struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
-
 /* USER CODE END 0 */
 
 /**
@@ -97,7 +94,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -106,6 +102,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -123,24 +120,8 @@ int main(void)
   MX_TIM2_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-
-  SPI_Init(2);
-  USART_Init(1);
-  USART_Init(2);
-  WS2812_Init();
-  L76LM33_Init();
-  CD74HC4051_Init(&hadc1);
-
-  ICM20602 icm;
-
-  printf(" Starting \n");
-
-  ICM20602_Init(&icm);
-
-  //memset(led_channels, 0, sizeof(led_channels));
-  //led_channels[0].framebuffer = channel_framebuffers;
-  //led_channels[0].length = FRAMEBUFFER_SIZE * sizeof(struct pixel);
 
   /* USER CODE END 2 */
 
@@ -148,18 +129,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  /*
-	  float temperature = BMP280_ReadTemperature(&bmp);
-	  float pressure = BMP280_ReadPressure(&bmp);
-	  printf("Temperature: %.2f C\r\n", temperature);
-	  printf("Pressure: %.2f Pa\r\n", pressure);
-	  printf("Altitude: %.2f m\r\n", BMP280_PressureToAltitude(pressure));
-	  HAL_Delay(1000);
-	  */
+
+  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
   /* USER CODE END 3 */
 }
 

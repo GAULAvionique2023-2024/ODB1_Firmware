@@ -1,3 +1,2 @@
 ../Core/Src/GAUL_Drivers/L76LM33.c:30:9:L76LM33_SendCommand	8	static
-../Core/Src/GAUL_Drivers/L76LM33.c:18:9:L76LM33_Init	136	static
-../Core/Src/GAUL_Drivers/L76LM33.c:52:6:charToUint8	0	static
+../Core/Src/GAUL_Drivers/L76LM33.c:18:9:L76LM33_Init	120	static

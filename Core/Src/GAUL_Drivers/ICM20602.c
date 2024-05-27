@@ -144,7 +144,7 @@ void ICM20602_Remove_DC_Offset(ICM20602 *dev, uint8_t mean)
 	ICM20602_Write(ICM20602_REG_ZG_OFFS_USRL, offset[2]*-2);
 }
 
-int8_t  ICM20602_Data_Ready()
+int8_t  ICM20602_Data_Ready(void)
 {
 	return Read_GPIO(PA, 10);
 }

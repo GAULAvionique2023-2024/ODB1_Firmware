@@ -24,13 +24,13 @@ typedef struct {
 	uint8_t batterie_status; // charge restante (peut-etre)
 	bool storage_status;
 	// ...
-} HM10BLE_Status;
+} HM10BLE;
 
 void HM10BLE_Init(void);
 
 void HM10BLE_SendCommand(char *command);
 void HM10BLE_Read(char *response);
-void HM10BLE_Send(char rx_buffer[], HM10BLE_Status status);
+void HM10BLE_Send(char rx_buffer[], HM10BLE status);
 
 
 #endif /* INC_GAUL_DRIVERS_HM10_BLE_H_ */

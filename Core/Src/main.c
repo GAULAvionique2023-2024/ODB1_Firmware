@@ -50,6 +50,15 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+// $Stats(8);V_Batt_Lipo1(16);V_Batt_Lipo2(16);V_Batt_Lipo3(16);5V_AN(16);Temp(32);Altitude(16);AngleRoll(32);AnglePitch(32)*CRC(16)$ => (28)
+#define MODE_PREFLIGHT 0x00
+#define PREFLIGHT_SIZE 28 // mode = 0x00
+// $Stats(8);GPS_Data(416);Gyro_Data(72)*CRC(16)$ => (64)
+#define MODE_FLIGHT 0x01
+#define FLIGHT_SIZE 64 // mode = 0x01
+// $Stats(8);GPS_Data(296);V_Batt_Lipo1(16);V_Batt_Lipo2(16);V_Batt_Lipo3(16);5V_AN(16) => (46)
+#define MODE_POSTFLIGHT 0x02
+#define POSTFLIGHT_SIZE 46 // mode = 0x02
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -79,81 +88,181 @@ static void MX_CRC_Init(void);
 /* USER CODE BEGIN 0 */
 struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
 struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
+
+// Variables
+GPS_Data gps_data;
+BMP280 bmp_data;
+ICM20602 icm_data;
+RFD900 rfd_data;
+HM10BLE ble_data;
+char L76LM33_Buffer[NMEA_TRAME_RMC_SIZE]; // gps_data buffer
+
+typedef struct {
+	uint8_t mode;
+	uint8_t pyro1;
+	uint8_t pyro2;
+	uint8_t accelerometer;
+	uint8_t barometer;
+	uint8_t gps;
+	uint8_t sd;
+} STM32_states;
+STM32_states states;
 /* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
   * @retval int
   */
+
+void STM32_InitRoutine(void) {
+
+	/* MCU Configuration--------------------------------------------------------*/
+	HAL_Init();
+	SystemClock_Config();
+	MX_USART1_UART_Init();
+	MX_USART2_UART_Init();
+	MX_USART3_UART_Init();
+	MX_TIM3_Init();
+	MX_TIM2_Init();
+	MX_ADC1_Init();
+	MX_CRC_Init();
+	MX_FATFS_Init();
+
+	/* Communications Configuration-------------------------------------------------------- */
+	printf("|----------Starting----------|\r\n");
+	SPI_Init(1);
+	printf("(+) SPI1 succeeded...\r\n");
+	SPI_Init(2);
+	printf("(+) SPI2 succeeded...\r\n");
+	USART_Init(1);
+	printf("(+) USART1 succeeded...\r\n");
+	USART_Init(2);
+	printf("(+) USART2 succeeded...\r\n");
+	USART_Init(3);
+	printf("(+) USART3 succeeded...\r\n");
+
+	/* Components Configuration-------------------------------------------------------- */
+	printf("|----------Components initialization----------|\r\n");
+	// LED RGB
+	WS2812_Init();
+	printf("(+) WS2812 succeeded...\r\n");
+	// Multiplexer
+	if (CD74HC4051_Init(&hadc1) != 0) {
+	  printf("(-) CD74HC4051 failed...\r\n");
+	} else {
+	  printf("(+) CD74HC4051 succeeded...\r\n");
+	}
+	// Barometer
+	if (BMP280_Init(&bmp_data) != 0) {
+	  printf("(-) BMP280 failed...\r\n");
+	} else {
+	  printf("(+) BMP280 succeeded...\r\n");
+	}
+	// Accelerometer
+	if (ICM20602_Init(&icm_data) != 0) {
+	  printf("(-) ICM20602 failed...\r\n");
+	} else {
+	  printf("(+) ICM20602 succeeded...\r\n");
+	}
+	// GPS
+	if(L76LM33_Init() == 1) {
+	  printf("(-) L76LM33 failed...\r\n");
+	} else {
+	  printf("(+) L76LM33 succeeded...\r\n");
+	}
+	// SD Card
+	if (MEM2067_SDCardDetection() == 1) {
+	  printf("(-) No SD card detected in MEM2067...\r\n");
+	} else {
+	  printf("(+) SD card detected in MEM2067...\r\n");
+	}
+	/* USER CODE END 2 */
+
+	// TESTS
+	/*
+	// Test d'écriture
+	const char *filename = "test.txt";
+	uint8_t data[] = "Hello, SD Card!";
+	uint16_t size = sizeof(data) - 1;
+	if (MEM2067_WriteFATFS(filename, data, size) == 0) {
+	  printf("(+) Writing to %s succeeded...\r\n", filename);
+	} else {
+	  printf("(-) Writing %s failed...\r\n", filename);
+	}
+
+	while (1)
+	{
+		//Test GPS
+	  memset(L76LM33_Buffer, 0, NMEA_TRAME_RMC_SIZE);
+	  USART_RX(2, (uint8_t*)L76LM33_Buffer, NMEA_TRAME_RMC_SIZE);
+	  // Affichage de la trame NMEA reçue
+	  printf("NMEA sentence: %s", L76LM33_Buffer);
+	  NMEA_Decode_GPRMC(L76LM33_Buffer, &gps_data);
+	  printf("Time: %s\n", gps_data.time);
+	  printf("Latitude: %s %c\n", gps_data.latitude, gps_data.latitude_indicator);
+	  printf("Longitude: %s %c\n", gps_data.longitude, gps_data.longitude_indicator);
+	  printf("Vitesse: %s\n", gps_data.speed_knots);
+	  printf("Angle: %s\n", gps_data.track_angle);
+	}
+	*/
+	// End test
+}
+
+uint8_t STM32_GetStates(uint8_t mode) {
+
+	states.mode = mode & 0x03;
+	states.pyro1 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_0, VREF12) & 0x01;
+	states.pyro2 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_1, VREF12) & 0x01;
+	if(mode == MODE_PREFLIGHT) {
+
+		// Faire fonctions checkvalidity...
+
+		states.accelerometer = 0x00 & 0x01;
+		states.barometer = 0x00 & 0x01;
+		states.gps = 0x00 & 0x01;
+		states.sd = MEM2067_SDCardDetection() & 0x01;
+		return (states.mode << 6) | (states.pyro1 << 5) | (states.pyro2 << 4) | (states.accelerometer << 3) | (states.barometer << 2) | (states.gps << 1) | states.sd;
+	} else if(mode == MODE_FLIGHT || MODE_POSTFLIGHT) {
+		return (states.mode << 6) | (states.pyro1 << 5) | (states.pyro2 << 4) | 0x00;
+	} else {
+		return 0x01; // Error
+	}
+}
+
+uint8_t STM32_ModeRoutine(uint8_t mode) {
+	uint8_t *data;
+	if(mode == MODE_PREFLIGHT) {
+		// V_Batt_Lipo1(16);V_Batt_Lipo2(16);V_Batt_Lipo3(16);5V_AN(16);Temp(32);Altitude(16);AngleRoll(32);AnglePitch(32) => (22)
+		data = (bool *)malloc(22 * sizeof(bool));
+		if (data == NULL) {
+			return 0;
+		}
+
+	} else if (mode == MODE_FLIGHT) {
+		// GPS_Data(416);Gyro_Data(72) => (64)
+		data = (bool *)malloc(FLIGHT_SIZE * sizeof(bool));
+		if (data == NULL) {
+			return 0;
+		}
+
+	} else if(mode == MODE_POSTFLIGHT) {
+		// data: gps;altitude;vbat
+		data = (bool *)malloc(POSTFLIGHT_SIZE * sizeof(bool));
+		if (data == NULL) {
+			return 0;
+		}
+
+	} else {
+		return 0;
+	}
+	return 1; // OK
+}
+
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	STM32_InitRoutine();
   /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
-  HAL_Init();
-  SystemClock_Config();
-  MX_USART1_UART_Init();
-  MX_USART2_UART_Init();
-  MX_USART3_UART_Init();
-  MX_TIM3_Init();
-  MX_TIM2_Init();
-  MX_ADC1_Init();
-  MX_CRC_Init();
-  MX_FATFS_Init();
-
-  /* Communications Configuration-------------------------------------------------------- */
-  printf("|----------Starting----------|\r\n");
-  SPI_Init(1);
-  printf("(+) SPI1 succeeded...\r\n");
-  SPI_Init(2);
-  printf("(+) SPI2 succeeded...\r\n");
-  USART_Init(1);
-  printf("(+) USART1 succeeded...\r\n");
-  USART_Init(2);
-  printf("(+) USART2 succeeded...\r\n");
-
-  /* Components Configuration-------------------------------------------------------- */
-  printf("|----------Components initialization----------|\r\n");
-  // LED RGB
-  WS2812_Init();
-  printf("(+) WS2812 succeeded...\r\n");
-  // Multiplexer
-  if (CD74HC4051_Init(&hadc1) != 0) {
-	  printf("(-) CD74HC4051 failed...\r\n");
-  } else {
-	  printf("(+) CD74HC4051 succeeded...\r\n");
-  }
-  // Barometer
-  BMP280 bmp;
-  if (BMP280_Init(&bmp) != 0) {
-	  printf("(-) BMP280 failed...\r\n");
-  } else {
-	  printf("(+) BMP280 succeeded...\r\n");
-  }
-  // Accelerometer
-  ICM20602 icm;
-  if (ICM20602_Init(&icm) != 0) {
-	  printf("(-) ICM20602 failed...\r\n");
-  } else {
-	  printf("(+) ICM20602 succeeded...\r\n");
-  }
-  // SD Card
-  if (MEM2067_SDCardDetection() == 1) {
-      printf("(-) No SD card detected in MEM2067...\r\n");
-  } else {
-	  printf("(+) SD card detected in MEM2067...\r\n");
-	  // Test d'écriture
-	  const char *filename = "test.txt";
-	  uint8_t data[] = "Hello, SD Card!";
-	  uint16_t size = sizeof(data) - 1;
-	  if (MEM2067_WriteFATFS(filename, data, size) == 0) {
-		  printf("(+) Writing to %s succeeded...\r\n", filename);
-	  } else {
-		  printf("(-) Writing %s failed...\r\n", filename);
-	  }
-  }
-  /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */

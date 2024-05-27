@@ -51,7 +51,7 @@ uint8_t MEM2067_WriteFATFS(const char *filename, uint8_t *data, uint16_t size) {
     if (result != FR_OK) {
         printf("Error mounting: %s\n", FATFS_ErrorToString(result));
         Write_GPIO(PA, 4, HIGH);
-        return 1;
+        return 0;
     }
 
     result = f_open(&file, filename, FA_WRITE | FA_CREATE_ALWAYS);
@@ -59,7 +59,7 @@ uint8_t MEM2067_WriteFATFS(const char *filename, uint8_t *data, uint16_t size) {
         printf("Error opening file: %s\n", FATFS_ErrorToString(result));
         f_mount(NULL, USERPath, 1);
         Write_GPIO(PA, 4, HIGH);
-        return 1;
+        return 0;
     }
 
     result = f_write(&file, data, size, &bytes_written);
@@ -68,7 +68,7 @@ uint8_t MEM2067_WriteFATFS(const char *filename, uint8_t *data, uint16_t size) {
         f_close(&file);
         f_mount(NULL, USERPath, 1);
         Write_GPIO(PA, 4, HIGH);
-        return 1;
+        return 0;
     }
 
     f_close(&file);
@@ -76,7 +76,7 @@ uint8_t MEM2067_WriteFATFS(const char *filename, uint8_t *data, uint16_t size) {
 
     Write_GPIO(PA, 4, HIGH);
 
-    return 0;
+    return 1; // OK
 }
 
 uint8_t MEM2067_SDCardDetection(void) {
@@ -93,10 +93,10 @@ uint8_t MEM2067_SDCardDetection(void) {
         f_mount(NULL, USERPath, 1);
         Write_GPIO(PA, 4, HIGH);
         printf(" -> SD card detected\r\n");
-        return 0;
+        return 1; // OK
     } else {
         printf(" -> No SD card detected\r\n");
         Write_GPIO(PA, 4, HIGH);
-        return 1;
+        return 0;
     }
 }

@@ -21,7 +21,7 @@ uint8_t BMP280_Init(BMP280 *devBMP) {
     BMP280_WriteRegister(BMP280_REG_RESET, BMP280_RESET_WORD); // Reset
     // Check ID
     if (BMP280_ReadRegister(BMP280_REG_ID) != BMP280_DEVICE_ID) {
-        return 1; // Error
+        return 0; // Error
     }
     // Lire calibration
     BMP280_ReadCalibrationData(devBMP);
@@ -29,7 +29,7 @@ uint8_t BMP280_Init(BMP280 *devBMP) {
     BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, BMP280_SETTING_CTRL_MEAS_NORMAL);
     BMP280_WriteRegister(BMP280_REG_CONFIG, BMP280_SETTING_CONFIG);
 
-    return 0;
+    return 1;
 }
 
 float BMP280_ReadTemperature(BMP280 *devBMP) {
@@ -100,7 +100,7 @@ void BMP280_ReadCalibrationData(BMP280 *devBMP) {
 uint8_t BMP280_SwapMode(uint8_t mode) {
 
 	BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, mode); // BMP280_SETTING_CTRL_MEAS_NORMAL (0x57) ou BMP280_SETTING_CTRL_MEAS_LOW (0x54)
-	return 0;
+	return 1;
 }
 
 float BMP280_PressureToAltitude(float pressure) {
@@ -125,5 +125,5 @@ uint8_t BMP280_WriteRegister(uint8_t reg, uint8_t value) {
     Write_GPIO(PA, 8, LOW); // Disable CS
     SPI2_TX(data, 2);
     Write_GPIO(PA, 8, HIGH); // Enable CS
-    return 0; // OK
+    return 1; // OK
 }

@@ -22,6 +22,6 @@ void HM10BLE_Read(char *response) {
 	printf("BLE response: %s/n", response);
 }
 
-void HM10BLE_Send(char rx_buffer[], HM10BLE_Status status) {
+void HM10BLE_Send(char rx_buffer[], HM10BLE status) {
 
 }

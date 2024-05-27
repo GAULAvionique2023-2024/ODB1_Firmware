@@ -1,3 +1,3 @@
 ../Core/Src/GAUL_Drivers/MEM2067.c:15:13:FATFS_ErrorToString	0	static
-../Core/Src/GAUL_Drivers/MEM2067.c:42:9:MEM2067_WriteFATFS	576	static
+../Core/Src/GAUL_Drivers/MEM2067.c:42:9:MEM2067_WriteFATFS	4168	static
 ../Core/Src/GAUL_Drivers/MEM2067.c:82:9:MEM2067_SDCardDetection	8	static

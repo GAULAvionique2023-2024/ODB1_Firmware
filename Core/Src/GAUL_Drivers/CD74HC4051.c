@@ -27,7 +27,7 @@ uint8_t CD74HC4051_Init (ADC_HandleTypeDef *hadc) {
 	ADC_Stop(hadc);
 	ADC_Calibration(hadc);
 
-	return 0; // OK
+	return 1; // OK
 }
 
 uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyro_channel, float vref) {

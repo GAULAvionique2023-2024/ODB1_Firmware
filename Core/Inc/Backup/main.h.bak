@@ -28,6 +28,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
+
 #include "stm32f1xx_ll_spi.h"
 #include "stm32f1xx_ll_system.h"
 #include "stm32f1xx_ll_gpio.h"

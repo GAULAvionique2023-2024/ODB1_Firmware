@@ -12,8 +12,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <stdint.h>
 
-#define NMEA_TRAME_RMC_SIZE 88
+#define NMEA_TRAME_RMC_SIZE 68
 
 // Définition des valeurs par défaut en tant que macros
 #define DEFAULT_LATITUDE 	"00000.000"
@@ -36,6 +37,7 @@ typedef struct {
     char  	track_angle[8]; // Route sur le fond en degres
 } GPS_Data;
 
-int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data);
+
+uint8_t NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data);
 
 #endif /* INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_NMEA_H_ */

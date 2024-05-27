@@ -7,12 +7,12 @@
 
 #include "GAUL_Drivers/NMEA.h"
 
-int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
+uint8_t NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 
 	// Créer une copie de la trame pour la manipulation
 	char *copy = strdup(nmea_sentence);
 	if (!copy) {
-		return -1;
+		return 0;
 	}
 
 	char *token;
@@ -21,14 +21,14 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	token = strtok(copy, ",");
 	if (token == NULL || strcmp(token, "$GPRMC") != 0) {
 	    free(copy);
-	    return -1;
+	    return 0;
 	}
 
 	// Extraire utc time
 	token = strtok(NULL, ",");
 	if (token == NULL) {
 		free(copy);
-		return -1;
+		return 0;
 	} else {
 		strncpy(gps_data->time, token, 11);
 		gps_data->time[11] = '\0';
@@ -39,14 +39,14 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	token = strtok(NULL, ",");
 	if (token == NULL || strcmp(token, "A") != 0) {
 		free(copy);
-		return -1;
+		return 0;
 	}
 
 	// Extraire latitude
 	token = strtok(NULL, ",");
 	if (token == NULL) {
 		strncpy(gps_data->latitude, DEFAULT_LATITUDE, 10);
-		return -1;
+		return 0;
 	} else {
 		strncpy(gps_data->latitude, token, 10);
 	}
@@ -56,7 +56,7 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	token = strtok(NULL, ",");
 	if (token == NULL) {
 		strcpy(gps_data->latitude_indicator, DEFAULT_INDICATOR);
-		return -1;
+		return 0;
 	} else {
 		gps_data->latitude_indicator = token[0];
 	}
@@ -65,7 +65,7 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	token = strtok(NULL, ",");
 	if (token == NULL) {
 		strncpy(gps_data->longitude, DEFAULT_LATITUDE, 11);
-		return -1;
+		return 0;
 	} else {
 		strncpy(gps_data->longitude, token, 11);
 	}
@@ -75,7 +75,7 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	token = strtok(NULL, ",");
 	if (token == NULL) {
 		strcpy(gps_data->longitude_indicator, DEFAULT_INDICATOR);
-		return -1;
+		return 0;
 	} else {
 		gps_data->longitude_indicator = token[0];
 	}
@@ -84,7 +84,7 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	token = strtok(NULL, ",");
 	if (token == NULL) {
 		strncpy(gps_data->speed_knots, DEFAULT_SPEED, 6);
-		return -1;
+		return 0;
 	} else {
 		strncpy(gps_data->speed_knots, token, 6);
 	}
@@ -94,12 +94,12 @@ int NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 	token = strtok(NULL, ",");
 	if (token == NULL) {
 		strncpy(gps_data->track_angle, DEFAULT_ANGLE, 7);
-		return -1;
+		return 0;
 	} else {
 		strncpy(gps_data->track_angle, token, 7);
 	}
 	gps_data->track_angle[7] = '\0';
 
 	free(copy);
-	return 0;
+	return 1; // OK
 }
