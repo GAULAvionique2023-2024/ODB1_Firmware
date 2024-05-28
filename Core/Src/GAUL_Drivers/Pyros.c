@@ -8,7 +8,6 @@
 #include "GAUL_Drivers/Pyros.h"
 
 void Pyro_Init(void) {
-
 	// Pyros
 	Init_GPIO(PB, 4, OUT2, O_GP_PP); // PyroON0
 	Init_GPIO(PB, 5, OUT2, O_GP_PP); // PyroON1

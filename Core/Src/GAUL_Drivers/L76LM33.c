@@ -29,6 +29,28 @@ uint8_t L76LM33_Init (void) {
 
 uint8_t L76LM33_SendCommand(char *command) {
 
-	USART_TX(GPS_USART_PORT, (uint8_t*)command, strlen(command));
-	return 1; // OK
+    if (command == NULL) {
+        return 0; // Error
+    }
+    USART_TX(2, (uint8_t*)command, strlen(command));
+    return 1; // OK
+}
+
+void L76LM33_Read(char *rx_data, GPS_Data *gps_data) {
+
+    if (rx_data == NULL || gps_data == NULL) {
+        return; // Error
+    }
+    memset(rx_data, 0, NMEA_TRAME_RMC_SIZE);
+    USART_RX(GPS_USART_PORT, (uint8_t*)rx_data, NMEA_TRAME_RMC_SIZE);
+    printf("NMEA sentence: %s\n", rx_data);
+    if (NMEA_Decode_GPRMC(rx_data, gps_data)) {
+        printf("Time: %s\n", gps_data->time);
+        printf("Latitude: %s %c\n", gps_data->latitude, gps_data->latitude_indicator);
+        printf("Longitude: %s %c\n", gps_data->longitude, gps_data->longitude_indicator);
+        printf("Speed: %s\n", gps_data->speed_knots);
+        printf("Angle: %s\n", gps_data->track_angle);
+    } else {
+        printf("Failed to decode NMEA sentence.\n");
+    }
 }

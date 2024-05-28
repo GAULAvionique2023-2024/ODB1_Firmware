@@ -73,14 +73,17 @@ typedef struct {
     float 				temp_C;
     BMP280_CalibData 	calib_data;
     int32_t 			t_fine;
+    float 				temperature_ref;
+    float 				pressure_ref;
 } BMP280;
 
-uint8_t BMP280_Init(BMP280 *devBMP);
+uint8_t BMP280_Init(BMP280 *devBMP, float temp_ref, float press_ref);
 
 float BMP280_ReadTemperature(BMP280 *devBMP);
 float BMP280_ReadPressure(BMP280 *devBMP);
 
 uint8_t BMP280_SwapMode(uint8_t mode);
+uint8_t BMP280_MeasureReference(BMP280 *devBMP, float temp_ref, float press_ref);
 float BMP280_PressureToAltitude(float pressure);
 
 uint8_t BMP280_ReadRegister(uint8_t reg);

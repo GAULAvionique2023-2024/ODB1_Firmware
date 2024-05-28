@@ -39,5 +39,6 @@ typedef struct {
 
 
 uint8_t NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data);
+uint8_t NMEA_ValidTrame(const char * nmea_sentence);
 
 #endif /* INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_NMEA_H_ */

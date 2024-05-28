@@ -50,15 +50,15 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-// $Stats(8);V_Batt_Lipo1(16);V_Batt_Lipo2(16);V_Batt_Lipo3(16);5V_AN(16);Temp(32);Altitude(16);AngleRoll(32);AnglePitch(32)*CRC(16)$ => (28)
+// $Stats(8);V_Batt_Lipo1(16);V_Batt_Lipo2(16);V_Batt_Lipo3(16);5V_AN(16);Temp(32);Altitude(32);AngleRoll(32);AnglePitch(32)*CRC(16)$ => (28)
 #define MODE_PREFLIGHT 0x00
-#define PREFLIGHT_SIZE 28 // mode = 0x00
-// $Stats(8);GPS_Data(416);Gyro_Data(72)*CRC(16)$ => (64)
-#define MODE_FLIGHT 0x01
-#define FLIGHT_SIZE 64 // mode = 0x01
-// $Stats(8);GPS_Data(296);V_Batt_Lipo1(16);V_Batt_Lipo2(16);V_Batt_Lipo3(16);5V_AN(16) => (46)
+#define PREFLIGHT_DATASIZE 24 // mode = 0x00
+// $Stats(8);Altitude(32);GPS_Data(416);Gyro_Data(72)*CRC(16)$ => (64)
+#define MODE_INFLIGHT 0x01
+#define INFLIGHT_DATASIZE 61 // mode = 0x01
+// $Stats(8);GPS_Data(296);V_Batt_Lipo1(16);V_Batt_Lipo2(16);V_Batt_Lipo3(16);5V_AN(16)*CRC(16)$ => (46)
 #define MODE_POSTFLIGHT 0x02
-#define POSTFLIGHT_SIZE 46 // mode = 0x02
+#define POSTFLIGHT_DATASIZE 45 // mode = 0x02
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -96,17 +96,22 @@ ICM20602 icm_data;
 RFD900 rfd_data;
 HM10BLE ble_data;
 char L76LM33_Buffer[NMEA_TRAME_RMC_SIZE]; // gps_data buffer
-
 typedef struct {
 	uint8_t mode;
+	uint8_t pyro0;
 	uint8_t pyro1;
-	uint8_t pyro2;
 	uint8_t accelerometer;
 	uint8_t barometer;
 	uint8_t gps;
 	uint8_t sd;
 } STM32_states;
-STM32_states states;
+typedef struct {
+	STM32_states header_states;
+	uint8_t *data;
+	uint16_t crc16;
+	uint8_t size;
+} STM32_Packet;
+STM32_Packet packet;
 /* USER CODE END 0 */
 
 /**
@@ -143,118 +148,142 @@ void STM32_InitRoutine(void) {
 
 	/* Components Configuration-------------------------------------------------------- */
 	printf("|----------Components initialization----------|\r\n");
+	packet.header_states.mode = MODE_PREFLIGHT;
+	printf("(+) Mode flight: %i succeeded...\r\n", packet.header_states.mode);
 	// LED RGB
 	WS2812_Init();
 	printf("(+) WS2812 succeeded...\r\n");
 	// Multiplexer
-	if (CD74HC4051_Init(&hadc1) != 0) {
+	if (CD74HC4051_Init(&hadc1) != 1) {
 	  printf("(-) CD74HC4051 failed...\r\n");
 	} else {
-	  printf("(+) CD74HC4051 succeeded...\r\n");
+		packet.header_states.pyro0 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_0, VREF12); // TODO: Verifier vref
+		packet.header_states.pyro1 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_1, VREF12); // TODO: Verifier vref
+		printf(" -> Pyro0 state: %i\r\n", packet.header_states.pyro0);
+		printf(" -> Pyro1 state: %i\r\n", packet.header_states.pyro1);
+		printf("(+) CD74HC4051 succeeded...\r\n");
 	}
 	// Barometer
-	if (BMP280_Init(&bmp_data) != 0) {
-	  printf("(-) BMP280 failed...\r\n");
+	if (BMP280_Init(&bmp_data, T0 - 273.15, P0) != 1) {
+		packet.header_states.barometer = 0x00;
+		printf("(-) BMP280 failed...\r\n");
 	} else {
-	  printf("(+) BMP280 succeeded...\r\n");
+		packet.header_states.barometer = 0x01;
+		printf("(+) BMP280 succeeded...\r\n");
 	}
 	// Accelerometer
 	if (ICM20602_Init(&icm_data) != 0) {
-	  printf("(-) ICM20602 failed...\r\n");
+		packet.header_states.accelerometer = 0x00;
+		printf("(-) ICM20602 failed...\r\n");
 	} else {
-	  printf("(+) ICM20602 succeeded...\r\n");
+		packet.header_states.accelerometer = 0x01;
+		printf("(+) ICM20602 succeeded...\r\n");
 	}
 	// GPS
-	if(L76LM33_Init() == 1) {
-	  printf("(-) L76LM33 failed...\r\n");
+	if(L76LM33_Init() != 1) {
+		packet.header_states.gps = 0x00;
+		printf("(-) L76LM33 failed...\r\n");
 	} else {
-	  printf("(+) L76LM33 succeeded...\r\n");
+		packet.header_states.gps = 0x01;
+		printf("(+) L76LM33 succeeded...\r\n");
 	}
 	// SD Card
-	if (MEM2067_SDCardDetection() == 1) {
-	  printf("(-) No SD card detected in MEM2067...\r\n");
+	if (MEM2067_SDCardDetection() != 1) {
+		packet.header_states.sd = 0x00;
+		printf("(-) No SD card detected in MEM2067...\r\n");
 	} else {
-	  printf("(+) SD card detected in MEM2067...\r\n");
+		packet.header_states.sd = 0x01;
+		printf("(+) SD card detected in MEM2067...\r\n");
 	}
 	/* USER CODE END 2 */
-
-	// TESTS
-	/*
-	// Test d'écriture
-	const char *filename = "test.txt";
-	uint8_t data[] = "Hello, SD Card!";
-	uint16_t size = sizeof(data) - 1;
-	if (MEM2067_WriteFATFS(filename, data, size) == 0) {
-	  printf("(+) Writing to %s succeeded...\r\n", filename);
-	} else {
-	  printf("(-) Writing %s failed...\r\n", filename);
-	}
-
-	while (1)
-	{
-		//Test GPS
-	  memset(L76LM33_Buffer, 0, NMEA_TRAME_RMC_SIZE);
-	  USART_RX(2, (uint8_t*)L76LM33_Buffer, NMEA_TRAME_RMC_SIZE);
-	  // Affichage de la trame NMEA reçue
-	  printf("NMEA sentence: %s", L76LM33_Buffer);
-	  NMEA_Decode_GPRMC(L76LM33_Buffer, &gps_data);
-	  printf("Time: %s\n", gps_data.time);
-	  printf("Latitude: %s %c\n", gps_data.latitude, gps_data.latitude_indicator);
-	  printf("Longitude: %s %c\n", gps_data.longitude, gps_data.longitude_indicator);
-	  printf("Vitesse: %s\n", gps_data.speed_knots);
-	  printf("Angle: %s\n", gps_data.track_angle);
-	}
-	*/
-	// End test
 }
 
-uint8_t STM32_GetStates(uint8_t mode) {
+uint8_t STM32_SetMode(uint8_t mode) {
 
-	states.mode = mode & 0x03;
-	states.pyro1 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_0, VREF12) & 0x01;
-	states.pyro2 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_1, VREF12) & 0x01;
-	if(mode == MODE_PREFLIGHT) {
-
-		// Faire fonctions checkvalidity...
-
-		states.accelerometer = 0x00 & 0x01;
-		states.barometer = 0x00 & 0x01;
-		states.gps = 0x00 & 0x01;
-		states.sd = MEM2067_SDCardDetection() & 0x01;
-		return (states.mode << 6) | (states.pyro1 << 5) | (states.pyro2 << 4) | (states.accelerometer << 3) | (states.barometer << 2) | (states.gps << 1) | states.sd;
-	} else if(mode == MODE_FLIGHT || MODE_POSTFLIGHT) {
-		return (states.mode << 6) | (states.pyro1 << 5) | (states.pyro2 << 4) | 0x00;
-	} else {
-		return 0x01; // Error
-	}
-}
-
-uint8_t STM32_ModeRoutine(uint8_t mode) {
-	uint8_t *data;
-	if(mode == MODE_PREFLIGHT) {
-		// V_Batt_Lipo1(16);V_Batt_Lipo2(16);V_Batt_Lipo3(16);5V_AN(16);Temp(32);Altitude(16);AngleRoll(32);AnglePitch(32) => (22)
-		data = (bool *)malloc(22 * sizeof(bool));
-		if (data == NULL) {
-			return 0;
-		}
-
-	} else if (mode == MODE_FLIGHT) {
-		// GPS_Data(416);Gyro_Data(72) => (64)
-		data = (bool *)malloc(FLIGHT_SIZE * sizeof(bool));
-		if (data == NULL) {
-			return 0;
-		}
-
-	} else if(mode == MODE_POSTFLIGHT) {
-		// data: gps;altitude;vbat
-		data = (bool *)malloc(POSTFLIGHT_SIZE * sizeof(bool));
-		if (data == NULL) {
-			return 0;
-		}
-
-	} else {
+	if(mode != MODE_PREFLIGHT || mode != MODE_INFLIGHT || mode != MODE_POSTFLIGHT){
 		return 0;
 	}
+
+	packet.header_states.mode = mode;
+	return 1; // OK
+}
+
+uint8_t STM32_ModeRoutine(void) {
+
+	uint8_t header_states = 0x00;
+	packet.size = 0;
+	packet.crc16 = 0x00;
+
+	switch (packet.header_states.mode) {
+		case MODE_PREFLIGHT:
+			header_states = (packet.header_states.mode << 6) | (packet.header_states.pyro0 << 5) | (packet.header_states.pyro1 << 4)
+			| (packet.header_states.accelerometer << 3) | (packet.header_states.barometer << 2) | (packet.header_states.gps << 1) | packet.header_states.sd;
+
+			packet.size = PREFLIGHT_DATASIZE;
+			packet.data = (uint8_t *)malloc(packet.size * sizeof(uint8_t));
+			//V_Batt
+			uint16_t lipo1 = CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREF33); // TODO: Verifier vref
+			uint16_t lipo2 = CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREF33); // TODO: Verifier vref
+			uint16_t lipo3 = CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREF33); // TODO: Verifier vref
+			uint16_t an = CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5); // TODO: Verifier vref
+			packet.data[0] = (uint8_t)(lipo1 >> 8);
+			packet.data[1] = (uint8_t)(lipo1 & 0xFF);
+			packet.data[2] = (uint8_t)(lipo2 >> 8);
+			packet.data[3] = (uint8_t)(lipo2 & 0xFF);
+			packet.data[4] = (uint8_t)(lipo3 >> 8);
+			packet.data[5] = (uint8_t)(lipo3 & 0xFF);
+			packet.data[6] = (uint8_t)(an >> 8);
+			packet.data[7] = (uint8_t)(an & 0xFF);
+			// Temperature
+			uint32_t temp = BMP280_ReadTemperature(&bmp_data);
+			packet.data[8] = (uint8_t)((temp >> 24) & 0xFF);
+			packet.data[9] = (uint8_t)((temp >> 16) & 0xFF);
+			packet.data[10] = (uint8_t)((temp >> 8) & 0xFF);
+			packet.data[11] = (uint8_t)(temp & 0xFF);
+			// Altitude
+			uint32_t altit = BMP280_PressureToAltitude(BMP280_ReadPressure(&bmp_data));
+			packet.data[12] = (uint8_t)((altit >> 24) & 0xFF);
+			packet.data[13] = (uint8_t)((altit >> 16) & 0xFF);
+			packet.data[14] = (uint8_t)((altit >> 8) & 0xFF);
+			packet.data[15] = (uint8_t)(altit & 0xFF);
+			// Roll Pitch Yaw
+			ICM20602_Update_All(&icm_data);
+			uint32_t roll = icm_data.kalmanAngleRoll;
+			uint32_t pitch = icm_data.kalmanAnglePitch;
+			packet.data[16] = (uint8_t)((roll >> 24) & 0xFF);
+			packet.data[17] = (uint8_t)((roll >> 16) & 0xFF);
+			packet.data[18] = (uint8_t)((roll >> 8) & 0xFF);
+			packet.data[19] = (uint8_t)(roll & 0xFF);
+			packet.data[20] = (uint8_t)((pitch >> 24) & 0xFF);
+			packet.data[21] = (uint8_t)((pitch >> 16) & 0xFF);
+			packet.data[22] = (uint8_t)((pitch >> 8) & 0xFF);
+			packet.data[23] = (uint8_t)(pitch & 0xFF);
+			break;
+		case MODE_INFLIGHT:
+			header_states = (packet.header_states.mode << 6) | (packet.header_states.pyro0 << 5) | (packet.header_states.pyro1 << 4) | 0x00;
+
+			packet.size = INFLIGHT_DATASIZE;
+			packet.data = (uint8_t *)malloc(packet.size * sizeof(uint8_t));
+
+
+			break;
+		case MODE_POSTFLIGHT:
+			header_states = (packet.header_states.mode << 6) | 0x00;
+
+			packet.size = POSTFLIGHT_DATASIZE;
+			packet.data = (uint8_t *)malloc(packet.size * sizeof(uint8_t));
+
+			break;
+		default:
+			return 0; // Error
+	}
+
+	//packet.crc16 = CRC16_Calculate(packet.data, packet.size);
+
+	//RFD900_Create()
+	//RFD900_Send()
+
+	free(packet.data);
 	return 1; // OK
 }
 

@@ -15,22 +15,20 @@
 #define CAM_NUMBER 2
 
 typedef struct {
-	bool bluetooth_status;
-	bool antenne_status;
-	bool gyroscope_status;
-	bool accelerometer_status;
-	bool gps_status;
-	bool barometer_status;
-	uint8_t batterie_status; // charge restante (peut-etre)
-	bool storage_status;
-	// ...
+	bool hm10_status;
+	bool rfd_status;
+	bool icm_status;
+	bool l76lm33_status;
+	bool bmp_status;
+	uint8_t bat_status; // charge restante (peut-etre)
+	bool sd_status;
 } HM10BLE;
 
 void HM10BLE_Init(void);
 
 void HM10BLE_SendCommand(char *command);
 void HM10BLE_Read(char *response);
-void HM10BLE_Send(char rx_buffer[], HM10BLE status);
+void HM10BLE_Send(char *rx_buffer, HM10BLE status);
 
 
 #endif /* INC_GAUL_DRIVERS_HM10_BLE_H_ */

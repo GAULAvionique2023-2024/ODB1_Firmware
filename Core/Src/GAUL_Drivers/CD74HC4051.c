@@ -11,6 +11,9 @@
 
 uint8_t CD74HC4051_Init (ADC_HandleTypeDef *hadc) {
 
+	if (hadc == NULL) {
+		return 0; // Error
+	}
 	// Read pin
 	Init_GPIO(PA, 0, IN, I_AN); // MUL_AN
 	// Batteries
@@ -32,6 +35,9 @@ uint8_t CD74HC4051_Init (ADC_HandleTypeDef *hadc) {
 
 uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyro_channel, float vref) {
 
+	if (hadc == NULL) {
+		return 0;
+	}
 	if(channel == CHANNEL_1 || channel == CHANNEL_7) {
 		return 0;
 	}

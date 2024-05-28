@@ -1,2 +1,2 @@
 ../Core/Src/GAUL_Drivers/Pyros.c:10:6:Pyro_Init	8	static
-../Core/Src/GAUL_Drivers/Pyros.c:22:6:Pyro_Fire	8	static
+../Core/Src/GAUL_Drivers/Pyros.c:21:6:Pyro_Fire	8	static

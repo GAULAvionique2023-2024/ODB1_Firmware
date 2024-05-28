@@ -1,1 +1,2 @@
 ../Core/Src/GAUL_Drivers/NMEA.c:10:9:NMEA_Decode_GPRMC	13
+../Core/Src/GAUL_Drivers/NMEA.c:107:9:NMEA_ValidTrame	3
