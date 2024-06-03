@@ -7,154 +7,109 @@
 
 #include "GAUL_Drivers/NMEA.h"
 
-uint8_t NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
+// Fonction pour convertir un float en tableau de uint8_t
+int32_t NMEA_FloatToBytes(float value) {
 
-	// Créer une copie de la trame pour la manipulation
-	char *copy = strdup(nmea_sentence);
-	if (!copy) {
-		return 0;
-	}
-
-	char *token;
-
-	// Extraire le type de trame NMEA
-	token = strtok(copy, ",");
-	if (token == NULL || strcmp(token, "$GPRMC") != 0) {
-	    free(copy);
-	    return 0;
-	}
-
-	// Extraire utc time
-	token = strtok(NULL, ",");
-	if (token == NULL) {
-		free(copy);
-		return 0;
-	} else {
-		strncpy(gps_data->time, token, 11);
-		gps_data->time[11] = '\0';
-	}
-
-
-	// Vérifier caractere de validite
-	token = strtok(NULL, ",");
-	if (token == NULL || strcmp(token, "A") != 0) {
-		free(copy);
-		return 0;
-	}
-
-	// Extraire latitude
-	token = strtok(NULL, ",");
-	if (token == NULL) {
-		strncpy(gps_data->latitude, DEFAULT_LATITUDE, 10);
-		return 0;
-	} else {
-		strncpy(gps_data->latitude, token, 10);
-	}
-	gps_data->latitude[10] = '\0';
-
-	// Extraire l'indicateur de latitude (N ou S)
-	token = strtok(NULL, ",");
-	if (token == NULL) {
-		strcpy(gps_data->latitude_indicator, DEFAULT_INDICATOR);
-		return 0;
-	} else {
-		gps_data->latitude_indicator = token[0];
-	}
-
-	// Extraire longitude
-	token = strtok(NULL, ",");
-	if (token == NULL) {
-		strncpy(gps_data->longitude, DEFAULT_LATITUDE, 11);
-		return 0;
-	} else {
-		strncpy(gps_data->longitude, token, 11);
-	}
-	gps_data->longitude[11] = '\0';
-
-	// Extraire l'indicateur de longitude (E ou W)
-	token = strtok(NULL, ",");
-	if (token == NULL) {
-		strcpy(gps_data->longitude_indicator, DEFAULT_INDICATOR);
-		return 0;
-	} else {
-		gps_data->longitude_indicator = token[0];
-	}
-
-	// Extraire vitesse
-	token = strtok(NULL, ",");
-	if (token == NULL) {
-		strncpy(gps_data->speed_knots, DEFAULT_SPEED, 6);
-		return 0;
-	} else {
-		strncpy(gps_data->speed_knots, token, 6);
-	}
-	gps_data->speed_knots[6] = '\0';
-
-	// Extraire angle
-	token = strtok(NULL, ",");
-	if (token == NULL) {
-		strncpy(gps_data->track_angle, DEFAULT_ANGLE, 7);
-		return 0;
-	} else {
-		strncpy(gps_data->track_angle, token, 7);
-	}
-	gps_data->track_angle[7] = '\0';
-
-	free(copy);
-	return 1; // OK
+    return (int32_t)value;
 }
 
+// Fonction pour convertir une chaîne de caractères en float
+float NMEA_CharToFloat(char *data) {
+
+    return (float)atof(data);
+}
+
+// Fonction pour décoder une trame NMEA GPRMC
+uint8_t NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
+
+    if (!nmea_sentence || !gps_data) {
+        return 0;
+    }
+
+    char *copy = strdup(nmea_sentence);
+    if (!copy) {
+        return 0;
+    }
+
+    char *token;
+    int field_index = 0;
+    int valid = 1;
+
+    // Valeurs par default
+	gps_data->latitude = DEFAULT_LATITUDE;
+	gps_data->latitude_indicator = DEFAULT_INDICATOR;
+	gps_data->longitude = DEFAULT_LONGITUDE;
+	gps_data->longitude_indicator = DEFAULT_INDICATOR;
+	gps_data->speed_knots = DEFAULT_SPEED;
+	gps_data->track_angle = DEFAULT_ANGLE;
+
+    // Extraire chaque champ de la trame
+    token = strtok(copy, ",");
+    while (token != NULL && valid) {
+        switch (field_index) {
+            case 0:
+                if (strcmp(token, "$GPRMC") != 0) {
+                    valid = 0;
+                }
+                break;
+            case 1:
+            	gps_data->time = NMEA_FloatToBytes(NMEA_CharToFloat(token));
+                break;
+            case 2:
+                if (strcmp(token, "A") != 0) {
+                    valid = 0;
+                }
+                break;
+            case 3:
+            	gps_data->latitude = NMEA_FloatToBytes(NMEA_CharToFloat(token));
+                break;
+            case 4:
+                gps_data->latitude_indicator = (uint8_t)token[0];
+                break;
+            case 5:
+                gps_data->longitude = NMEA_FloatToBytes(NMEA_CharToFloat(token));
+                break;
+            case 6:
+                gps_data->longitude_indicator = (uint8_t)token[0];
+                break;
+            case 7:
+                gps_data->speed_knots = NMEA_FloatToBytes(NMEA_CharToFloat(token));
+                break;
+            case 8:
+                gps_data->track_angle = NMEA_FloatToBytes(NMEA_CharToFloat(token));
+                break;
+        }
+        token = strtok(NULL, ",");
+        field_index++;
+    }
+
+    free(copy);
+    return valid;
+}
+
+// Fonction pour vérifier la validité d'une trame NMEA
 uint8_t NMEA_ValidTrame(const char *nmea_sentence) {
 
-	uint8_t valid = 1;
-
-	char *copy = strdup(nmea_sentence);
-	char *token;
-	token = strtok(copy, ",");
-	token = strtok(NULL, ",");
-	token = strtok(NULL, ",");
-	if (token == NULL || strcmp(token, "A") != 0) {
-		free(copy);
-		valid = 0;
-	}
-
-	return valid;
-}
-/*
-uint8_t NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
-    if (nmea_sentence == NULL || gps_data == NULL) {
-        return 0; // Error: Null pointer
+    char *copy = strdup(nmea_sentence);
+    if (!copy) {
+        return 0;
     }
 
-    char type[6];
-    int n = sscanf(nmea_sentence, "$%5[^,],%11[^,],%*c,%10[^,],%c,%11[^,],%c,%6[^,],%7[^,]",
-                   type,
-                   gps_data->time,
-                   gps_data->latitude,
-                   &gps_data->latitude_indicator,
-                   gps_data->longitude,
-                   &gps_data->longitude_indicator,
-                   gps_data->speed_knots,
-                   gps_data->track_angle);
+    uint8_t valid = 1;
+    char *token;
 
-    // Check if the type is "GPRMC" and the required fields are successfully parsed
-    if (n == 8 && strcmp(type, "GPRMC") == 0) {
-        // Ensure string termination
-        gps_data->time[11] = '\0';
-        gps_data->latitude[10] = '\0';
-        gps_data->longitude[11] = '\0';
-        gps_data->speed_knots[6] = '\0';
-        gps_data->track_angle[7] = '\0';
-        return 1; // Success
+    token = strtok(copy, ",");
+    if (token == NULL || strcmp(token, "$GPRMC") != 0) {
+        valid = 0;
+    } else {
+        token = strtok(NULL, ","); // Skip time
+        token = strtok(NULL, ","); // Validity indicator
+        if (token == NULL || strcmp(token, "A") != 0) {
+            valid = 0;
+        }
     }
 
-    // Fill with default values if parsing failed
-    strcpy(gps_data->latitude, DEFAULT_LATITUDE);
-    gps_data->latitude_indicator = DEFAULT_INDICATOR[0];
-    strcpy(gps_data->longitude, DEFAULT_LONGITUDE);
-    gps_data->longitude_indicator = DEFAULT_INDICATOR[0];
-    strcpy(gps_data->speed_knots, DEFAULT_SPEED);
-    strcpy(gps_data->track_angle, DEFAULT_ANGLE);
-    return 0; // Error: Parsing failed
+    free(copy);
+    return valid;
 }
-*/
+

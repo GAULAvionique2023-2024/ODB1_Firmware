@@ -8,35 +8,25 @@
 #include "GAUL_Drivers/RFD900.h"
 #include "GAUL_Drivers/CD74HC4051.h"
 
-void RFD900_Init(RFD900 *devRFD, uint8_t mode) {
+void RFD900_Init(RFD900 *devRFD) {
 
-    devRFD->mode = mode;
-    devRFD->states = 0;
+	devRFD->header = 0x00;
     devRFD->data = NULL;
-    devRFD->validationCRC = 0;
-    devRFD->size = 0;
-}
-
-uint8_t *RFD900_Create(RFD900 *devRFD, uint8_t mode) {
-	/*
-	devRFD->validationCRC = 0x0000;
-
-	int i = 0;
-	while (i < DATA_ARRAY_SIZE)
-	{
-		devRFD->packetToSend[i] = data[i];
-	}
-
-	devRFD->packetToSend[30] = (uint8_t)(devRFD->validationCRC) >> 8;
-	devRFD->packetToSend[31] = (uint8_t)(devRFD->validationCRC) & 0xFF;
-	*/
-
-	//return packet; // OK
+    devRFD->crc = 0x00;
+    devRFD->size = 0x00;
 }
 
 uint8_t RFD900_Send(RFD900 *devRFD) {
 
-	//USART_TX(RFD_USART_PORT, devRFD->packetToSend, PACKET_ARRAY_SIZE);
+	uint8_t delim = 0x24;
+	uint8_t crc_delim = 0x2a;
+
+	USART_TX(RFD_USART_PORT, &delim, 1);
+	USART_TX(RFD_USART_PORT, &devRFD->header, 1);
+	USART_TX(RFD_USART_PORT, devRFD->data, devRFD->size);
+	USART_TX(RFD_USART_PORT, &crc_delim, 1);
+	USART_TX(RFD_USART_PORT, devRFD->crc, 2);
+	USART_TX(RFD_USART_PORT, &delim, 1);
 
 	return 1; // OK
 }

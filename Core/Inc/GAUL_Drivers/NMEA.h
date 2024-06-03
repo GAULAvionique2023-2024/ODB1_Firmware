@@ -5,40 +5,34 @@
  *      Author: gagno
  */
 
-#ifndef INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_NMEA_H_
-#define INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_NMEA_H
+#ifndef INC_GAUL_DRIVERS_NMEA_H
+#define INC_GAUL_DRIVERS_NMEA_H
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <stdint.h>
 
 #define NMEA_TRAME_RMC_SIZE 68
 
 // Définition des valeurs par défaut en tant que macros
-#define DEFAULT_LATITUDE 	"00000.000"
-#define DEFAULT_LONGITUDE 	"000000.000"
-#define DEFAULT_SPEED 		"000.00"
-#define DEFAULT_ANGLE 		"0000.00"
-#define DEFAULT_INDICATOR 	"V"
-
-/* --RMC
- * $GPRMC,140146.000,A,3150.863861,N,11711.928739,E,0.00,183.85,211019,,,A,V*13<CR><LF>
- */
+#define DEFAULT_LATITUDE 	0x00000000
+#define DEFAULT_LONGITUDE 	0x00000000
+#define DEFAULT_SPEED 		0x00000000
+#define DEFAULT_ANGLE 		0x00000000
+#define DEFAULT_INDICATOR 	56 // "V"
 
 typedef struct {
-    char 	time[12]; // Heure (format HHMMSS.SSS)
-    char  	latitude[11]; // Latitude (format dddmm.mmmm)
-    char 	latitude_indicator; // Indicateur de latitude (N ou S)
-    char  	longitude[12]; // Longitude (format dddmm.mmmm)
-    char 	longitude_indicator; // Indicateur de longitude (E ou W)
-    char  	speed_knots[7]; // Vitesse sur le fond en noeuds
-    char  	track_angle[8]; // Route sur le fond en degres
+    int32_t time;         		// Heure en bytes
+    int32_t latitude;     		// Latitude en bytes
+    uint8_t latitude_indicator; 	// Indicateur de latitude (N ou S)
+    int32_t longitude;			// Longitude en bytes
+    uint8_t longitude_indicator;	// Indicateur de longitude (E ou W)
+    int32_t speed_knots;			// Vitesse sur le fond en noeuds en bytes
+    int32_t track_angle;			// Route sur le fond en degres en bytes
 } GPS_Data;
 
-
 uint8_t NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data);
-uint8_t NMEA_ValidTrame(const char * nmea_sentence);
+uint8_t NMEA_ValidTrame(const char *nmea_sentence);
 
-#endif /* INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_NMEA_H_ */
+#endif /* INC_GAUL_DRIVERS_NMEA_H */
