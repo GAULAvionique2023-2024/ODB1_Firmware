@@ -9,6 +9,9 @@
 #include "GAUL_Drivers/Pyros.h"
 #include "GAUL_Drivers/Low_Level_Drivers/ADC_driver.h"
 
+
+uint32_t ADC_Sampling (ADC_HandleTypeDef *hadc);
+
 uint8_t CD74HC4051_Init (ADC_HandleTypeDef *hadc) {
 
 	if (hadc == NULL) {

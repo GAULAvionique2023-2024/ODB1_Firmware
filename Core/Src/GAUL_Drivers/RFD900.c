@@ -16,17 +16,17 @@ void RFD900_Init(RFD900 *devRFD) {
     devRFD->size = 0x00;
 }
 
-uint8_t RFD900_Send(RFD900 *devRFD) {
+uint8_t RFD900_Send(RFD900 *devRFD, unsigned short usart_port) {
 
 	uint8_t delim = 0x24;
 	uint8_t crc_delim = 0x2a;
 
-	USART_TX(RFD_USART_PORT, &delim, 1);
-	USART_TX(RFD_USART_PORT, &devRFD->header, 1);
-	USART_TX(RFD_USART_PORT, devRFD->data, devRFD->size);
-	USART_TX(RFD_USART_PORT, &crc_delim, 1);
-	USART_TX(RFD_USART_PORT, devRFD->crc, 2);
-	USART_TX(RFD_USART_PORT, &delim, 1);
+	USART_TX(usart_port, &delim, 1); // Start
+	USART_TX(usart_port, &devRFD->header, 1);
+	USART_TX(usart_port, devRFD->data, devRFD->size);
+	USART_TX(usart_port, &crc_delim, 1); // CRC
+	USART_TX(usart_port, devRFD->crc, 2);
+	USART_TX(usart_port, &delim, 1); // End
 
 	return 1; // OK
 }

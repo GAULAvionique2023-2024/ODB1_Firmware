@@ -18,14 +18,14 @@ void HM10BLE_SendCommand(char *command) {
     // Vous pouvez utiliser la fonction USART_Send() ou une fonction similaire pour transmettre la commande
 }
 
-void HM10BLE_Read(char *response) {
+void HM10BLE_Read(unsigned short usart_port, char *response) {
     // Lecture de la réponse du module HM10 BLE
     // Vous pouvez utiliser la fonction USART_Read() ou une fonction similaire pour recevoir la réponse
-	USART_RX(BT_USART_PORT, (uint8_t*)response, sizeof(response));
-	printf("BLE response: %s/n", response);
+	USART_RX(usart_port, (uint8_t*)response, sizeof(response));
+	//printf("BLE response: %s/n", response);
 }
 
-void HM10BLE_Send(char *rx_buffer, HM10BLE status) {
+void HM10BLE_Send(unsigned short usart_port, char *rx_buffer, HM10BLE *status) {
     // Envoi de données via le module HM10 BLE en fonction du statut fourni
     // Vous pouvez baser le contenu de l'envoi sur le contenu de rx_buffer et le statut HM10BLE fourni
     // Par exemple :

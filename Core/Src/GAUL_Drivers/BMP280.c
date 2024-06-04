@@ -15,9 +15,9 @@ uint8_t BMP280_WriteRegister(uint8_t reg, uint8_t value);
 void BMP280_ReadCalibrationData(BMP280 *devBMP);
 uint8_t BMP280_BMP280_MeasureReference(BMP280 devBMP, float temp_ref, float press_ref);
 
-uint8_t BMP280_Init(BMP280 *devBMP, float temp_ref, float press_ref) {
+uint8_t BMP280_Init(BMP280 *devBMP, unsigned short spi_port, float temp_ref, float press_ref) {
 
-	SPI_Init(2);
+	SPI_Init(spi_port);
 
     BMP280_WriteRegister(BMP280_REG_RESET, BMP280_RESET_WORD); // Reset
     // Check ID
@@ -35,7 +35,7 @@ uint8_t BMP280_Init(BMP280 *devBMP, float temp_ref, float press_ref) {
     return 1;
 }
 
-float BMP280_ReadTemperature(BMP280 *devBMP) {
+uint8_t BMP280_ReadTemperature(BMP280 *devBMP) {
 
     int32_t adc_T = (BMP280_ReadRegister(BMP280_REG_TEMP_MSB) << 12) |
                     (BMP280_ReadRegister(BMP280_REG_TEMP_LSB) << 4) |
@@ -46,10 +46,11 @@ float BMP280_ReadTemperature(BMP280 *devBMP) {
     devBMP->t_fine = var1 + var2;
 
     float T = (devBMP->t_fine * 5 + 128) >> 8;
-    return (T / 100.0) + devBMP->temperature_ref;
+    devBMP->temp_C = (T / 100.0) + devBMP->temperature_ref;
+    return 1; // OK
 }
 
-float BMP280_ReadPressure(BMP280 *devBMP) {
+uint8_t BMP280_ReadPressure(BMP280 *devBMP) {
 
 	// Verifie si la lecture est possible
 	while((BMP280_ReadRegister(BMP280_REG_STATUS) & 0x04) != 0);
@@ -65,7 +66,7 @@ float BMP280_ReadPressure(BMP280 *devBMP) {
     var1 = ((var1 * var1 * (int64_t)devBMP->calib_data.dig_P3) >> 8) + ((var1 * (int64_t)devBMP->calib_data.dig_P2) << 12);
     var1 = (((((int64_t)1) << 47) + var1)) * ((int64_t)devBMP->calib_data.dig_P1) >> 33;
     if (var1 == 0) {
-        return 0; // avoid exception caused by division by zero
+        return 0; // Error (division par 0)
     }
     int64_t p = 1048576 - adc_P;
     p = (((p << 31) - var2) * 3125) / var1;
@@ -73,7 +74,8 @@ float BMP280_ReadPressure(BMP280 *devBMP) {
     var2 = (((int64_t)devBMP->calib_data.dig_P8) * p) >> 19;
 
     p = ((p + var1 + var2) >> 8) + (((int64_t)devBMP->calib_data.dig_P7) << 4);
-    return ((float)p / 256.09) + devBMP->pressure_ref;
+    devBMP->pressure_Pa = ((float)p / 256.09) + devBMP->pressure_ref;
+    return 1; // OK
 }
 
 void BMP280_ReadCalibrationData(BMP280 *devBMP) {
@@ -102,8 +104,14 @@ void BMP280_ReadCalibrationData(BMP280 *devBMP) {
 
 uint8_t BMP280_SwapMode(uint8_t mode) {
 
-	BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, mode); // BMP280_SETTING_CTRL_MEAS_NORMAL (0x57) ou BMP280_SETTING_CTRL_MEAS_LOW (0x54)
-	return 1;
+	if(BMP280_ReadRegister(BMP280_REG_CTRL_MEAS) != mode) {
+		BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, mode); // BMP280_SETTING_CTRL_MEAS_NORMAL (0x57) ou BMP280_SETTING_CTRL_MEAS_LOW (0x54)
+		printf("BMP mode set to: %i/n", BMP280_SETTING_CTRL_MEAS_NORMAL);
+		return 1; // OK
+	} else {
+		printf("BMP mode set error...");
+		return 0; // Error (no change)
+	}
 }
 
 uint8_t BMP280_MeasureReference(BMP280 *devBMP, float temp_ref, float press_ref) {

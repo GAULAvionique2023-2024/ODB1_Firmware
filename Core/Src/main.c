@@ -51,6 +51,12 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+#define ICM_SPI_PORT 1
+#define BMP_SPI_PORT 2
+#define RFD_USART_PORT 1
+#define GPS_USART_PORT 2
+#define BT_USART_PORT  3
+
 // $Stats(1);Altitude(4);Temp(4);V_Batt_Lipo1(2);V_Batt_Lipo2(2);V_Batt_Lipo3(2);5V_AN(2);AngleRoll(4);AnglePitch(4);AngleYaw(4)*CRC(2)$ => (31) + (3 delim) = 33
 #define MODE_PREFLIGHT 0x00
 #define PREFLIGHT_DATASIZE 28 // mode = 0x00
@@ -138,6 +144,16 @@ void STM32_i32To8(int32_t data, STM32_Packet packet, uint8_t index) {
 	packet.data[index] = (uint8_t)(data & 0xFF);
 }
 
+uint8_t STM32_SetMode(uint8_t mode) {
+
+	if(mode != MODE_PREFLIGHT && mode != MODE_INFLIGHT && mode != MODE_POSTFLIGHT){
+		return 0;
+	}
+
+	packet.header_states.mode = mode;
+	return 1; // OK
+}
+
 void STM32_InitRoutine(void) {
 
 	/* MCU Configuration--------------------------------------------------------*/
@@ -167,7 +183,7 @@ void STM32_InitRoutine(void) {
 
 	/* Components Configuration-------------------------------------------------------- */
 	printf("|----------Components initialization----------|\r\n");
-	packet.header_states.mode = MODE_PREFLIGHT;
+	STM32_SetMode(MODE_PREFLIGHT);
 	printf("(+) Mode flight: %i succeeded...\r\n", packet.header_states.mode);
 	// LED RGB
 	WS2812_Init();
@@ -183,28 +199,18 @@ void STM32_InitRoutine(void) {
 		printf("(+) CD74HC4051 succeeded...\r\n");
 	}
 	// Barometer
-	packet.header_states.barometer = BMP280_Init(&bmp_data, T0 - 273.15, P0) == 1 ? 0x01 : 0x00;
+	packet.header_states.barometer = BMP280_Init(&bmp_data, BMP_SPI_PORT, T0 - 273.15, P0) == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
 	// Accelerometer
 	packet.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x00 : 0x01;
 	printf(packet.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
 	// GPS
-	packet.header_states.gps = L76LM33_Init() == 1 ? 0x01 : 0x00;
+	packet.header_states.gps = L76LM33_Init(GPS_USART_PORT) == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
 	// SD Card
 	packet.header_states.sd = MEM2067_SDCardDetection() == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.sd ? "(+) SD card detected in MEM2067...\r\n" : "(-) No SD card detected in MEM2067...\r\n");
 	/* USER CODE END 2 */
-}
-
-uint8_t STM32_SetMode(uint8_t mode) {
-
-	if(mode != MODE_PREFLIGHT && mode != MODE_INFLIGHT && mode != MODE_POSTFLIGHT){
-		return 0;
-	}
-
-	packet.header_states.mode = mode;
-	return 1; // OK
 }
 
 uint8_t STM32_ModeRoutine(void) {
@@ -216,15 +222,21 @@ uint8_t STM32_ModeRoutine(void) {
 
     switch (packet.header_states.mode) {
         case MODE_PREFLIGHT:
+        	// BMP normal mode
+        	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
+
             header_states = (packet.header_states.mode << 6) | (packet.header_states.pyro0 << 5) | (packet.header_states.pyro1 << 4)
-                            | (packet.header_states.accelerometer << 3) | (packet.header_states.barometer << 2) | (packet.header_states.gps << 1) | packet.header_states.sd;
+                            | (packet.header_states.accelerometer << 3) | (packet.header_states.barometer << 2) | (packet.header_states.gps << 1)
+							| packet.header_states.sd;
 
             packet.size = PREFLIGHT_DATASIZE;
             packet.data = (uint8_t *)malloc(packet.size * sizeof(uint8_t));
             // Altitude
-			STM32_i32To8((int32_t)BMP280_PressureToAltitude(BMP280_ReadPressure(&bmp_data)), packet, 0);
+            BMP280_ReadPressure(&bmp_data);
+			STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa), packet, 0);
             // Temperature
-            STM32_i32To8((int32_t)BMP280_ReadTemperature(&bmp_data), packet, 4);
+			BMP280_ReadTemperature(&bmp_data);
+            STM32_i32To8((int32_t)bmp_data.temp_C, packet, 4);
             // Roll Pitch Yaw
             ICM20602_Update_All(&icm_data);
             STM32_i32To8((int32_t)icm_data.kalmanAngleRoll, packet, 8);
@@ -235,40 +247,48 @@ uint8_t STM32_ModeRoutine(void) {
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREF33), packet, 22);
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREF33), packet, 24);
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5), packet, 26);
+
             break;
         case MODE_INFLIGHT:
+        	// BMP normal mode
+        	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
+
             header_states = (packet.header_states.mode << 6) | (packet.header_states.pyro0 << 5) | (packet.header_states.pyro1 << 4) | 0x00;
 
             packet.size = INFLIGHT_DATASIZE;
             packet.data = (uint8_t *)malloc(packet.size * sizeof(uint8_t));
             // Altitude
-            STM32_i32To8((int32_t)BMP280_PressureToAltitude(BMP280_ReadPressure(&bmp_data)), packet, 0);
+            BMP280_ReadPressure(&bmp_data);
+            STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa), packet, 0);
+            // Temperature
+            BMP280_ReadTemperature(&bmp_data);
+            STM32_i32To8((int32_t)bmp_data.temp_C, packet, 4);
             // GPS
-            L76LM33_Read(L76LM33_Buffer, &gps_data);
-            STM32_i32To8(gps_data.time, packet, 4);
-            STM32_i32To8(gps_data.latitude, packet, 8);
+            L76LM33_Read(GPS_USART_PORT, L76LM33_Buffer, &gps_data);
+            STM32_i32To8(gps_data.time, packet, 8);
+            STM32_i32To8(gps_data.latitude, packet, 12);
             packet.data[12] = gps_data.latitude_indicator;
-            STM32_i32To8(gps_data.time, packet, 13);
+            STM32_i32To8(gps_data.time, packet, 17);
             packet.data[17] = gps_data.longitude_indicator;
-            STM32_i32To8(gps_data.speed_knots, packet, 18);
-            STM32_i32To8(gps_data.track_angle, packet, 22);
+            STM32_i32To8(gps_data.speed_knots, packet, 22);
+            STM32_i32To8(gps_data.track_angle, packet, 26);
             // Gyro
             ICM20602_Update_All(&icm_data);
-            STM32_i32To8((int32_t)icm_data.gyroX, packet, 26);
-            STM32_i32To8((int32_t)icm_data.gyroY, packet, 30);
-            STM32_i32To8((int32_t)icm_data.gyroZ, packet, 34);
+            STM32_i32To8((int32_t)icm_data.gyroX, packet, 30);
+            STM32_i32To8((int32_t)icm_data.gyroY, packet, 34);
+            STM32_i32To8((int32_t)icm_data.gyroZ, packet, 38);
             // Acceleration
-            STM32_i32To8((int32_t)icm_data.accX, packet, 38);
-            STM32_i32To8((int32_t)icm_data.accY, packet, 42);
-            STM32_i32To8((int32_t)icm_data.accZ, packet, 46);
-            // Temperature
-			STM32_i32To8((int32_t)BMP280_ReadTemperature(&bmp_data), packet, 50);
+            STM32_i32To8((int32_t)icm_data.accX, packet, 42);
+            STM32_i32To8((int32_t)icm_data.accY, packet, 46);
+            STM32_i32To8((int32_t)icm_data.accZ, packet, 50);
 			// Roll Pitch
 			STM32_i32To8((int32_t)icm_data.kalmanAngleRoll, packet, 54);
 			STM32_i32To8((int32_t)icm_data.kalmanAnglePitch, packet, 58);
 
             break;
         case MODE_POSTFLIGHT:
+        	// BMP low mode
+        	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_LOW);
             header_states = (packet.header_states.mode << 6) | 0x00;
 
             packet.size = POSTFLIGHT_DATASIZE;
@@ -276,7 +296,7 @@ uint8_t STM32_ModeRoutine(void) {
             // Altitude
 			STM32_i32To8((int32_t)BMP280_PressureToAltitude(BMP280_ReadPressure(&bmp_data)), packet, 0);
 			// GPS
-			L76LM33_Read(L76LM33_Buffer, &gps_data);
+			L76LM33_Read(GPS_USART_PORT, L76LM33_Buffer, &gps_data);
 			STM32_i32To8(gps_data.time, packet, 4);
 			STM32_i32To8(gps_data.latitude, packet, 8);
 			packet.data[12] = gps_data.latitude_indicator;
@@ -289,9 +309,10 @@ uint8_t STM32_ModeRoutine(void) {
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREF33), packet, 28);
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREF33), packet, 30);
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5), packet, 32);
+
             break;
         default:
-            return 0; // Erreur
+            return 0; // Error
     }
 
     rfd_data.header = header_states;
@@ -301,7 +322,8 @@ uint8_t STM32_ModeRoutine(void) {
     packet.crc16[0] = (uint8_t)(crc >> 8);
     packet.crc16[1] = (uint8_t)(crc & 0xFF);
     rfd_data.crc = (uint8_t *)packet.crc16;
-    if(RFD900_Send(&rfd_data) == 1) {
+    // TODO: add MEM2067_Write()
+    if(RFD900_Send(&rfd_data, RFD_USART_PORT) == 1) {
     	free(packet.data);
 		return 1; // OK
     } else {
@@ -312,19 +334,21 @@ uint8_t STM32_ModeRoutine(void) {
 
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 	STM32_InitRoutine();
-  /* USER CODE END 1 */
+	/* USER CODE END 1 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
+	while (1)
+	{
+		// TEST ZONE START
 
-  }
-  /* USER CODE END WHILE */
-  /* USER CODE BEGIN 3 */
-  /* USER CODE END 3 */
+		// TEST ZONE END
+	}
+	/* USER CODE END WHILE */
+	/* USER CODE BEGIN 3 */
+	/* USER CODE END 3 */
 }
 
 /**

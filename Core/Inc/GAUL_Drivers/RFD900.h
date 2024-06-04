@@ -23,6 +23,6 @@ typedef struct {
 
 void RFD900_Init(RFD900 *devRFD);
 
-uint8_t RFD900_Send(RFD900 *devRFD);
+uint8_t RFD900_Send(RFD900 *devRFD, unsigned short usart_port);
 
 #endif /* INC_GAUL_DRIVERS_RFD900_H_ */

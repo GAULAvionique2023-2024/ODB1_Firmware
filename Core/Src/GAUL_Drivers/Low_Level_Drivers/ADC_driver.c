@@ -13,22 +13,19 @@
 uint8_t ADC_Start(ADC_HandleTypeDef *hadc) {
 
 	HAL_ADC_Start(hadc);
-
-	return 0;
+	return 1; // OK
 }
 
 uint8_t ADC_Calibration(ADC_HandleTypeDef *hadc) {
 
 	HAL_ADCEx_Calibration_Start(hadc);
-
-	return 0;
+	return 1; // OK
 }
 
 uint8_t ADC_Stop(ADC_HandleTypeDef *hadc) {
 
 	HAL_ADC_Stop(hadc);
-
-	return 0;
+	return 1; // OK
 }
 
 uint32_t ADC_Sampling (ADC_HandleTypeDef *hadc) {

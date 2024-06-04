@@ -12,10 +12,6 @@
 
 #include <stdint.h>
 
-#define RFD_USART_PORT 1
-#define GPS_USART_PORT 2
-#define BT_USART_PORT  3
-
 
 void USART_Init(unsigned short usart);
 

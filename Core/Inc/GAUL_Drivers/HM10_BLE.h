@@ -12,7 +12,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define CAM_NUMBER 2
 
 typedef struct {
 	bool hm10_status;
@@ -27,8 +26,9 @@ typedef struct {
 void HM10BLE_Init(void);
 
 void HM10BLE_SendCommand(char *command);
-void HM10BLE_Read(char *response);
-void HM10BLE_Send(char *rx_buffer, HM10BLE status);
+void HM10BLE_Read(unsigned short usart_port,char *response);
+void HM10BLE_Send(unsigned short usart_port, char *rx_buffer, HM10BLE *status);
+// TODO: add temp_ref + press_ref modification via ble
 
 
 #endif /* INC_GAUL_DRIVERS_HM10_BLE_H_ */

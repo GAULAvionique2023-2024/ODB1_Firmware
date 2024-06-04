@@ -15,34 +15,34 @@ NMEA_GPSSEARCHONLY = "$PMTK353,1,0,0,0,0*2A<CR><LF>",	// Active la recherche de 
 NMEA_NAVMODE = "PMTK886,2*2A<CR><LF>",				// 0 : Normal (10000m) ; 2 : Aviation +acc (10000m) ; 3 : Ballon +hauteur (80000m) ; 4 : Stationary
 */
 
-uint8_t L76LM33_Init (void) {
+uint8_t L76LM33_Init (unsigned short usart_port) {
 
 	char PROTOCOL_SETRMS[] = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*35\r\n";
 	char PROTOCOL_GPSSEARCHONLY[] = "$PMTK353,1,0,0,0,0*2A\r\n";
 	char PROTOCOL_NAVMODE[] = "PMTK886,2*2A\r\n";
-	L76LM33_SendCommand(PROTOCOL_SETRMS);
-	L76LM33_SendCommand(PROTOCOL_GPSSEARCHONLY);
-	L76LM33_SendCommand(PROTOCOL_NAVMODE);
+	L76LM33_SendCommand(usart_port, PROTOCOL_SETRMS);
+	L76LM33_SendCommand(usart_port, PROTOCOL_GPSSEARCHONLY);
+	L76LM33_SendCommand(usart_port, PROTOCOL_NAVMODE);
 
 	return 1; // OK
 }
 
-uint8_t L76LM33_SendCommand(char *command) {
+uint8_t L76LM33_SendCommand(unsigned short usart_port, char *command) {
 
     if (command == NULL) {
         return 0; // Error
     }
-    USART_TX(GPS_USART_PORT, (uint8_t*)command, strlen(command));
+    USART_TX(usart_port, (uint8_t*)command, strlen(command));
     return 1; // OK
 }
 
-uint8_t L76LM33_Read(char *rx_data, GPS_Data *gps_data) {
+uint8_t L76LM33_Read(unsigned short usart_port, char *rx_data, GPS_Data *gps_data) {
 
     if (rx_data == NULL || gps_data == NULL) {
         return 0; // Error
     }
     memset(rx_data, 0, NMEA_TRAME_RMC_SIZE);
-    USART_RX(GPS_USART_PORT, (uint8_t*)rx_data, NMEA_TRAME_RMC_SIZE);
+    USART_RX(usart_port, (uint8_t*)rx_data, NMEA_TRAME_RMC_SIZE);
     printf("NMEA sentence: %s\n", rx_data);
     if (NMEA_Decode_GPRMC(rx_data, gps_data) == 1) {
         printf("Time: %ld\n", gps_data->time);
