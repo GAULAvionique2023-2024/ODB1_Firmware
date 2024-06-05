@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "fatfs.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -43,40 +44,74 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+typedef struct {
+	uint8_t mode;
+	uint8_t pyro0;
+	uint8_t pyro1;
+	uint8_t accelerometer;
+	uint8_t barometer;
+	uint8_t gps;
+	uint8_t sd;
+	uint8_t ble;
+} STM32_states;
+
+typedef struct {
+	STM32_states header_states;
+	uint8_t *data;
+	uint8_t crc16[2];
+	uint8_t size;
+} STM32_Packet;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
 #define ICM_SPI_PORT 1
 #define BMP_SPI_PORT 2
 #define RFD_USART_PORT 1
 #define GPS_USART_PORT 2
 #define BT_USART_PORT  3
 
-// $Stats(1);Altitude(4);Temp(4);V_Batt_Lipo1(2);V_Batt_Lipo2(2);V_Batt_Lipo3(2);5V_AN(2);AngleRoll(4);AnglePitch(4);AngleYaw(4)*CRC(2)$ => (31) + (3 delim) = 33
 #define MODE_PREFLIGHT 0x00
-#define PREFLIGHT_DATASIZE 28 // mode = 0x00
-// $Stats(1);Altitude(4);Temp(4);GPS_Data(22);Gyro_Data(12);Acc_Data(12);AngleRoll(4);AnglePitch(4)*CRC(2)$ => (65) + (3 delim) = 68
+#define PREFLIGHT_DATASIZE 28
 #define MODE_INFLIGHT 0x01
-#define INFLIGHT_DATASIZE 62 // mode = 0x01
-// $Stats(1);Altitude(4);GPS_Data(22);V_Batt_Lipo1(2);V_Batt_Lipo2(2);V_Batt_Lipo3(2);5V_AN(2)*CRC(2)$ => (37) + (3 delim) = 40
+#define INFLIGHT_DATASIZE 62
 #define MODE_POSTFLIGHT 0x02
-#define POSTFLIGHT_DATASIZE 34 // mode = 0x02
+#define POSTFLIGHT_DATASIZE 34
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+
 CRC_HandleTypeDef hcrc;
+
+TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
+
 /* USER CODE BEGIN PV */
+struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
+struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
+
+volatile int check_ble_done = 0;
+
+// Variables
+GPS_Data gps_data;
+BMP280 bmp_data;
+ICM20602 icm_data;
+RFD900 rfd_data;
+HM10BLE ble_data;
+
+char L76LM33_Buffer[NMEA_TRAME_RMC_SIZE]; // gps_data buffer
+uint8_t HM10BLE_Buffer[20];
+STM32_Packet packet;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -88,44 +123,17 @@ static void MX_TIM3_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
+static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
+void STM32_u16To8(uint16_t data, STM32_Packet packet, uint8_t index);
+void STM32_i32To8(int32_t data, STM32_Packet packet, uint8_t index);
+uint8_t STM32_SetMode(uint8_t mode);
+void STM32_InitRoutine(void);
+uint8_t STM32_ModeRoutine(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
-struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
-
-// Variables
-GPS_Data gps_data;
-BMP280 bmp_data;
-ICM20602 icm_data;
-RFD900 rfd_data;
-HM10BLE ble_data;
-char L76LM33_Buffer[NMEA_TRAME_RMC_SIZE]; // gps_data buffer
-typedef struct {
-	uint8_t mode;
-	uint8_t pyro0;
-	uint8_t pyro1;
-	uint8_t accelerometer;
-	uint8_t barometer;
-	uint8_t gps;
-	uint8_t sd;
-} STM32_states;
-typedef struct {
-	STM32_states header_states;
-	uint8_t *data;
-	uint8_t crc16[2];
-	uint8_t size;
-} STM32_Packet;
-STM32_Packet packet;
-/* USER CODE END 0 */
-
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
-
 void STM32_u16To8(uint16_t data, STM32_Packet packet, uint8_t index) {
 
 	packet.data[index] = (uint8_t)(data >> 8);
@@ -146,17 +154,15 @@ void STM32_i32To8(int32_t data, STM32_Packet packet, uint8_t index) {
 
 uint8_t STM32_SetMode(uint8_t mode) {
 
-	if(mode != MODE_PREFLIGHT && mode != MODE_INFLIGHT && mode != MODE_POSTFLIGHT){
+	if(mode != MODE_PREFLIGHT && mode != MODE_INFLIGHT && mode != MODE_POSTFLIGHT) {
 		return 0;
 	}
-
 	packet.header_states.mode = mode;
 	return 1; // OK
 }
 
 void STM32_InitRoutine(void) {
 
-	/* MCU Configuration--------------------------------------------------------*/
 	HAL_Init();
 	SystemClock_Config();
 	MX_USART1_UART_Init();
@@ -166,9 +172,7 @@ void STM32_InitRoutine(void) {
 	MX_TIM2_Init();
 	MX_ADC1_Init();
 	MX_CRC_Init();
-	MX_FATFS_Init();
 
-	/* Communications Configuration-------------------------------------------------------- */
 	printf("|----------Starting----------|\r\n");
 	SPI_Init(1);
 	printf("(+) SPI1 succeeded...\r\n");
@@ -181,7 +185,6 @@ void STM32_InitRoutine(void) {
 	USART_Init(3);
 	printf("(+) USART3 succeeded...\r\n");
 
-	/* Components Configuration-------------------------------------------------------- */
 	printf("|----------Components initialization----------|\r\n");
 	STM32_SetMode(MODE_PREFLIGHT);
 	printf("(+) Mode flight: %i succeeded...\r\n", packet.header_states.mode);
@@ -192,14 +195,28 @@ void STM32_InitRoutine(void) {
 	if (CD74HC4051_Init(&hadc1) != 1) {
 	  printf("(-) CD74HC4051 failed...\r\n");
 	} else {
-		packet.header_states.pyro0 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_0, VREF12); // TODO: Verifier vref
-		packet.header_states.pyro1 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_1, VREF12); // TODO: Verifier vref
+		packet.header_states.pyro0 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_0, VREF12);  // TODO: Verifier vref
+		packet.header_states.pyro1 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_1, VREF12);  // TODO: Verifier vref
 		printf(" -> Pyro0 state: %i\r\n", packet.header_states.pyro0);
 		printf(" -> Pyro1 state: %i\r\n", packet.header_states.pyro1);
 		printf("(+) CD74HC4051 succeeded...\r\n");
 	}
+	// Bluetooth
+	HM10BLE_Init(&ble_data);
+	while (!check_ble_done) {
+		if (HM10BLE_Connection(&ble_data, BT_USART_PORT, HM10BLE_Buffer) == 1) {
+			packet.header_states.ble = 0x01;
+			// TODO: Set ref values temp + press
+			printf("(+) HM10BLE connection succeeded...\r\n");
+			check_ble_done = 1;
+		}
+	}
+	if(HM10BLE_Connection(&ble_data, BT_USART_PORT, HM10BLE_Buffer) == 0) {
+		packet.header_states.ble = 0x00;
+		// TODO: Set default ref values temp + press
+		printf("(-) HM10BLE connection failed..\r\n");
+	}
 	// Barometer
-	// TODO: add hm10 set ref wait before continue
 	packet.header_states.barometer = BMP280_Init(&bmp_data, BMP_SPI_PORT, T0, P0) == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
 	// Accelerometer
@@ -211,7 +228,6 @@ void STM32_InitRoutine(void) {
 	// SD Card
 	packet.header_states.sd = MEM2067_SDCardDetection() == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.sd ? "(+) SD card detected in MEM2067...\r\n" : "(-) No SD card detected in MEM2067...\r\n");
-	/* USER CODE END 2 */
 }
 
 uint8_t STM32_ModeRoutine(void) {
@@ -223,7 +239,6 @@ uint8_t STM32_ModeRoutine(void) {
 
     switch (packet.header_states.mode) {
         case MODE_PREFLIGHT:
-        	// BMP normal mode
         	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
 
             header_states = (packet.header_states.mode << 6) | (packet.header_states.pyro0 << 5) | (packet.header_states.pyro1 << 4)
@@ -235,7 +250,7 @@ uint8_t STM32_ModeRoutine(void) {
             // Altitude
             BMP280_ReadPressure(&bmp_data);
 			STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa), packet, 0);
-            // Temperature
+			 // Temperature
 			BMP280_ReadTemperature(&bmp_data);
             STM32_i32To8((int32_t)bmp_data.temp_C, packet, 4);
             // Roll Pitch Yaw
@@ -243,7 +258,7 @@ uint8_t STM32_ModeRoutine(void) {
             STM32_i32To8((int32_t)icm_data.kalmanAngleRoll, packet, 8);
             STM32_i32To8((int32_t)icm_data.kalmanAnglePitch, packet, 12);
             // TODO: Yaw ...
-            //V_Batt
+            // V_Batt
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREF33), packet, 20);
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREF33), packet, 22);
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREF33), packet, 24);
@@ -251,7 +266,6 @@ uint8_t STM32_ModeRoutine(void) {
 
             break;
         case MODE_INFLIGHT:
-        	// BMP normal mode
         	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
 
             header_states = (packet.header_states.mode << 6) | (packet.header_states.pyro0 << 5) | (packet.header_states.pyro1 << 4) | 0x00;
@@ -282,20 +296,20 @@ uint8_t STM32_ModeRoutine(void) {
             STM32_i32To8((int32_t)icm_data.accX, packet, 42);
             STM32_i32To8((int32_t)icm_data.accY, packet, 46);
             STM32_i32To8((int32_t)icm_data.accZ, packet, 50);
-			// Roll Pitch
+            // Roll Pitch
 			STM32_i32To8((int32_t)icm_data.kalmanAngleRoll, packet, 54);
 			STM32_i32To8((int32_t)icm_data.kalmanAnglePitch, packet, 58);
 
             break;
         case MODE_POSTFLIGHT:
-        	// BMP low mode
         	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_LOW);
             header_states = (packet.header_states.mode << 6) | 0x00;
 
             packet.size = POSTFLIGHT_DATASIZE;
             packet.data = (uint8_t *)malloc(packet.size * sizeof(uint8_t));
             // Altitude
-			STM32_i32To8((int32_t)BMP280_PressureToAltitude(BMP280_ReadPressure(&bmp_data)), packet, 0);
+			BMP280_ReadPressure(&bmp_data);
+			STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa), packet, 0);
 			// GPS
 			L76LM33_Read(GPS_USART_PORT, L76LM33_Buffer, &gps_data);
 			STM32_i32To8(gps_data.time, packet, 4);
@@ -305,7 +319,7 @@ uint8_t STM32_ModeRoutine(void) {
 			packet.data[17] = gps_data.longitude_indicator;
 			STM32_i32To8(gps_data.speed_knots, packet, 18);
 			STM32_i32To8(gps_data.track_angle, packet, 22);
-			//V_Batt
+			// V_Batt
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREF33), packet, 26);
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREF33), packet, 28);
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREF33), packet, 30);
@@ -323,7 +337,9 @@ uint8_t STM32_ModeRoutine(void) {
     packet.crc16[0] = (uint8_t)(crc >> 8);
     packet.crc16[1] = (uint8_t)(crc & 0xFF);
     rfd_data.crc = (uint8_t *)packet.crc16;
+
     // TODO: add MEM2067_Write()
+
     if(RFD900_Send(&rfd_data, RFD_USART_PORT) == 1) {
     	free(packet.data);
 		return 1; // OK
@@ -332,27 +348,59 @@ uint8_t STM32_ModeRoutine(void) {
     	return 0; // ERROR
     }
 }
+/* USER CODE END 0 */
 
+/**
+  * @brief  The application entry point.
+  * @retval int
+  */
 int main(void)
 {
-	/* USER CODE BEGIN 1 */
+
+  /* USER CODE BEGIN 1 */
 	STM32_InitRoutine();
-	/* USER CODE END 1 */
+  /* USER CODE END 1 */
 
-	/* Infinite loop */
-	/* USER CODE BEGIN WHILE */
+  /* MCU Configuration--------------------------------------------------------*/
 
-	char ble_response[100];
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
+  SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+  MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
+  MX_USART3_UART_Init();
+  MX_TIM3_Init();
+  MX_TIM2_Init();
+  MX_ADC1_Init();
+  MX_CRC_Init();
+  MX_FATFS_Init();
+  MX_TIM1_Init();
+  /* USER CODE BEGIN 2 */
+
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 	while (1)
 	{
 		// TODO: conditions flight mode change
-		// TEST ZONE START
-
-		// TEST ZONE END
 	}
-	/* USER CODE END WHILE */
-	/* USER CODE BEGIN 3 */
-	/* USER CODE END 3 */
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+  /* USER CODE END 3 */
 }
 
 /**
@@ -473,6 +521,64 @@ static void MX_CRC_Init(void)
   /* USER CODE END CRC_Init 2 */
 
 }
+
+/**
+  * @brief TIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM1_Init(void)
+{
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 8399;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 29999;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM1_Init 2 */
+  if(HAL_TIM_Base_Start_IT(&htim1) != HAL_OK) {
+	  Error_Handler();
+  }
+  /* USER CODE END TIM1_Init 2 */
+
+}
+
+/* USER CODE BEGIN 1 */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+
+    if (htim->Instance == TIM1) {
+        check_ble_done = 1;
+        HAL_TIM_Base_Stop_IT(&htim1);
+    }
+}
+/* USER CODE END 1 */
 
 /**
   * @brief TIM2 Initialization Function
@@ -687,7 +793,6 @@ int _write(int le, char *ptr, int len)
 	}
 	return len;
 }
-
 /* USER CODE END 4 */
 
 /**
