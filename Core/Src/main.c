@@ -199,7 +199,8 @@ void STM32_InitRoutine(void) {
 		printf("(+) CD74HC4051 succeeded...\r\n");
 	}
 	// Barometer
-	packet.header_states.barometer = BMP280_Init(&bmp_data, BMP_SPI_PORT, T0 - 273.15, P0) == 1 ? 0x01 : 0x00;
+	// TODO: add hm10 set ref wait before continue
+	packet.header_states.barometer = BMP280_Init(&bmp_data, BMP_SPI_PORT, T0, P0) == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
 	// Accelerometer
 	packet.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x00 : 0x01;
@@ -340,8 +341,11 @@ int main(void)
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
+
+	char ble_response[100];
 	while (1)
 	{
+		// TODO: conditions flight mode change
 		// TEST ZONE START
 
 		// TEST ZONE END

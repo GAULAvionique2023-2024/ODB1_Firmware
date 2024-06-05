@@ -27,25 +27,25 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000029  00000000  00000000  0000b1e8  2**0
                   CONTENTS, READONLY
- 12 .debug_info   0000adb6  00000000  00000000  0000b211  2**0
+ 12 .debug_info   0000ade7  00000000  00000000  0000b211  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 0000200c  00000000  00000000  00015fc7  2**0
+ 13 .debug_abbrev 0000202c  00000000  00000000  00015ff8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_loclists 00000fef  00000000  00000000  00017fd3  2**0
+ 14 .debug_loclists 00000fef  00000000  00000000  00018024  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_aranges 00000620  00000000  00000000  00018fc2  2**0
+ 15 .debug_aranges 00000620  00000000  00000000  00019013  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_rnglists 0000049f  00000000  00000000  000195e2  2**0
+ 16 .debug_rnglists 0000049f  00000000  00000000  00019633  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_macro  0001b917  00000000  00000000  00019a81  2**0
+ 17 .debug_macro  0001b8df  00000000  00000000  00019ad2  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_line   0000dff9  00000000  00000000  00035398  2**0
+ 18 .debug_line   0000e000  00000000  00000000  000353b1  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    0009576b  00000000  00000000  00043391  2**0
+ 19 .debug_str    00095792  00000000  00000000  000433b1  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .comment      00000043  00000000  00000000  000d8afc  2**0
+ 20 .comment      00000043  00000000  00000000  000d8b43  2**0
                   CONTENTS, READONLY
- 21 .debug_frame  00002660  00000000  00000000  000d8b40  2**2
+ 21 .debug_frame  00002660  00000000  00000000  000d8b88  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -2689,7 +2689,7 @@ uint8_t L76LM33_Init (unsigned short usart_port) {
 08001bb8 <FATFS_ErrorToString>:
 extern char USERPath[4];
 
-// Dedebugging
+// Debugging
 const char* FATFS_ErrorToString(FRESULT result) {
 
     switch (result) {
@@ -4312,7 +4312,7 @@ void STM32_InitRoutine(void) {
 	  printf("(-) CD74HC4051 failed...\r\n");
  8002572:	483b      	ldr	r0, [pc, #236]	@ (8002660 <STM32_InitRoutine+0x184>)
  8002574:	f004 ffc2 	bl	80074fc <puts>
-	packet.header_states.barometer = BMP280_Init(&bmp_data, BMP_SPI_PORT, T0 - 273.15, P0) == 1 ? 0x01 : 0x00;
+	packet.header_states.barometer = BMP280_Init(&bmp_data, BMP_SPI_PORT, T0, P0) == 1 ? 0x01 : 0x00;
  8002578:	4b3a      	ldr	r3, [pc, #232]	@ (8002664 <STM32_InitRoutine+0x188>)
  800257a:	4a3b      	ldr	r2, [pc, #236]	@ (8002668 <STM32_InitRoutine+0x18c>)
  800257c:	2102      	movs	r1, #2
@@ -4424,7 +4424,7 @@ void STM32_InitRoutine(void) {
  800265c:	20000430 	.word	0x20000430
  8002660:	0800985c 	.word	0x0800985c
  8002664:	47c5e680 	.word	0x47c5e680
- 8002668:	41700000 	.word	0x41700000
+ 8002668:	43901333 	.word	0x43901333
  800266c:	20000294 	.word	0x20000294
  8002670:	08009654 	.word	0x08009654
  8002674:	2000025c 	.word	0x2000025c

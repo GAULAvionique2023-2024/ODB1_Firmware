@@ -11,7 +11,7 @@
 extern FATFS USERFatFS;
 extern char USERPath[4];
 
-// Dedebugging
+// Debugging
 const char* FATFS_ErrorToString(FRESULT result) {
 
     switch (result) {

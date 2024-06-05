@@ -1,4 +1,4 @@
-../Core/Src/GAUL_Drivers/HM10_BLE.c:11:6:HM10BLE_Init	0	static
-../Core/Src/GAUL_Drivers/HM10_BLE.c:16:6:HM10BLE_SendCommand	0	static
-../Core/Src/GAUL_Drivers/HM10_BLE.c:21:6:HM10BLE_Read	8	static
-../Core/Src/GAUL_Drivers/HM10_BLE.c:28:6:HM10BLE_Send	0	static
+../Core/Src/GAUL_Drivers/HM10_BLE.c:14:9:HM10BLE_Init	0	static
+../Core/Src/GAUL_Drivers/HM10_BLE.c:40:9:HM10BLE_Read	8	static
+../Core/Src/GAUL_Drivers/HM10_BLE.c:46:9:HM10BLE_Send	8	static
+../Core/Src/GAUL_Drivers/HM10_BLE.c:26:9:HM10BLE_Connection	16	static

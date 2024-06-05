@@ -11,7 +11,11 @@
 #include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
 #include <string.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 
+static char *paired_message = "(+) HM10BLE's STM32 connected...\r\n";
+static char *command_at = "AT";
 
 typedef struct {
 	bool hm10_status;
@@ -23,11 +27,11 @@ typedef struct {
 	bool sd_status;
 } HM10BLE;
 
-void HM10BLE_Init(void);
+uint8_t HM10BLE_Init(HM10BLE *status);
+uint8_t HM10BLE_Connection(HM10BLE *status, unsigned short usart_port, uint8_t *rx_buffer);
 
-void HM10BLE_SendCommand(char *command);
-void HM10BLE_Read(unsigned short usart_port,char *response);
-void HM10BLE_Send(unsigned short usart_port, char *rx_buffer, HM10BLE *status);
+uint8_t HM10BLE_Read(unsigned short usart_port, uint8_t *response, uint8_t size);
+uint8_t HM10BLE_Send(unsigned short usart_port, uint8_t *message, uint8_t size);
 // TODO: add temp_ref + press_ref modification via ble
 
 
