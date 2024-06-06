@@ -15,7 +15,7 @@ uint8_t BMP280_WriteRegister(uint8_t reg, uint8_t value);
 void BMP280_ReadCalibrationData(BMP280 *devBMP);
 uint8_t BMP280_BMP280_MeasureReference(BMP280 devBMP, float temp_ref, float press_ref);
 
-uint8_t BMP280_Init(BMP280 *devBMP, unsigned short spi_port, float temp_ref, float press_ref) {
+uint8_t BMP280_Init(BMP280 *devBMP, unsigned short spi_port) {
 
 	SPI_Init(spi_port);
 
@@ -30,7 +30,7 @@ uint8_t BMP280_Init(BMP280 *devBMP, unsigned short spi_port, float temp_ref, flo
     BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, BMP280_SETTING_CTRL_MEAS_NORMAL);
     BMP280_WriteRegister(BMP280_REG_CONFIG, BMP280_SETTING_CONFIG);
     // Ajuster reference
-    BMP280_MeasureReference(devBMP, temp_ref, press_ref);
+    BMP280_MeasureReference(devBMP, T0, 101325.0);
 
     return 1;
 }

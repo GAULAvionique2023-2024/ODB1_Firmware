@@ -5,5 +5,5 @@
 ../Core/Src/GAUL_Drivers/BMP280.c:117:9:BMP280_MeasureReference	16	static
 ../Core/Src/GAUL_Drivers/BMP280.c:81:6:BMP280_ReadCalibrationData	48	static
 ../Core/Src/GAUL_Drivers/BMP280.c:141:9:BMP280_WriteRegister	16	static
-../Core/Src/GAUL_Drivers/BMP280.c:18:9:BMP280_Init	16	static
+../Core/Src/GAUL_Drivers/BMP280.c:18:9:BMP280_Init	8	static
 ../Core/Src/GAUL_Drivers/BMP280.c:105:9:BMP280_SwapMode	8	static

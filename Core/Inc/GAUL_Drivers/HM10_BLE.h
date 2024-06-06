@@ -27,7 +27,7 @@ typedef struct {
 	bool sd_status;
 } HM10BLE;
 
-uint8_t HM10BLE_Init(HM10BLE *devHM10);
+uint8_t HM10BLE_Init(HM10BLE *devHM10, unsigned short usart_port);
 uint8_t HM10BLE_Connection(HM10BLE *devHM10, unsigned short usart_port, uint8_t *rx_buffer);
 
 uint8_t HM10BLE_Read(unsigned short usart_port, uint8_t *response, uint8_t size);

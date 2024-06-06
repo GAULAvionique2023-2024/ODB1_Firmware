@@ -88,7 +88,6 @@ ADC_HandleTypeDef hadc1;
 
 CRC_HandleTypeDef hcrc;
 
-TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
@@ -100,8 +99,6 @@ UART_HandleTypeDef huart3;
 struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
 struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
 
-volatile int check_ble_done = 0;
-
 // Variables
 GPS_Data gps_data;
 BMP280 bmp_data;
@@ -109,8 +106,8 @@ ICM20602 icm_data;
 RFD900 rfd_data;
 HM10BLE ble_data;
 
-char L76LM33_Buffer[NMEA_TRAME_RMC_SIZE]; // gps_data buffer
-uint8_t HM10BLE_Buffer[20];
+char L76LM33_buffer[NMEA_TRAME_RMC_SIZE]; // gps_data buffer
+uint8_t HM10BLE_buffer[20];
 STM32_Packet packet;
 /* USER CODE END PV */
 
@@ -123,7 +120,6 @@ static void MX_TIM3_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
-static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
 void STM32_u16To8(uint16_t data, STM32_Packet packet, uint8_t index);
 void STM32_i32To8(int32_t data, STM32_Packet packet, uint8_t index);
@@ -201,36 +197,27 @@ void STM32_InitRoutine(void) {
 		printf(" -> Pyro1 state: %i\r\n", packet.header_states.pyro1);
 		printf("(+) CD74HC4051 succeeded...\r\n");
 	}
-	// Bluetooth
-	HM10BLE_Init(&ble_data);
-	while (!check_ble_done) {
-		if (HM10BLE_Connection(&ble_data, BT_USART_PORT, HM10BLE_Buffer) == 1) {
-			packet.header_states.ble = 0x01;
-			// TODO: Set ref values temp + press
-			printf("(+) HM10BLE connection succeeded...\r\n");
-			check_ble_done = 1;
-		}
-	}
-	if(HM10BLE_Connection(&ble_data, BT_USART_PORT, HM10BLE_Buffer) == 0) {
-		packet.header_states.ble = 0x00;
-		// TODO: Set default ref values temp + press
-		printf("(-) HM10BLE connection failed..\r\n");
-	}
 	// Barometer
-	packet.header_states.barometer = BMP280_Init(&bmp_data, BMP_SPI_PORT, T0, P0) == 1 ? 0x01 : 0x00;
+	packet.header_states.barometer = BMP280_Init(&bmp_data, BMP_SPI_PORT) == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
 	// Accelerometer
-	packet.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x00 : 0x01;
+	packet.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x01 : 0x00;
 	printf(packet.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
 	// GPS
 	packet.header_states.gps = L76LM33_Init(GPS_USART_PORT) == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
 	// SD Card
+	/*
 	packet.header_states.sd = MEM2067_SDCardDetection() == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.sd ? "(+) SD card detected in MEM2067...\r\n" : "(-) No SD card detected in MEM2067...\r\n");
+	*/
+	// Bluetooth
+	HM10BLE_Init(&ble_data, BT_USART_PORT);
 }
 
 uint8_t STM32_ModeRoutine(void) {
+
+	uint8_t ok = 0;
 
     uint8_t header_states = 0x00;
     packet.size = 0;
@@ -240,6 +227,14 @@ uint8_t STM32_ModeRoutine(void) {
     switch (packet.header_states.mode) {
         case MODE_PREFLIGHT:
         	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
+        	if (HM10BLE_Connection(&ble_data, BT_USART_PORT, HM10BLE_buffer) == 1) {
+				packet.header_states.ble = 0x01;
+				printf("(+) HM10BLE connection succeeded...\r\n");
+				printf(" -> En attente des valeurs de reference pour la temperature et de la pression(t;p)...\r\n");
+				// TODO: Set ref values temp + press
+			} else {
+				packet.header_states.ble = 0x00;
+			}
 
             header_states = (packet.header_states.mode << 6) | (packet.header_states.pyro0 << 5) | (packet.header_states.pyro1 << 4)
                             | (packet.header_states.accelerometer << 3) | (packet.header_states.barometer << 2) | (packet.header_states.gps << 1)
@@ -264,6 +259,7 @@ uint8_t STM32_ModeRoutine(void) {
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREF33), packet, 24);
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5), packet, 26);
 
+			ok = 1;
             break;
         case MODE_INFLIGHT:
         	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
@@ -279,7 +275,7 @@ uint8_t STM32_ModeRoutine(void) {
             BMP280_ReadTemperature(&bmp_data);
             STM32_i32To8((int32_t)bmp_data.temp_C, packet, 4);
             // GPS
-            L76LM33_Read(GPS_USART_PORT, L76LM33_Buffer, &gps_data);
+            L76LM33_Read(GPS_USART_PORT, L76LM33_buffer, &gps_data);
             STM32_i32To8(gps_data.time, packet, 8);
             STM32_i32To8(gps_data.latitude, packet, 12);
             packet.data[12] = gps_data.latitude_indicator;
@@ -300,6 +296,7 @@ uint8_t STM32_ModeRoutine(void) {
 			STM32_i32To8((int32_t)icm_data.kalmanAngleRoll, packet, 54);
 			STM32_i32To8((int32_t)icm_data.kalmanAnglePitch, packet, 58);
 
+			ok = 1;
             break;
         case MODE_POSTFLIGHT:
         	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_LOW);
@@ -311,7 +308,7 @@ uint8_t STM32_ModeRoutine(void) {
 			BMP280_ReadPressure(&bmp_data);
 			STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa), packet, 0);
 			// GPS
-			L76LM33_Read(GPS_USART_PORT, L76LM33_Buffer, &gps_data);
+			L76LM33_Read(GPS_USART_PORT, L76LM33_buffer, &gps_data);
 			STM32_i32To8(gps_data.time, packet, 4);
 			STM32_i32To8(gps_data.latitude, packet, 8);
 			packet.data[12] = gps_data.latitude_indicator;
@@ -325,9 +322,10 @@ uint8_t STM32_ModeRoutine(void) {
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREF33), packet, 30);
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5), packet, 32);
 
+			ok = 1;
             break;
         default:
-            return 0; // Error
+        	ok = 0; // Error
     }
 
     rfd_data.header = header_states;
@@ -342,11 +340,13 @@ uint8_t STM32_ModeRoutine(void) {
 
     if(RFD900_Send(&rfd_data, RFD_USART_PORT) == 1) {
     	free(packet.data);
-		return 1; // OK
+		ok = 1; // OK
     } else {
     	free(packet.data);
-    	return 0; // ERROR
+    	ok = 0; // ERROR
     }
+
+    return ok;
 }
 /* USER CODE END 0 */
 
@@ -386,8 +386,10 @@ int main(void)
   MX_ADC1_Init();
   MX_CRC_Init();
   MX_FATFS_Init();
-  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
+
+	USART_RX(BT_USART_PORT, HM10BLE_buffer, sizeof(HM10BLE_buffer));
+	USART_TX(BT_USART_PORT, (uint8_t *)("AT"), strlen("AT"));
 
   /* USER CODE END 2 */
 
@@ -396,6 +398,9 @@ int main(void)
 	while (1)
 	{
 		// TODO: conditions flight mode change
+		USART_TX(BT_USART_PORT, (uint8_t *)("Hello from STM32"), strlen("Hello from STM32"));
+		USART_RX(BT_USART_PORT, HM10BLE_buffer, sizeof(HM10BLE_buffer));
+		HAL_Delay(1000);
 	}
     /* USER CODE END WHILE */
 
@@ -521,64 +526,6 @@ static void MX_CRC_Init(void)
   /* USER CODE END CRC_Init 2 */
 
 }
-
-/**
-  * @brief TIM1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM1_Init(void)
-{
-
-  /* USER CODE BEGIN TIM1_Init 0 */
-
-  /* USER CODE END TIM1_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM1_Init 1 */
-
-  /* USER CODE END TIM1_Init 1 */
-  htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 8399;
-  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 29999;
-  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim1.Init.RepetitionCounter = 0;
-  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM1_Init 2 */
-  if(HAL_TIM_Base_Start_IT(&htim1) != HAL_OK) {
-	  Error_Handler();
-  }
-  /* USER CODE END TIM1_Init 2 */
-
-}
-
-/* USER CODE BEGIN 1 */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-
-    if (htim->Instance == TIM1) {
-        check_ble_done = 1;
-        HAL_TIM_Base_Stop_IT(&htim1);
-    }
-}
-/* USER CODE END 1 */
 
 /**
   * @brief TIM2 Initialization Function

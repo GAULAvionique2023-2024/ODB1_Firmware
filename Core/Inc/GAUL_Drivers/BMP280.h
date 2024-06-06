@@ -77,7 +77,7 @@ typedef struct {
     float 				pressure_ref;
 } BMP280;
 
-uint8_t BMP280_Init(BMP280 *devBMP, unsigned short spi_port, float temp_ref, float press_ref);
+uint8_t BMP280_Init(BMP280 *devBMP, unsigned short spi_port);
 
 uint8_t BMP280_ReadTemperature(BMP280 *devBMP);
 uint8_t BMP280_ReadPressure(BMP280 *devBMP);

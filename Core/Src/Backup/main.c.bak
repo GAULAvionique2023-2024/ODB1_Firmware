@@ -52,6 +52,7 @@ typedef struct {
 	uint8_t barometer;
 	uint8_t gps;
 	uint8_t sd;
+	uint8_t ble;
 } STM32_states;
 
 typedef struct {
@@ -99,13 +100,17 @@ UART_HandleTypeDef huart3;
 struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
 struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
 
+volatile int check_ble_done = 0;
+
 // Variables
 GPS_Data gps_data;
 BMP280 bmp_data;
 ICM20602 icm_data;
 RFD900 rfd_data;
 HM10BLE ble_data;
+
 char L76LM33_Buffer[NMEA_TRAME_RMC_SIZE]; // gps_data buffer
+uint8_t HM10BLE_Buffer[20];
 STM32_Packet packet;
 /* USER CODE END PV */
 
@@ -197,8 +202,7 @@ void STM32_InitRoutine(void) {
 		printf("(+) CD74HC4051 succeeded...\r\n");
 	}
 	// Barometer
-	// TODO: add hm10 set ref wait before continue
-	packet.header_states.barometer = BMP280_Init(&bmp_data, BMP_SPI_PORT, T0, P0) == 1 ? 0x01 : 0x00;
+	packet.header_states.barometer = BMP280_Init(&bmp_data, BMP_SPI_PORT) == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
 	// Accelerometer
 	packet.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x00 : 0x01;
@@ -207,8 +211,24 @@ void STM32_InitRoutine(void) {
 	packet.header_states.gps = L76LM33_Init(GPS_USART_PORT) == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
 	// SD Card
+	/*
 	packet.header_states.sd = MEM2067_SDCardDetection() == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.sd ? "(+) SD card detected in MEM2067...\r\n" : "(-) No SD card detected in MEM2067...\r\n");
+	*/
+	// Bluetooth
+	HM10BLE_Init(&ble_data, BT_USART_PORT);
+	HAL_TIM_Base_Start_IT(&htim1); // Start TIM1
+	while (!check_ble_done) {
+		if (HM10BLE_Connection(&ble_data, BT_USART_PORT, HM10BLE_Buffer) == 1) {
+			packet.header_states.ble = 0x01;
+			printf("(+) HM10BLE connection succeeded...\r\n");
+			check_ble_done = 1;
+		}
+	}
+	if(HM10BLE_Connection(&ble_data, BT_USART_PORT, HM10BLE_Buffer) == 0) {
+		packet.header_states.ble = 0x00;
+		printf("(-) HM10BLE connection failed..\r\n");
+	}
 }
 
 uint8_t STM32_ModeRoutine(void) {
@@ -221,6 +241,10 @@ uint8_t STM32_ModeRoutine(void) {
     switch (packet.header_states.mode) {
         case MODE_PREFLIGHT:
         	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
+        	if(packet.header_states.ble == 0x01) {
+        		printf(" -> En attente des valeurs de reference pour la temperature et de la pression(t;p)...\r\n");
+        		// TODO: Set ref values temp + press
+        	}
 
             header_states = (packet.header_states.mode << 6) | (packet.header_states.pyro0 << 5) | (packet.header_states.pyro1 << 4)
                             | (packet.header_states.accelerometer << 3) | (packet.header_states.barometer << 2) | (packet.header_states.gps << 1)
@@ -543,13 +567,17 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN TIM1_Init 2 */
-  if(HAL_TIM_Base_Start(&htim1) != HAL_OK) {
-	  Error_Handler();
-  }
-  /* USER CODE END TIM1_Init 2 */
-
 }
+
+/* USER CODE BEGIN 1 */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+
+    if (htim->Instance == TIM1) {
+        check_ble_done = 1;
+        HAL_TIM_Base_Stop_IT(&htim1);
+    }
+}
+/* USER CODE END 1 */
 
 /**
   * @brief TIM2 Initialization Function
