@@ -1,5 +1,5 @@
 ../Core/Src/GAUL_Drivers/HM10_BLE.c:45:9:HM10BLE_Disconnection	1
-../Core/Src/GAUL_Drivers/HM10_BLE.c:50:9:HM10BLE_Read	1
-../Core/Src/GAUL_Drivers/HM10_BLE.c:56:9:HM10BLE_Send	1
+../Core/Src/GAUL_Drivers/HM10_BLE.c:51:9:HM10BLE_Read	1
+../Core/Src/GAUL_Drivers/HM10_BLE.c:57:9:HM10BLE_Send	1
 ../Core/Src/GAUL_Drivers/HM10_BLE.c:14:9:HM10BLE_Init	1
 ../Core/Src/GAUL_Drivers/HM10_BLE.c:31:9:HM10BLE_Connection	2

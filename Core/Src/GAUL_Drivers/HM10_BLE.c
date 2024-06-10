@@ -15,7 +15,7 @@ uint8_t HM10BLE_Init(HM10BLE *devHM10, unsigned short usart_port) {
 
 	// Configuration
 	HM10BLE_Send(usart_port, (uint8_t *)command_at, strlen(command_at));
-	HM10BLE_Send(usart_port, (uint8_t *)"AT+NAMEBulldogs", strlen("AT+NAMEBulldogs"));	// Name device
+	HM10BLE_Send(usart_port, (uint8_t *)"AT+NAMEBulldogs", strlen("AT+NAMEMerope"));	// Name device
 	HM10BLE_Send(usart_port, (uint8_t *)"AT+IMME1", strlen("AT+IMME1"));	// Start
 
 	devHM10->hm10_status = false;
@@ -45,6 +45,7 @@ uint8_t HM10BLE_Connection(HM10BLE *devHM10, unsigned short usart_port, uint8_t 
 uint8_t HM10BLE_Disconnection(HM10BLE *devHM10, unsigned short usart_port, uint8_t *rx_buffer) {
 
 
+	return 1; // OK
 }
 
 uint8_t HM10BLE_Read(unsigned short usart_port, uint8_t *response, uint8_t size) {

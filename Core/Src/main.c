@@ -107,7 +107,7 @@ RFD900 rfd_data;
 HM10BLE ble_data;
 
 char L76LM33_buffer[NMEA_TRAME_RMC_SIZE]; // gps_data buffer
-uint8_t HM10BLE_buffer[20];
+uint8_t HM10BLE_buffer[20];  // ble_data buffer
 STM32_Packet packet;
 /* USER CODE END PV */
 
@@ -217,7 +217,7 @@ void STM32_InitRoutine(void) {
 
 uint8_t STM32_ModeRoutine(void) {
 
-	uint8_t ok = 0;
+	uint8_t check = 0;
 
     uint8_t header_states = 0x00;
     packet.size = 0;
@@ -259,7 +259,7 @@ uint8_t STM32_ModeRoutine(void) {
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREF33), packet, 24);
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5), packet, 26);
 
-			ok = 1;
+			check = 1;
             break;
         case MODE_INFLIGHT:
         	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
@@ -296,7 +296,7 @@ uint8_t STM32_ModeRoutine(void) {
 			STM32_i32To8((int32_t)icm_data.kalmanAngleRoll, packet, 54);
 			STM32_i32To8((int32_t)icm_data.kalmanAnglePitch, packet, 58);
 
-			ok = 1;
+			check = 1;
             break;
         case MODE_POSTFLIGHT:
         	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_LOW);
@@ -322,10 +322,10 @@ uint8_t STM32_ModeRoutine(void) {
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREF33), packet, 30);
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5), packet, 32);
 
-			ok = 1;
+			check = 1;
             break;
         default:
-        	ok = 0; // Error
+        	check = 0; // Error
     }
 
     rfd_data.header = header_states;
@@ -340,13 +340,13 @@ uint8_t STM32_ModeRoutine(void) {
 
     if(RFD900_Send(&rfd_data, RFD_USART_PORT) == 1) {
     	free(packet.data);
-		ok = 1; // OK
+    	check = 1; // OK
     } else {
     	free(packet.data);
-    	ok = 0; // ERROR
+    	check = 0; // ERROR
     }
 
-    return ok;
+    return check;
 }
 /* USER CODE END 0 */
 
@@ -357,55 +357,48 @@ uint8_t STM32_ModeRoutine(void) {
 int main(void)
 {
 
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 	STM32_InitRoutine();
-  /* USER CODE END 1 */
+	/* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+	/* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+	/* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_USART1_UART_Init();
-  MX_USART2_UART_Init();
-  MX_USART3_UART_Init();
-  MX_TIM3_Init();
-  MX_TIM2_Init();
-  MX_ADC1_Init();
-  MX_CRC_Init();
-  MX_FATFS_Init();
-  /* USER CODE BEGIN 2 */
+	/* Initialize all configured peripherals */
+	MX_USART1_UART_Init();
+	MX_USART2_UART_Init();
+	MX_USART3_UART_Init();
+	MX_TIM3_Init();
+	MX_TIM2_Init();
+	MX_ADC1_Init();
+	MX_CRC_Init();
+	MX_FATFS_Init();
+	/* USER CODE BEGIN 2 */
+	/* USER CODE END 2 */
 
-	USART_RX(BT_USART_PORT, HM10BLE_buffer, sizeof(HM10BLE_buffer));
-	USART_TX(BT_USART_PORT, (uint8_t *)("AT"), strlen("AT"));
-
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
 	while (1)
 	{
 		// TODO: conditions flight mode change
-		USART_TX(BT_USART_PORT, (uint8_t *)("Hello from STM32"), strlen("Hello from STM32"));
-		USART_RX(BT_USART_PORT, HM10BLE_buffer, sizeof(HM10BLE_buffer));
-		HAL_Delay(1000);
 	}
-    /* USER CODE END WHILE */
+	/* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
-  /* USER CODE END 3 */
+	/* USER CODE BEGIN 3 */
+	/* USER CODE END 3 */
 }
 
 /**
