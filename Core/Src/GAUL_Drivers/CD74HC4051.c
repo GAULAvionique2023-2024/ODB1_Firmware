@@ -72,5 +72,5 @@ uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyr
 	Write_GPIO(PB, 5, LOW); // Pyro_ON1
 	Write_GPIO(PA, 15, HIGH); // Pyro_Test~
 
-	return (uint16_t)((adc_value * vref / 4096) * 1000); // millivolts
+	return (uint16_t)((adc_value * vref / 4096) * 1000);
 }

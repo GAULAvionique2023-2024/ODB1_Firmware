@@ -14,9 +14,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-static char *paired_message = "(+) HM10BLE's STM32 connected...\r\n";
-static char *command_at = "AT";
-
 typedef struct {
 	bool hm10_status;
 	bool rfd_status;

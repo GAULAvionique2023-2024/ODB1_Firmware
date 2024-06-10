@@ -133,19 +133,15 @@ uint8_t STM32_ModeRoutine(void);
 void STM32_u16To8(uint16_t data, STM32_Packet packet, uint8_t index) {
 
 	packet.data[index] = (uint8_t)(data >> 8);
-	index++;
-	packet.data[index] = (uint8_t)(data & 0xFF);
+	packet.data[index + 1] = (uint8_t)(data & 0xFF);
 }
 
 void STM32_i32To8(int32_t data, STM32_Packet packet, uint8_t index) {
 
 	packet.data[index] = (uint8_t)((data >> 24) & 0xFF);
-	index++;
-	packet.data[index] = (uint8_t)((data >> 16) & 0xFF);
-	index++;
-	packet.data[index] = (uint8_t)((data >> 8) & 0xFF);
-	index++;
-	packet.data[index] = (uint8_t)(data & 0xFF);
+	packet.data[index + 1] = (uint8_t)((data >> 16) & 0xFF);
+	packet.data[index + 2] = (uint8_t)((data >> 8) & 0xFF);
+	packet.data[index + 3] = (uint8_t)(data & 0xFF);
 }
 
 uint8_t STM32_SetMode(uint8_t mode) {
@@ -191,8 +187,8 @@ void STM32_InitRoutine(void) {
 	if (CD74HC4051_Init(&hadc1) != 1) {
 	  printf("(-) CD74HC4051 failed...\r\n");
 	} else {
-		packet.header_states.pyro0 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_0, VREF12);  // TODO: Verifier vref
-		packet.header_states.pyro1 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_1, VREF12);  // TODO: Verifier vref
+		//packet.header_states.pyro0 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_0, VREF12);  // TODO: Verifier vref ratio
+		//packet.header_states.pyro1 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_1, VREF12);  // TODO: Verifier vref ratio
 		printf(" -> Pyro0 state: %i\r\n", packet.header_states.pyro0);
 		printf(" -> Pyro1 state: %i\r\n", packet.header_states.pyro1);
 		printf("(+) CD74HC4051 succeeded...\r\n");
@@ -394,6 +390,7 @@ int main(void)
 	while (1)
 	{
 		// TODO: conditions flight mode change
+		STM32_ModeRoutine();
 	}
 	/* USER CODE END WHILE */
 

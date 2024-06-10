@@ -14,9 +14,9 @@ uint8_t HM10BLE_Send(unsigned short usart_port, uint8_t *message, uint8_t size);
 uint8_t HM10BLE_Init(HM10BLE *devHM10, unsigned short usart_port) {
 
 	// Configuration
-	HM10BLE_Send(usart_port, (uint8_t *)command_at, strlen(command_at));
-	HM10BLE_Send(usart_port, (uint8_t *)"AT+NAMEBulldogs", strlen("AT+NAMEMerope"));	// Name device
-	HM10BLE_Send(usart_port, (uint8_t *)"AT+IMME1", strlen("AT+IMME1"));	// Start
+	HM10BLE_Send(usart_port, (uint8_t *)"AT\n", strlen("AT\n"));							// Awake
+	HM10BLE_Send(usart_port, (uint8_t *)"AT+NAMEBulldogs\n", strlen("AT+NAMEMerope\n"));	// Name device
+	HM10BLE_Send(usart_port, (uint8_t *)"AT+IMME1\n", strlen("AT+IMME1\n"));				// Start
 
 	devHM10->hm10_status = false;
 	devHM10->rfd_status = false;
@@ -30,10 +30,10 @@ uint8_t HM10BLE_Init(HM10BLE *devHM10, unsigned short usart_port) {
 
 uint8_t HM10BLE_Connection(HM10BLE *devHM10, unsigned short usart_port, uint8_t *rx_buffer) {
 
-	HM10BLE_Send(usart_port, (uint8_t *)command_at, strlen(command_at));
-	HM10BLE_Read(usart_port, rx_buffer, strlen(command_at));
+	HM10BLE_Send(usart_port, (uint8_t *)"AT\n", strlen("AT\n"));
+	HM10BLE_Read(usart_port, rx_buffer, strlen("AT\n"));
 	if(rx_buffer == (uint8_t *)"OK"){
-		HM10BLE_Send(usart_port, (uint8_t *)paired_message, strlen(paired_message));
+		HM10BLE_Send(usart_port, (uint8_t *)"(+) HM10BLE's STM32 connected...\r\n", strlen("(+) HM10BLE's STM32 connected...\r\n"));
 		devHM10->hm10_status = true;
 		return 1; // OK
 	} else {
