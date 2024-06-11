@@ -187,8 +187,8 @@ void STM32_InitRoutine(void) {
 	if (CD74HC4051_Init(&hadc1) != 1) {
 	  printf("(-) CD74HC4051 failed...\r\n");
 	} else {
-		//packet.header_states.pyro0 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_0, VREF12);  // TODO: Verifier vref ratio
-		//packet.header_states.pyro1 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_1, VREF12);  // TODO: Verifier vref ratio
+		packet.header_states.pyro0 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_0, VREFPYRO);
+		packet.header_states.pyro1 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_1, VREFPYRO);
 		printf(" -> Pyro0 state: %i\r\n", packet.header_states.pyro0);
 		printf(" -> Pyro1 state: %i\r\n", packet.header_states.pyro1);
 		printf("(+) CD74HC4051 succeeded...\r\n");
@@ -244,16 +244,15 @@ uint8_t STM32_ModeRoutine(void) {
 			 // Temperature
 			BMP280_ReadTemperature(&bmp_data);
             STM32_i32To8((int32_t)bmp_data.temp_C, packet, 4);
-            // Roll Pitch Yaw
+            // Roll Pitch
             ICM20602_Update_All(&icm_data);
             STM32_i32To8((int32_t)icm_data.kalmanAngleRoll, packet, 8);
             STM32_i32To8((int32_t)icm_data.kalmanAnglePitch, packet, 12);
-            // TODO: Yaw ...
             // V_Batt
-			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREF33), packet, 20);
-			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREF33), packet, 22);
-			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREF33), packet, 24);
-			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5), packet, 26);
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREFLIPO1), packet, 20);
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREFLIPO3), packet, 22);
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREFLIPO3), packet, 24);
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5VAN), packet, 26);
 
 			check = 1;
             break;
@@ -313,10 +312,10 @@ uint8_t STM32_ModeRoutine(void) {
 			STM32_i32To8(gps_data.speed_knots, packet, 18);
 			STM32_i32To8(gps_data.track_angle, packet, 22);
 			// V_Batt
-			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREF33), packet, 26);
-			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREF33), packet, 28);
-			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREF33), packet, 30);
-			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5), packet, 32);
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREFLIPO1), packet, 26);
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREFLIPO3), packet, 28);
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREFLIPO3), packet, 30);
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5VAN), packet, 32);
 
 			check = 1;
             break;
@@ -390,7 +389,13 @@ int main(void)
 	while (1)
 	{
 		// TODO: conditions flight mode change
-		STM32_ModeRoutine();
+		//STM32_ModeRoutine();
+		BMP280_ReadPressure(&bmp_data);
+		BMP280_ReadTemperature(&bmp_data);
+		printf("pression: %.4f\r\n", bmp_data.pressure_Pa);
+		printf("altitude: %.4f\r\n", BMP280_PressureToAltitude(bmp_data.pressure_Pa));
+		printf("temperature: %.4f\r\n", bmp_data.temp_C);
+
 	}
 	/* USER CODE END WHILE */
 

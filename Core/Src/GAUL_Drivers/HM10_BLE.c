@@ -31,8 +31,8 @@ uint8_t HM10BLE_Init(HM10BLE *devHM10, unsigned short usart_port) {
 uint8_t HM10BLE_Connection(HM10BLE *devHM10, unsigned short usart_port, uint8_t *rx_buffer) {
 
 	HM10BLE_Send(usart_port, (uint8_t *)"AT\n", strlen("AT\n"));
-	HM10BLE_Read(usart_port, rx_buffer, strlen("AT\n"));
-	if(rx_buffer == (uint8_t *)"OK"){
+	HM10BLE_Read(usart_port, rx_buffer, 2);
+	if(rx_buffer == (uint8_t *)"OK\n"){
 		HM10BLE_Send(usart_port, (uint8_t *)"(+) HM10BLE's STM32 connected...\r\n", strlen("(+) HM10BLE's STM32 connected...\r\n"));
 		devHM10->hm10_status = true;
 		return 1; // OK

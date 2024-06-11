@@ -105,8 +105,8 @@ typedef struct{
 
 	float	angleRoll;
 	float	anglePitch;
-	float	kalmanAngleRoll;
-	float	kalmanAnglePitch;
+	float	kalmanAngleRoll; // Gauche/Droite
+	float	kalmanAnglePitch; // Haut/Bas
 
 }ICM20602;
 

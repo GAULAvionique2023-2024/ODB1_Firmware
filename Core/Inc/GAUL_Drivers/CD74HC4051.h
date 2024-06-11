@@ -28,8 +28,10 @@
 #define PYRO_CHANNEL_0 0x01
 #define PYRO_CHANNEL_1 0x02
 
-#define VREF33 3.3
-#define VREF5 5
+#define VREFPYRO 3.3
+#define VREF5VAN 3.205
+#define VREFLIPO1 2.91338
+#define VREFLIPO3 2.93817
 
 
 uint8_t CD74HC4051_Init(ADC_HandleTypeDef *hadc);
