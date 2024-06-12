@@ -18,11 +18,15 @@ void Pyro_Init(void) {
 	Write_GPIO(PB, 5, LOW);
 }
 
-void Pyro_Fire(bool armed) {
+void Pyro_Fire(bool armed, char pyro) {
 
 	if(armed == true) {
-		Write_GPIO(PB, 4, HIGH);
-		Write_GPIO(PB, 5, HIGH);
+		if(pyro == 0) {
+			Write_GPIO(PB, 4, HIGH);
+		}
+		if(pyro == 1) {
+			Write_GPIO(PB, 5, HIGH);
+		}
 	}
 	HAL_Delay(10);
 	Write_GPIO(PA, 15, HIGH);

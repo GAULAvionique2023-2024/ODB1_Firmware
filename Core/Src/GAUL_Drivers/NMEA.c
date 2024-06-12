@@ -53,6 +53,7 @@ uint8_t NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
                 }
                 break;
             case 1:
+            	printf("time: %s\r\n", token);
             	gps_data->time = NMEA_FloatToBytes(NMEA_CharToFloat(token));
                 break;
             case 2:
@@ -61,21 +62,27 @@ uint8_t NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
                 }
                 break;
             case 3:
+            	printf("latitude: %s\r\n", token);
             	gps_data->latitude = NMEA_FloatToBytes(NMEA_CharToFloat(token));
                 break;
             case 4:
+            	printf("latitude_indicator: %s\r\n", token);
                 gps_data->latitude_indicator = (uint8_t)token[0];
                 break;
             case 5:
+            	printf("longitude: %s\r\n", token);
                 gps_data->longitude = NMEA_FloatToBytes(NMEA_CharToFloat(token));
                 break;
             case 6:
+            	printf("longitude_indicator: %s\r\n", token);
                 gps_data->longitude_indicator = (uint8_t)token[0];
                 break;
             case 7:
+            	printf("speed: %s\r\n", token);
                 gps_data->speed_knots = NMEA_FloatToBytes(NMEA_CharToFloat(token));
                 break;
             case 8:
+            	printf("angle: %s\r\n", token);
                 gps_data->track_angle = NMEA_FloatToBytes(NMEA_CharToFloat(token));
                 break;
         }

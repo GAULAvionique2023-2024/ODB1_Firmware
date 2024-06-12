@@ -111,15 +111,10 @@ char L76LM33_buffer[NMEA_TRAME_RMC_SIZE]; // gps_data buffer
 uint8_t HM10BLE_buffer[20];  // ble_data buffer
 ROCKET_Packet packet;
 
-static const float gyroMin = 0.8;		// delta > 0.8 dps
-static const float accXYMin = 0.3;		// delta > 0.3 g
-static const float accZMin = 1.2;		// delta > 1.2 g
-static const float angleRollMin = 2;	// delta > 2 deg
-static const float anglePitchMin = 1;	// delta > 1 deg
+static const float accZMin = 1.1;		// delta > 0.9 g
+static const float angleMin = 2;		// delta > 2 deg
 static const float tempMin = 1;			// delta > 1 C
 static const float pressMin = 10;		// delta > 10 Pa
-static const float gpsMin =  0.0001;	// delta > 10 m
-static const float speedMin = 10;		// delta > 10 knots/s
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -346,152 +341,110 @@ uint8_t ROCKET_ModeRoutine(void) {
     return check;
 }
 
-uint16_t ROCKET_Behavior(void) {
+uint8_t ROCKET_Behavior(void) {
 
-	uint16_t behavior = 0x00;
+	uint8_t behavior = 0x00;
 	// Variation
 	/*
-	bool gyroX = false;
-	bool gyroY = false;
-	bool gyroZ = false;
-	bool accX = false;
-	bool accY = false;
-	bool accZ = false;
-	bool rollUp = false;
-	bool rollDown = false;
-	bool pitchUp = false;
-	bool pitchDown = false;
-	bool temp = false;
-	bool press = false;
-	bool latit = false;
-	bool longit = false;
-	bool speed = false;
+	accZ -> 1bit
+	rollUp -> 2bits (4 etats)
+	pitchUp -> 2bits (4 etats)
+	temp -> 1bit
+	press -> 1bit
 	*/
 
 	ICM20602_Update_All(&icm_data);
 	BMP280_ReadTemperature(&bmp_data);
 	BMP280_ReadPressure(&bmp_data);
-	//L76LM33_Read(GPS_USART_PORT, L76LM33_buffer, &gps_data);
 
 	float old_temp = bmp_data.temp_C;
 	float old_press = bmp_data.pressure_Pa;
-	int32_t old_latit = gps_data.latitude;
-	int32_t old_longit = gps_data.longitude;
-	int32_t old_speed = gps_data.speed_knots;
 
-	if(icm_data.gyroX >= gyroMin || icm_data.gyroX <= -gyroMin) {
-		behavior |= (1 << 0);
-		printf("%d", 1);
+	// Detect z
+	if(icm_data.accZ > 0) {
+		behavior |= (1 << 0);	// up
+		printf("Up\n");
 	} else {
-		behavior &= ~(1 << 0);
-		printf("%d", 0);
+		behavior &= ~(1 << 0);	// down
+		printf("Down\n");
 	}
-	if(icm_data.gyroY >= gyroMin || icm_data.gyroY <= -gyroMin) {
-		behavior |= (1 << 1);
-		printf("%d", 1);
+	if(icm_data.accZ <= accZMin && icm_data.accZ >= -accZMin) {
+		behavior |= (1 << 1);	// idle z
+		printf("Idle\n");
+	} else{
+		behavior &= ~(1 << 1);	// move z
+		printf("Move\n");
+	}
+	// Y
+	// Right
+	if(icm_data.angleRoll >= angleMin) {
+		if(icm_data.angleRoll <= 45) {
+			behavior |= (1 << 2); // up with deviation to right
+			printf("Y: up with deviation to right\n");
+		} else if(icm_data.angleRoll > 45) {
+			behavior &= ~(1 << 2);	// right with deviation to up
+			printf("Y: right with deviation to up\n");
+		}
 	} else {
-		behavior &= ~(1 << 1);
-		printf("%d", 0);
-	}
-	if(icm_data.gyroZ >= gyroMin || icm_data.gyroZ <= -gyroMin) {
 		behavior |= (1 << 2);
-		printf("%d", 1);
-	} else {
-		behavior &= ~(1 << 2);
-		printf("%d", 0);
 	}
-
-	if(icm_data.accX >= accXYMin || icm_data.accX <= -accXYMin) {
+	// Left
+	if(icm_data.angleRoll <= -angleMin) {
+		if(icm_data.angleRoll >= -45) {
+			behavior |= (1 << 3); // up with deviation to left
+			printf("Y: up with deviation to left\n");
+		} else if(icm_data.angleRoll < -45) {
+			behavior &= ~(1 << 3);	// left with deviation to up
+			printf("Y: left with deviation to up\n");
+		}
+	} else {
 		behavior |= (1 << 3);
-		printf("%d", 1);
-	} else {
-		behavior &= ~(1 << 3);
-		printf("%d", 0);
 	}
-	if(icm_data.accY >= accXYMin || icm_data.accY <= -accXYMin) {
+	// X
+	// Right
+	if(icm_data.anglePitch <= -angleMin) {
+		if(icm_data.anglePitch >= -45) {
+			behavior |= (1 << 4); // up with deviation to left
+			printf("X: up with deviation to right\n");
+		} else if(icm_data.anglePitch < -45) {
+			behavior &= ~(1 << 4);	// left with deviation to up
+			printf("X: right with deviation to up\n");
+		}
+	} else {
 		behavior |= (1 << 4);
-		printf("%d", 1);
-	} else {
-		behavior &= ~(1 << 4);
-		printf("%d", 0);
 	}
-	if(icm_data.accZ >= accZMin || icm_data.accZ <= -accZMin) {
+	// Left
+	if(icm_data.anglePitch >= angleMin) {
+		if(icm_data.anglePitch <= 45) {
+			behavior |= (1 << 5); // up with deviation to right
+			printf("X: up with deviation to left\n");
+		} else if(icm_data.anglePitch > 45) {
+			behavior &= ~(1 << 5);	// right with deviation to up
+			printf("X: left with deviation to up\n");
+		}
+	} else {
 		behavior |= (1 << 5);
-		printf("%d", 1);
-	} else {
-		behavior &= ~(1 << 5);
-		printf("%d", 0);
-	}
-
-	if(icm_data.kalmanAngleRoll >= angleRollMin) {
-		behavior |= (1 << 6);
-		printf("%d", 1);
-		printf("%d", 0);
-	} else if(icm_data.kalmanAngleRoll <= -angleRollMin) {
-		behavior |= (1 << 7);
-		printf("%d", 0);
-		printf("%d", 1);
-	} else {
-		behavior &= ~(1 << 6);
-		behavior &= ~(1 << 7);
-		printf("%d", 0);
-		printf("%d", 0);
-	}
-	if(icm_data.kalmanAnglePitch >= anglePitchMin) {
-		behavior |= (1 << 8);
-		printf("%d", 1);
-		printf("%d", 0);
-	} else if(icm_data.kalmanAnglePitch <= -anglePitchMin) {
-		behavior |= (1 << 9);
-		printf("%d", 0);
-		printf("%d", 1);
-	} else {
-		behavior &= ~(1 << 8);
-		behavior &= ~(1 << 9);
-		printf("%d", 0);
-		printf("%d", 0);
 	}
 
 	BMP280_ReadTemperature(&bmp_data);
 	if(bmp_data.temp_C > old_temp + tempMin || bmp_data.temp_C < old_temp - tempMin) {
-		behavior |= (1 << 10);
-		printf("%d", 1);
+		behavior |= (1 << 6);
 	} else {
-		behavior &= ~(1 << 10);
-		printf("%d", 0);
+		behavior &= ~(1 << 6);
 	}
 	BMP280_ReadPressure(&bmp_data);
 	if(bmp_data.pressure_Pa > old_press + pressMin || bmp_data.pressure_Pa < old_press - pressMin) {
-		behavior |= (1 << 11);
-		printf("%d", 1);
+		behavior |= (1 << 7);
+
 	} else {
-		behavior &= ~(1 << 11);
-		printf("%d", 0);
-	}
-	//L76LM33_Read(GPS_USART_PORT, L76LM33_buffer, &gps_data);
-	if(gps_data.latitude > old_latit + gpsMin || gps_data.latitude < old_latit - gpsMin) {
-		behavior |= (1 << 12);
-		printf("%d", 1);
-	} else {
-		behavior &= ~(1 << 12);
-		printf("%d", 0);
-	}
-	if(gps_data.longitude > old_longit + gpsMin || gps_data.longitude < old_longit - gpsMin) {
-		behavior |= (1 << 13);
-		printf("%d", 1);
-	} else {
-		behavior &= ~(1 << 13);
-		printf("%d", 0);
-	}
-	if(gps_data.speed_knots > old_speed + speedMin || gps_data.speed_knots < old_speed - speedMin) {
-		behavior |= (1 << 14);
-		printf("%dx0\r\n", 1);
-	} else {
-		behavior &= ~(1 << 14);
-		printf("%dx0\r\n", 0);
+		behavior &= ~(1 << 7);
 	}
 
 	return behavior;
+}
+
+void ROCKET_DecodeBehavior(uint16_t behavior) {
+
 }
 /* USER CODE END 0 */
 
@@ -540,15 +493,8 @@ int main(void)
 	{
 		// TODO: conditions flight mode change
 		//STM32_ModeRoutine();
-		/*
 		ICM20602_Update_All(&icm_data);
-		printf("gyro: (%0.4f ; %0.4f ; %0.4f)\r\n", icm_data.gyroX, icm_data.gyroY, icm_data.gyroZ);
-		printf("acc: (%0.4f ; %0.4f ; %0.4f)\r\n", icm_data.accX, icm_data.accY, icm_data.accZ);
-		printf("kalmanangleRoll: %0.4f\r\n", icm_data.kalmanAngleRoll);
-		printf("kalmananglePitch: %0.4f\r\n", icm_data.kalmanAnglePitch);
-		HAL_Delay(1000);
-		*/
-		printf("behavior: %04x\r\n", ROCKET_Behavior());
+		printf("Behavior: %u\r\n", ROCKET_Behavior());
 		HAL_Delay(1000);
 	}
     /* USER CODE END WHILE */
