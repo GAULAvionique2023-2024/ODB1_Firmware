@@ -25,6 +25,7 @@
 #include "string.h"
 #include "stdio.h"
 #include "stdbool.h"
+#include "inttypes.h"
 
 #include "GAUL_Drivers/WS2812_led.h"
 #include "GAUL_Drivers/BMP280.h"
@@ -53,14 +54,14 @@ typedef struct {
 	uint8_t gps;
 	uint8_t sd;
 	uint8_t ble;
-} STM32_states;
+} ROCKET_states;
 
 typedef struct {
-	STM32_states header_states;
+	ROCKET_states header_states;
 	uint8_t *data;
 	uint8_t crc16[2];
 	uint8_t size;
-} STM32_Packet;
+} ROCKET_Packet;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -108,7 +109,17 @@ HM10BLE ble_data;
 
 char L76LM33_buffer[NMEA_TRAME_RMC_SIZE]; // gps_data buffer
 uint8_t HM10BLE_buffer[20];  // ble_data buffer
-STM32_Packet packet;
+ROCKET_Packet packet;
+
+static const float gyroMin = 0.8;		// delta > 0.8 dps
+static const float accXYMin = 0.3;		// delta > 0.3 g
+static const float accZMin = 1.2;		// delta > 1.2 g
+static const float angleRollMin = 2;	// delta > 2 deg
+static const float anglePitchMin = 1;	// delta > 1 deg
+static const float tempMin = 1;			// delta > 1 C
+static const float pressMin = 10;		// delta > 10 Pa
+static const float gpsMin =  0.0001;	// delta > 10 m
+static const float speedMin = 10;		// delta > 10 knots/s
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -121,22 +132,22 @@ static void MX_TIM2_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
 /* USER CODE BEGIN PFP */
-void STM32_u16To8(uint16_t data, STM32_Packet packet, uint8_t index);
-void STM32_i32To8(int32_t data, STM32_Packet packet, uint8_t index);
-uint8_t STM32_SetMode(uint8_t mode);
-void STM32_InitRoutine(void);
-uint8_t STM32_ModeRoutine(void);
+void STM32_u16To8(uint16_t data, ROCKET_Packet packet, uint8_t index);
+void STM32_i32To8(int32_t data, ROCKET_Packet packet, uint8_t index);
+uint8_t ROCKET_SetMode(uint8_t mode);
+void ROCKET_InitRoutine(void);
+uint8_t ROCKET_ModeRoutine(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void STM32_u16To8(uint16_t data, STM32_Packet packet, uint8_t index) {
+void STM32_u16To8(uint16_t data, ROCKET_Packet packet, uint8_t index) {
 
 	packet.data[index] = (uint8_t)(data >> 8);
 	packet.data[index + 1] = (uint8_t)(data & 0xFF);
 }
 
-void STM32_i32To8(int32_t data, STM32_Packet packet, uint8_t index) {
+void STM32_i32To8(int32_t data, ROCKET_Packet packet, uint8_t index) {
 
 	packet.data[index] = (uint8_t)((data >> 24) & 0xFF);
 	packet.data[index + 1] = (uint8_t)((data >> 16) & 0xFF);
@@ -144,7 +155,7 @@ void STM32_i32To8(int32_t data, STM32_Packet packet, uint8_t index) {
 	packet.data[index + 3] = (uint8_t)(data & 0xFF);
 }
 
-uint8_t STM32_SetMode(uint8_t mode) {
+uint8_t ROCKET_SetMode(uint8_t mode) {
 
 	if(mode != MODE_PREFLIGHT && mode != MODE_INFLIGHT && mode != MODE_POSTFLIGHT) {
 		return 0;
@@ -153,7 +164,7 @@ uint8_t STM32_SetMode(uint8_t mode) {
 	return 1; // OK
 }
 
-void STM32_InitRoutine(void) {
+void ROCKET_InitRoutine(void) {
 
 	HAL_Init();
 	SystemClock_Config();
@@ -178,7 +189,7 @@ void STM32_InitRoutine(void) {
 	printf("(+) USART3 succeeded...\r\n");
 
 	printf("|----------Components initialization----------|\r\n");
-	STM32_SetMode(MODE_PREFLIGHT);
+	ROCKET_SetMode(MODE_PREFLIGHT);
 	printf("(+) Mode flight: %i succeeded...\r\n", packet.header_states.mode);
 	// LED RGB
 	WS2812_Init();
@@ -211,7 +222,7 @@ void STM32_InitRoutine(void) {
 	HM10BLE_Init(&ble_data, BT_USART_PORT);
 }
 
-uint8_t STM32_ModeRoutine(void) {
+uint8_t ROCKET_ModeRoutine(void) {
 
 	uint8_t check = 0;
 
@@ -239,13 +250,10 @@ uint8_t STM32_ModeRoutine(void) {
             packet.size = PREFLIGHT_DATASIZE;
             packet.data = (uint8_t *)malloc(packet.size * sizeof(uint8_t));
             // Altitude
-            BMP280_ReadPressure(&bmp_data);
 			STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa), packet, 0);
 			 // Temperature
-			BMP280_ReadTemperature(&bmp_data);
             STM32_i32To8((int32_t)bmp_data.temp_C, packet, 4);
             // Roll Pitch
-            ICM20602_Update_All(&icm_data);
             STM32_i32To8((int32_t)icm_data.kalmanAngleRoll, packet, 8);
             STM32_i32To8((int32_t)icm_data.kalmanAnglePitch, packet, 12);
             // V_Batt
@@ -264,13 +272,10 @@ uint8_t STM32_ModeRoutine(void) {
             packet.size = INFLIGHT_DATASIZE;
             packet.data = (uint8_t *)malloc(packet.size * sizeof(uint8_t));
             // Altitude
-            BMP280_ReadPressure(&bmp_data);
             STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa), packet, 0);
             // Temperature
-            BMP280_ReadTemperature(&bmp_data);
             STM32_i32To8((int32_t)bmp_data.temp_C, packet, 4);
             // GPS
-            L76LM33_Read(GPS_USART_PORT, L76LM33_buffer, &gps_data);
             STM32_i32To8(gps_data.time, packet, 8);
             STM32_i32To8(gps_data.latitude, packet, 12);
             packet.data[12] = gps_data.latitude_indicator;
@@ -279,7 +284,6 @@ uint8_t STM32_ModeRoutine(void) {
             STM32_i32To8(gps_data.speed_knots, packet, 22);
             STM32_i32To8(gps_data.track_angle, packet, 26);
             // Gyro
-            ICM20602_Update_All(&icm_data);
             STM32_i32To8((int32_t)icm_data.gyroX, packet, 30);
             STM32_i32To8((int32_t)icm_data.gyroY, packet, 34);
             STM32_i32To8((int32_t)icm_data.gyroZ, packet, 38);
@@ -300,10 +304,8 @@ uint8_t STM32_ModeRoutine(void) {
             packet.size = POSTFLIGHT_DATASIZE;
             packet.data = (uint8_t *)malloc(packet.size * sizeof(uint8_t));
             // Altitude
-			BMP280_ReadPressure(&bmp_data);
 			STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa), packet, 0);
 			// GPS
-			L76LM33_Read(GPS_USART_PORT, L76LM33_buffer, &gps_data);
 			STM32_i32To8(gps_data.time, packet, 4);
 			STM32_i32To8(gps_data.latitude, packet, 8);
 			packet.data[12] = gps_data.latitude_indicator;
@@ -343,6 +345,154 @@ uint8_t STM32_ModeRoutine(void) {
 
     return check;
 }
+
+uint16_t ROCKET_Behavior(void) {
+
+	uint16_t behavior = 0x00;
+	// Variation
+	/*
+	bool gyroX = false;
+	bool gyroY = false;
+	bool gyroZ = false;
+	bool accX = false;
+	bool accY = false;
+	bool accZ = false;
+	bool rollUp = false;
+	bool rollDown = false;
+	bool pitchUp = false;
+	bool pitchDown = false;
+	bool temp = false;
+	bool press = false;
+	bool latit = false;
+	bool longit = false;
+	bool speed = false;
+	*/
+
+	ICM20602_Update_All(&icm_data);
+	BMP280_ReadTemperature(&bmp_data);
+	BMP280_ReadPressure(&bmp_data);
+	//L76LM33_Read(GPS_USART_PORT, L76LM33_buffer, &gps_data);
+
+	float old_temp = bmp_data.temp_C;
+	float old_press = bmp_data.pressure_Pa;
+	int32_t old_latit = gps_data.latitude;
+	int32_t old_longit = gps_data.longitude;
+	int32_t old_speed = gps_data.speed_knots;
+
+	if(icm_data.gyroX >= gyroMin || icm_data.gyroX <= -gyroMin) {
+		behavior |= (1 << 0);
+		printf("%d", 1);
+	} else {
+		behavior &= ~(1 << 0);
+		printf("%d", 0);
+	}
+	if(icm_data.gyroY >= gyroMin || icm_data.gyroY <= -gyroMin) {
+		behavior |= (1 << 1);
+		printf("%d", 1);
+	} else {
+		behavior &= ~(1 << 1);
+		printf("%d", 0);
+	}
+	if(icm_data.gyroZ >= gyroMin || icm_data.gyroZ <= -gyroMin) {
+		behavior |= (1 << 2);
+		printf("%d", 1);
+	} else {
+		behavior &= ~(1 << 2);
+		printf("%d", 0);
+	}
+
+	if(icm_data.accX >= accXYMin || icm_data.accX <= -accXYMin) {
+		behavior |= (1 << 3);
+		printf("%d", 1);
+	} else {
+		behavior &= ~(1 << 3);
+		printf("%d", 0);
+	}
+	if(icm_data.accY >= accXYMin || icm_data.accY <= -accXYMin) {
+		behavior |= (1 << 4);
+		printf("%d", 1);
+	} else {
+		behavior &= ~(1 << 4);
+		printf("%d", 0);
+	}
+	if(icm_data.accZ >= accZMin || icm_data.accZ <= -accZMin) {
+		behavior |= (1 << 5);
+		printf("%d", 1);
+	} else {
+		behavior &= ~(1 << 5);
+		printf("%d", 0);
+	}
+
+	if(icm_data.kalmanAngleRoll >= angleRollMin) {
+		behavior |= (1 << 6);
+		printf("%d", 1);
+		printf("%d", 0);
+	} else if(icm_data.kalmanAngleRoll <= -angleRollMin) {
+		behavior |= (1 << 7);
+		printf("%d", 0);
+		printf("%d", 1);
+	} else {
+		behavior &= ~(1 << 6);
+		behavior &= ~(1 << 7);
+		printf("%d", 0);
+		printf("%d", 0);
+	}
+	if(icm_data.kalmanAnglePitch >= anglePitchMin) {
+		behavior |= (1 << 8);
+		printf("%d", 1);
+		printf("%d", 0);
+	} else if(icm_data.kalmanAnglePitch <= -anglePitchMin) {
+		behavior |= (1 << 9);
+		printf("%d", 0);
+		printf("%d", 1);
+	} else {
+		behavior &= ~(1 << 8);
+		behavior &= ~(1 << 9);
+		printf("%d", 0);
+		printf("%d", 0);
+	}
+
+	BMP280_ReadTemperature(&bmp_data);
+	if(bmp_data.temp_C > old_temp + tempMin || bmp_data.temp_C < old_temp - tempMin) {
+		behavior |= (1 << 10);
+		printf("%d", 1);
+	} else {
+		behavior &= ~(1 << 10);
+		printf("%d", 0);
+	}
+	BMP280_ReadPressure(&bmp_data);
+	if(bmp_data.pressure_Pa > old_press + pressMin || bmp_data.pressure_Pa < old_press - pressMin) {
+		behavior |= (1 << 11);
+		printf("%d", 1);
+	} else {
+		behavior &= ~(1 << 11);
+		printf("%d", 0);
+	}
+	//L76LM33_Read(GPS_USART_PORT, L76LM33_buffer, &gps_data);
+	if(gps_data.latitude > old_latit + gpsMin || gps_data.latitude < old_latit - gpsMin) {
+		behavior |= (1 << 12);
+		printf("%d", 1);
+	} else {
+		behavior &= ~(1 << 12);
+		printf("%d", 0);
+	}
+	if(gps_data.longitude > old_longit + gpsMin || gps_data.longitude < old_longit - gpsMin) {
+		behavior |= (1 << 13);
+		printf("%d", 1);
+	} else {
+		behavior &= ~(1 << 13);
+		printf("%d", 0);
+	}
+	if(gps_data.speed_knots > old_speed + speedMin || gps_data.speed_knots < old_speed - speedMin) {
+		behavior |= (1 << 14);
+		printf("%dx0\r\n", 1);
+	} else {
+		behavior &= ~(1 << 14);
+		printf("%dx0\r\n", 0);
+	}
+
+	return behavior;
+}
 /* USER CODE END 0 */
 
 /**
@@ -353,7 +503,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	STM32_InitRoutine();
+	ROCKET_InitRoutine();
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -390,6 +540,16 @@ int main(void)
 	{
 		// TODO: conditions flight mode change
 		//STM32_ModeRoutine();
+		/*
+		ICM20602_Update_All(&icm_data);
+		printf("gyro: (%0.4f ; %0.4f ; %0.4f)\r\n", icm_data.gyroX, icm_data.gyroY, icm_data.gyroZ);
+		printf("acc: (%0.4f ; %0.4f ; %0.4f)\r\n", icm_data.accX, icm_data.accY, icm_data.accZ);
+		printf("kalmanangleRoll: %0.4f\r\n", icm_data.kalmanAngleRoll);
+		printf("kalmananglePitch: %0.4f\r\n", icm_data.kalmanAnglePitch);
+		HAL_Delay(1000);
+		*/
+		printf("behavior: %04x\r\n", ROCKET_Behavior());
+		HAL_Delay(1000);
 	}
     /* USER CODE END WHILE */
 

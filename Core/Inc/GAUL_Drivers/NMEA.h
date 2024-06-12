@@ -23,10 +23,10 @@
 #define DEFAULT_INDICATOR 	56 // "V"
 
 typedef struct {
-    int32_t time;         		// Heure en bytes
-    int32_t latitude;     		// Latitude en bytes
+    int32_t time;         			// Heure en bytes
+    int32_t latitude;     			// Latitude en bytes
     uint8_t latitude_indicator; 	// Indicateur de latitude (N ou S)
-    int32_t longitude;			// Longitude en bytes
+    int32_t longitude;				// Longitude en bytes
     uint8_t longitude_indicator;	// Indicateur de longitude (E ou W)
     int32_t speed_knots;			// Vitesse sur le fond en noeuds en bytes
     int32_t track_angle;			// Route sur le fond en degres en bytes
