@@ -20,8 +20,6 @@ void USART_Init(unsigned short usart)
         USART1->CR1 |= USART_CR1_UE; // Activer USART (0x0C)
         USART1->CR1 |= USART_CR1_TE; // Activer la transmission
         USART1->CR1 |= USART_CR1_RE; // Activer la réception
-        // Activation des interruptions globales pour USART1
-        NVIC_EnableIRQ(USART1_IRQn);
     }
     else if(usart == 2) {
         RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
@@ -32,8 +30,6 @@ void USART_Init(unsigned short usart)
         USART2->CR1 |= USART_CR1_UE; // Activer USART (0x10)
         USART2->CR1 |= USART_CR1_TE; // Activer la transmission
         USART2->CR1 |= USART_CR1_RE; // Activer la réception
-        // Activation des interruptions globales pour USART2
-        NVIC_EnableIRQ(USART2_IRQn);
     }
     else if(usart == 3) {
         RCC->APB1ENR |= RCC_APB1ENR_USART3EN ;
@@ -44,8 +40,6 @@ void USART_Init(unsigned short usart)
         USART3->CR1 |= USART_CR1_UE; // Activer USART (0x14)
         USART3->CR1 |= USART_CR1_TE; // Activer la transmission
         USART3->CR1 |= USART_CR1_RE; // Activer la réception
-        // Activation des interruptions globales pour USART3
-        NVIC_EnableIRQ(USART3_IRQn);
     }
 }
 

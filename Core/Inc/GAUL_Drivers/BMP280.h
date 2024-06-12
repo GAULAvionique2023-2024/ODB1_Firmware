@@ -50,7 +50,7 @@
 #define T0 288.15  		// Temperature mer (kelvin)
 #define alpha 0.0065  	// Taux de temperature (km/h)
 #define P0 101325.0  	// Pression atmospherique mer
-#define beta 5.256  	// Indice temperature
+#define beta 5.2561  	// Indice temperature
 
 
 typedef struct {

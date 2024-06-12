@@ -37,27 +37,30 @@ uint8_t BMP280_Init(BMP280 *devBMP, unsigned short spi_port) {
 
 uint8_t BMP280_ReadTemperature(BMP280 *devBMP) {
 
+	// Verifie si la lecture est possible
+	while((BMP280_ReadRegister(BMP280_REG_STATUS) & 0x04) != 0 || (BMP280_ReadRegister(BMP280_REG_STATUS) & 0x01) != 0);
+
     int32_t adc_T = (BMP280_ReadRegister(BMP280_REG_TEMP_MSB) << 12) |
                     (BMP280_ReadRegister(BMP280_REG_TEMP_LSB) << 4) |
-                    (BMP280_ReadRegister(BMP280_REG_TEMP_XLSB) >> 4);
+					((BMP280_ReadRegister(BMP280_REG_TEMP_XLSB) >> 4) & 0x0F);
 
     int32_t var1 = ((((adc_T >> 3) - ((int32_t)devBMP->calib_data.dig_T1 << 1))) * ((int32_t)devBMP->calib_data.dig_T2)) >> 11;
     int32_t var2 = (((((adc_T >> 4) - ((int32_t)devBMP->calib_data.dig_T1)) * ((adc_T >> 4) - ((int32_t)devBMP->calib_data.dig_T1))) >> 12) * ((int32_t)devBMP->calib_data.dig_T3)) >> 14;
     devBMP->t_fine = var1 + var2;
 
-    float T = (devBMP->t_fine * 5 + 128) >> 8;
-    devBMP->temp_C = (T / 100.0) + devBMP->temperature_ref;
+    int32_t T = (devBMP->t_fine * 5 + 128) >> 8;
+    devBMP->temp_C = (float)(T / 100.0); // + devBMP->temperature_ref;
     return 1; // OK
 }
 
 uint8_t BMP280_ReadPressure(BMP280 *devBMP) {
 
 	// Verifie si la lecture est possible
-	while((BMP280_ReadRegister(BMP280_REG_STATUS) & 0x04) != 0);
+	while((BMP280_ReadRegister(BMP280_REG_STATUS) & 0x04) != 0 || (BMP280_ReadRegister(BMP280_REG_STATUS) & 0x01) != 0);
 
     int32_t adc_P = (BMP280_ReadRegister(BMP280_REG_PRESS_MSB) << 12) |
                     (BMP280_ReadRegister(BMP280_REG_PRESS_LSB) << 4) |
-                    (BMP280_ReadRegister(BMP280_REG_PRESS_XLSB) >> 4);
+                    ((BMP280_ReadRegister(BMP280_REG_PRESS_XLSB) >> 4) & 0x0F);
 
     int64_t var1 = ((int64_t)devBMP->t_fine) - 128000;
     int64_t var2 = var1 * var1 * (int64_t)devBMP->calib_data.dig_P6;
@@ -72,9 +75,10 @@ uint8_t BMP280_ReadPressure(BMP280 *devBMP) {
     p = (((p << 31) - var2) * 3125) / var1;
     var1 = (((int64_t)devBMP->calib_data.dig_P9) * (p >> 13) * (p >> 13)) >> 25;
     var2 = (((int64_t)devBMP->calib_data.dig_P8) * p) >> 19;
-
     p = ((p + var1 + var2) >> 8) + (((int64_t)devBMP->calib_data.dig_P7) << 4);
-    devBMP->pressure_Pa = ((float)p / 256.09) + devBMP->pressure_ref;
+    p = (uint32_t)p;
+
+    devBMP->pressure_Pa = (float)p / (float)(1 << 8); // + devBMP->pressure_ref;
     return 1; // OK
 }
 
@@ -116,15 +120,14 @@ uint8_t BMP280_SwapMode(uint8_t mode) {
 
 uint8_t BMP280_MeasureReference(BMP280 *devBMP, float temp_ref, float press_ref) {
 
-	devBMP->temperature_ref = BMP280_ReadTemperature(devBMP) - temp_ref;
-	devBMP->pressure_ref = BMP280_ReadPressure(devBMP) - press_ref;
-
-	return 1; // OK
+    devBMP->temperature_ref = BMP280_ReadTemperature(devBMP) - temp_ref;
+    devBMP->pressure_ref = BMP280_ReadPressure(devBMP) - press_ref;
+    return 1; // OK
 }
 
 float BMP280_PressureToAltitude(float pressure) {
 
-    float altitude = (T0 / alpha) * (1 - pow((pressure / P0), (1 / beta)));
+	float altitude = (T0 / alpha) * (1 - pow((pressure / P0), (1 / beta)));
     return altitude;
 }
 
