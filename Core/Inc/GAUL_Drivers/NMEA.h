@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#define NMEA_TRAME_RMC_SIZE 68
+#define NMEA_TRAME_RMC_SIZE 67
 
 // Définition des valeurs par défaut en tant que macros
 #define DEFAULT_LATITUDE 	0x00000000

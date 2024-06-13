@@ -33,9 +33,7 @@ typedef enum {
 
 } buzzRoutines_t;
 
-
-
-//functions
-void BuzzInit(TIM_HandleTypeDef *htim, uint32_t channel, buzzRoutines_t routine);
+// Functions
+void Buzz(TIM_HandleTypeDef *htim, uint32_t channel, buzzRoutines_t routine);
 
 #endif /* INC_BUZZER_H_ */

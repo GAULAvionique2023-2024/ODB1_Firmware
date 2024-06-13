@@ -45,6 +45,19 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+// Debugging
+const char* ROCKET_BehaviorToString(uint8_t behavior) {
+
+    switch (behavior) {
+    /*
+        case FR_OK: return "Succeeded";
+        case FR_DISK_ERR: return "A hard error occurred in the low level disk I/O layer";
+        case FR_INT_ERR: return "Assertion failed";
+        default: return "Unknown error";
+    */
+    }
+}
+
 typedef struct {
 	uint8_t mode;
 	uint8_t pyro0;
@@ -172,6 +185,7 @@ void ROCKET_InitRoutine(void) {
 	MX_CRC_Init();
 
 	printf("|----------Starting----------|\r\n");
+	Buzz(&htim3, TIM_CHANNEL_4, START);
 	SPI_Init(1);
 	printf("(+) SPI1 succeeded...\r\n");
 	SPI_Init(2);
@@ -493,9 +507,11 @@ int main(void)
 	{
 		// TODO: conditions flight mode change
 		//STM32_ModeRoutine();
+		/*
 		ICM20602_Update_All(&icm_data);
 		printf("Behavior: %u\r\n", ROCKET_Behavior());
 		HAL_Delay(1000);
+		*/
 	}
     /* USER CODE END WHILE */
 
