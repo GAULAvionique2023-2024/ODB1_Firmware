@@ -1,5 +1,6 @@
-Core/Src/GAUL_Drivers/Buzzer.o: ../Core/Src/GAUL_Drivers/Buzzer.c \
- ../Core/Inc/GAUL_Drivers\Buzzer.h \
+Core/Src/GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.o: \
+ ../Core/Src/GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.c \
+ ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -27,9 +28,8 @@ Core/Src/GAUL_Drivers/Buzzer.o: ../Core/Src/GAUL_Drivers/Buzzer.c \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
- ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.h
-../Core/Inc/GAUL_Drivers\Buzzer.h:
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+../Core/Inc/GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h:
@@ -58,4 +58,3 @@ Core/Src/GAUL_Drivers/Buzzer.o: ../Core/Src/GAUL_Drivers/Buzzer.c \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
-../Core/Inc/GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.h:

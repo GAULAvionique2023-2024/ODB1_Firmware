@@ -8,6 +8,7 @@ C_SRCS += \
 ../Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.c \
 ../Core/Src/GAUL_Drivers/Low_Level_Drivers/CRC_driver.c \
 ../Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.c \
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.c \
 ../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c \
 ../Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.c 
 
@@ -15,6 +16,7 @@ OBJS += \
 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o \
 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/CRC_driver.o \
 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o \
+./Core/Src/GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.o \
 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o \
 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.o 
 
@@ -22,6 +24,7 @@ C_DEPS += \
 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.d \
 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/CRC_driver.d \
 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.d \
+./Core/Src/GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.d \
 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.d \
 ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.d 
 
@@ -33,7 +36,7 @@ Core/Src/GAUL_Drivers/Low_Level_Drivers/%.o Core/Src/GAUL_Drivers/Low_Level_Driv
 clean: clean-Core-2f-Src-2f-GAUL_Drivers-2f-Low_Level_Drivers
 
 clean-Core-2f-Src-2f-GAUL_Drivers-2f-Low_Level_Drivers:
-	-$(RM) ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.cyclo ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.d ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.su ./Core/Src/GAUL_Drivers/Low_Level_Drivers/CRC_driver.cyclo ./Core/Src/GAUL_Drivers/Low_Level_Drivers/CRC_driver.d ./Core/Src/GAUL_Drivers/Low_Level_Drivers/CRC_driver.o ./Core/Src/GAUL_Drivers/Low_Level_Drivers/CRC_driver.su ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.cyclo ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.d ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.su ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.cyclo ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.d ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.su ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.cyclo ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.d ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.o ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.su
+	-$(RM) ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.cyclo ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.d ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o ./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.su ./Core/Src/GAUL_Drivers/Low_Level_Drivers/CRC_driver.cyclo ./Core/Src/GAUL_Drivers/Low_Level_Drivers/CRC_driver.d ./Core/Src/GAUL_Drivers/Low_Level_Drivers/CRC_driver.o ./Core/Src/GAUL_Drivers/Low_Level_Drivers/CRC_driver.su ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.cyclo ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.d ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o ./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.su ./Core/Src/GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.cyclo ./Core/Src/GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.d ./Core/Src/GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.o ./Core/Src/GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.su ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.cyclo ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.d ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o ./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.su ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.cyclo ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.d ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.o ./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.su
 
 .PHONY: clean-Core-2f-Src-2f-GAUL_Drivers-2f-Low_Level_Drivers
 

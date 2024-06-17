@@ -10,6 +10,7 @@
 
 //include
 #include "stm32f1xx_hal.h"
+#include "GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.h"
 
 //Parametres
 typedef struct {

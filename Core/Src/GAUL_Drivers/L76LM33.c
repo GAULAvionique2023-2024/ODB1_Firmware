@@ -41,7 +41,9 @@ uint8_t L76LM33_Read(unsigned short usart_port, char *rx_data, GPS_Data *gps_dat
     if (rx_data == NULL || gps_data == NULL) {
         return 0; // Error
     }
-    memset(rx_data, 0, NMEA_TRAME_RMC_SIZE);
+    for(int j = 0; j < NMEA_TRAME_RMC_SIZE; j++) {
+    	rx_data[j] = "\0";
+    }
     USART_RX(usart_port, (uint8_t*)rx_data, NMEA_TRAME_RMC_SIZE);
     printf("NMEA sentence: %s\n", rx_data);
     if (NMEA_Decode_GPRMC(rx_data, gps_data) == 1) {

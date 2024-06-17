@@ -26,18 +26,20 @@ void Buzz(TIM_HandleTypeDef *htim, uint32_t channel, buzzRoutines_t routine){
 	uint8_t counter = params->nbBips;
 	int freq;
 
-	while (counter > 0)
-	{
-		for(freq = params->frequencyStart; freq > params->frequencyEnd; freq--)
-		{
-		  __HAL_TIM_SET_AUTORELOAD(htim, freq);
-		  __HAL_TIM_SET_COMPARE(htim, channel, freq);
-		  HAL_Delay(params->delayModulation);
+	while (counter > 0) {
+		if(Delay_Wait(params->delayPause)) {
+			for(freq = params->frequencyStart; freq > params->frequencyEnd; freq--)
+			{
+				if(Delay_Wait(params->delayModulation) == true) {
+					__HAL_TIM_SET_AUTORELOAD(htim, freq);
+					__HAL_TIM_SET_COMPARE(htim, channel, freq);
+					Delay_Wait(params->delayModulation);
+				}
+			}
+			__HAL_TIM_SET_AUTORELOAD(htim, 0);
+			__HAL_TIM_SET_COMPARE(htim, channel, 0);
+			counter--;
 		}
-		__HAL_TIM_SET_AUTORELOAD(htim, 0);
-		__HAL_TIM_SET_COMPARE(htim, channel, 0);
-		HAL_Delay(params->delayPause);
-		counter--;
 	}
 
 	HAL_TIM_PWM_Stop(htim, channel);

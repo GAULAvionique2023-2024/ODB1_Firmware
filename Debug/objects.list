@@ -13,6 +13,7 @@
 "./Core/Src/GAUL_Drivers/Low_Level_Drivers/ADC_driver.o"
 "./Core/Src/GAUL_Drivers/Low_Level_Drivers/CRC_driver.o"
 "./Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.o"
+"./Core/Src/GAUL_Drivers/Low_Level_Drivers/NonBlockingDelay_driver.o"
 "./Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.o"
 "./Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.o"
 "./Core/Src/main.o"

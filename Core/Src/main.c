@@ -456,10 +456,6 @@ uint8_t ROCKET_Behavior(void) {
 
 	return behavior;
 }
-
-void ROCKET_DecodeBehavior(uint16_t behavior) {
-
-}
 /* USER CODE END 0 */
 
 /**
@@ -507,11 +503,6 @@ int main(void)
 	{
 		// TODO: conditions flight mode change
 		//STM32_ModeRoutine();
-		/*
-		ICM20602_Update_All(&icm_data);
-		printf("Behavior: %u\r\n", ROCKET_Behavior());
-		HAL_Delay(1000);
-		*/
 	}
     /* USER CODE END WHILE */
 
