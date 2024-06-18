@@ -241,7 +241,7 @@ uint8_t ROCKET_ModeRoutine(void) {
     packet.crc16[1] = 0x00;
 
     switch (packet.header_states.mode) {
-        case MODE_PREFLIGHT:
+        /*case MODE_PREFLIGHT:
         	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
         	if (HM10BLE_Connection(&ble_data, BT_USART_PORT, HM10BLE_buffer) == 1) {
 				packet.header_states.ble = 0x01;
@@ -272,7 +272,7 @@ uint8_t ROCKET_ModeRoutine(void) {
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5VAN), packet, 26);
 
 			check = 1;
-            break;
+            break;*/
         case MODE_INFLIGHT:
         	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
 
@@ -280,6 +280,7 @@ uint8_t ROCKET_ModeRoutine(void) {
 
             packet.size = INFLIGHT_DATASIZE;
             packet.data = (uint8_t *)malloc(packet.size * sizeof(uint8_t));
+
             // Altitude
             STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa), packet, 0);
             // Temperature
@@ -306,7 +307,7 @@ uint8_t ROCKET_ModeRoutine(void) {
 
 			check = 1;
             break;
-        case MODE_POSTFLIGHT:
+        /*case MODE_POSTFLIGHT:
         	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_LOW);
             header_states = (packet.header_states.mode << 6) | 0x00;
 
@@ -329,7 +330,7 @@ uint8_t ROCKET_ModeRoutine(void) {
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5VAN), packet, 32);
 
 			check = 1;
-            break;
+            break;*/
         default:
         	check = 0; // Error
     }
@@ -466,7 +467,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	ROCKET_InitRoutine();
+  ROCKET_InitRoutine();
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
