@@ -27,7 +27,8 @@ uint8_t BMP280_Init(BMP280 *devBMP, unsigned short spi_port) {
     // Lire calibration
     BMP280_ReadCalibrationData(devBMP);
     // Configuration
-    BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, BMP280_SETTING_CTRL_MEAS_NORMAL);
+    //BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, BMP280_SETTING_CTRL_MEAS_NORMAL);
+    BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, 0x55); // Forced mode
     BMP280_WriteRegister(BMP280_REG_CONFIG, BMP280_SETTING_CONFIG);
     // Ajuster reference
     BMP280_MeasureReference(devBMP, T0, 101325.0);
@@ -36,6 +37,8 @@ uint8_t BMP280_Init(BMP280 *devBMP, unsigned short spi_port) {
 }
 
 uint8_t BMP280_ReadTemperature(BMP280 *devBMP) {
+    BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, 0x55); // Forced mode
+    HAL_Delay(5);
 
 	// Verifie si la lecture est possible
 	while((BMP280_ReadRegister(BMP280_REG_STATUS) & 0x04) != 0 || (BMP280_ReadRegister(BMP280_REG_STATUS) & 0x01) != 0);
@@ -43,6 +46,8 @@ uint8_t BMP280_ReadTemperature(BMP280 *devBMP) {
     int32_t adc_T = (BMP280_ReadRegister(BMP280_REG_TEMP_MSB) << 12) |
                     (BMP280_ReadRegister(BMP280_REG_TEMP_LSB) << 4) |
 					((BMP280_ReadRegister(BMP280_REG_TEMP_XLSB) >> 4) & 0x0F);
+
+    //printf("%x", adc_T);
 
     int32_t var1 = ((((adc_T >> 3) - ((int32_t)devBMP->calib_data.dig_T1 << 1))) * ((int32_t)devBMP->calib_data.dig_T2)) >> 11;
     int32_t var2 = (((((adc_T >> 4) - ((int32_t)devBMP->calib_data.dig_T1)) * ((adc_T >> 4) - ((int32_t)devBMP->calib_data.dig_T1))) >> 12) * ((int32_t)devBMP->calib_data.dig_T3)) >> 14;
@@ -54,6 +59,8 @@ uint8_t BMP280_ReadTemperature(BMP280 *devBMP) {
 }
 
 uint8_t BMP280_ReadPressure(BMP280 *devBMP) {
+    BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, 0x55); // Forced mode
+    HAL_Delay(5);
 
 	// Verifie si la lecture est possible
 	while((BMP280_ReadRegister(BMP280_REG_STATUS) & 0x04) != 0 || (BMP280_ReadRegister(BMP280_REG_STATUS) & 0x01) != 0);
@@ -61,6 +68,8 @@ uint8_t BMP280_ReadPressure(BMP280 *devBMP) {
     int32_t adc_P = (BMP280_ReadRegister(BMP280_REG_PRESS_MSB) << 12) |
                     (BMP280_ReadRegister(BMP280_REG_PRESS_LSB) << 4) |
                     ((BMP280_ReadRegister(BMP280_REG_PRESS_XLSB) >> 4) & 0x0F);
+
+    //printf("%x", adc_P);
 
     int64_t var1 = ((int64_t)devBMP->t_fine) - 128000;
     int64_t var2 = var1 * var1 * (int64_t)devBMP->calib_data.dig_P6;

@@ -49,6 +49,7 @@ uint8_t NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
         switch (field_index) {
             case 0:
                 if (strcmp(token, "$GPRMC") != 0) {
+                	printf("$GPRMC not found");
                     valid = 0;
                 }
                 break;

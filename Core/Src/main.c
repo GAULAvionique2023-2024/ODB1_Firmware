@@ -114,6 +114,7 @@ struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
 struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
 
 // Variables
+char rx_data[200];
 GPS_Data gps_data;
 BMP280 bmp_data;
 ICM20602 icm_data;
@@ -228,7 +229,7 @@ void ROCKET_InitRoutine(void) {
 	printf(packet.header_states.sd ? "(+) SD card detected in MEM2067...\r\n" : "(-) No SD card detected in MEM2067...\r\n");
 	*/
 	// Bluetooth
-	HM10BLE_Init(&ble_data, BT_USART_PORT);
+	//HM10BLE_Init(&ble_data, BT_USART_PORT);
 }
 
 uint8_t ROCKET_ModeRoutine(void) {
@@ -239,6 +240,11 @@ uint8_t ROCKET_ModeRoutine(void) {
     packet.size = 0;
     packet.crc16[0] = 0x00;
     packet.crc16[1] = 0x00;
+
+    // CODE MATHIAS, update les sensors
+	//ICM20602_Update_All(&icm_data);
+	BMP280_ReadTemperature(&bmp_data);
+	BMP280_ReadPressure(&bmp_data);
 
     switch (packet.header_states.mode) {
         /*case MODE_PREFLIGHT:
@@ -276,7 +282,8 @@ uint8_t ROCKET_ModeRoutine(void) {
         case MODE_INFLIGHT:
         	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
 
-            header_states = (packet.header_states.mode << 6) | (packet.header_states.pyro0 << 5) | (packet.header_states.pyro1 << 4) | 0x00;
+        	// CODE MATHIAS, fake header
+            header_states = (packet.header_states.mode << 6) | 0x3F;
 
             packet.size = INFLIGHT_DATASIZE;
             packet.data = (uint8_t *)malloc(packet.size * sizeof(uint8_t));
@@ -457,6 +464,22 @@ uint8_t ROCKET_Behavior(void) {
 
 	return behavior;
 }
+
+// CODE MATHIAS, fonction test
+void logBMP() {
+	BMP280_ReadTemperature(&bmp_data);
+	BMP280_ReadPressure(&bmp_data);
+    printf("Temp: %f\r\n", bmp_data.temp_C);
+    printf("Pres: %f\r\n", bmp_data.pressure_Pa);
+}
+void logBMPadc() {
+	printf("T_MSB: %d\r\n", BMP280_ReadRegister(BMP280_REG_TEMP_MSB));
+	printf("T_LSB: %d\r\n", BMP280_ReadRegister(BMP280_REG_TEMP_LSB));
+	printf("T_XLSB: %d\r\n", BMP280_ReadRegister(BMP280_REG_TEMP_XLSB));
+	printf("P_MSB: %d\r\n", BMP280_ReadRegister(BMP280_REG_PRESS_MSB));
+	printf("P_LSB: %d\r\n", BMP280_ReadRegister(BMP280_REG_PRESS_LSB));
+	printf("P_XLSB: %d\r\n", BMP280_ReadRegister(BMP280_REG_PRESS_XLSB));
+}
 /* USER CODE END 0 */
 
 /**
@@ -496,6 +519,11 @@ int main(void)
   MX_CRC_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
+
+  // CODE MATHIAS, force inflight mode
+  ROCKET_SetMode(MODE_INFLIGHT);
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -504,6 +532,22 @@ int main(void)
 	{
 		// TODO: conditions flight mode change
 		//STM32_ModeRoutine();
+
+		// CODE MATHIAS, send data
+		//ROCKET_ModeRoutine();
+
+		// Tests
+		//logBMP();
+
+		//L76LM33_Read(GPS_USART_PORT, &rx_data, &gps_data);
+
+		//uint8_t gps = USART_RX(GPS_USART_PORT, (uint8_t*)rx_data, 8);
+
+		USART_RX(GPS_USART_PORT, (uint8_t*)rx_data, 64);
+		USART_TX(RFD_USART_PORT, (uint8_t*)rx_data, 64);
+
+
+		//HAL_Delay(1000);
 	}
     /* USER CODE END WHILE */
 
