@@ -46,17 +46,17 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 // Debugging
-const char* ROCKET_BehaviorToString(uint8_t behavior) {
+//const char* ROCKET_BehaviorToString(uint8_t behavior) {
 
-    switch (behavior) {
+//    switch (behavior) {
     /*
         case FR_OK: return "Succeeded";
         case FR_DISK_ERR: return "A hard error occurred in the low level disk I/O layer";
         case FR_INT_ERR: return "Assertion failed";
         default: return "Unknown error";
     */
-    }
-}
+//    }
+//}
 
 typedef struct {
 	uint8_t mode;
@@ -114,7 +114,8 @@ struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
 struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
 
 // Variables
-char rx_data[200];
+char rx_data[64];
+char send_data[32];
 GPS_Data gps_data;
 BMP280 bmp_data;
 ICM20602 icm_data;
@@ -521,7 +522,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   // CODE MATHIAS, force inflight mode
-  ROCKET_SetMode(MODE_INFLIGHT);
+  //ROCKET_SetMode(MODE_INFLIGHT);
 
 
   /* USER CODE END 2 */
@@ -533,19 +534,42 @@ int main(void)
 		// TODO: conditions flight mode change
 		//STM32_ModeRoutine();
 
-		// CODE MATHIAS, send data
-		//ROCKET_ModeRoutine();
+		// CODE MATHIAS
+		USART_RX(GPS_USART_PORT, (uint8_t*)rx_data, 64); // Read GPS
 
-		// Tests
-		//logBMP();
+		printf("%s\r\n", rx_data); // Print GPS Trace buffer
+		printf("\r\nEND\r\n");
 
-		//L76LM33_Read(GPS_USART_PORT, &rx_data, &gps_data);
+		// Loop GPS Trace buffer
+		int valid = 1;
+		for (int i = 0; i < 64; i++) {
+			if (rx_data[i] == '$') { // Trace start found
+				// Data validation
+				if (i > 22 || rx_data[i + 24] != '.' || rx_data[i + 29] != ',' || rx_data[i + 42] != ',') {
+					printf("Wrong data\r\n");
+					valid = 0;
+					break;
+				}
 
-		//uint8_t gps = USART_RX(GPS_USART_PORT, (uint8_t*)rx_data, 8);
+				// Extract lat lon to "send_data"
+				for (int j = 0; j <= 24; j++) { // A,0000.0000,N,00000.0000,
+					send_data[j] = rx_data[i + j + 18]; // 20: offset to where lat lon starts
+				}
 
-		USART_RX(GPS_USART_PORT, (uint8_t*)rx_data, 64);
-		USART_TX(RFD_USART_PORT, (uint8_t*)rx_data, 64);
+				//printf("%s", send_data);
+				//printf("\r\nEND\r\n");
+				break;
+			}
+		}
 
+		if (valid == 1) {
+			uint8_t delim = '$';
+			USART_TX(RFD_USART_PORT, &delim, 1);
+			USART_TX(RFD_USART_PORT, (uint8_t*)send_data, 32);
+		} else {
+			uint8_t err = '!';
+			USART_TX(RFD_USART_PORT, &err, 1);
+		}
 
 		//HAL_Delay(1000);
 	}

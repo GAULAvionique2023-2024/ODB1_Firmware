@@ -18,11 +18,13 @@ NMEA_NAVMODE = "PMTK886,2*2A<CR><LF>",				// 0 : Normal (10000m) ; 2 : Aviation 
 uint8_t L76LM33_Init (unsigned short usart_port) {
 
 	char PROTOCOL_SETRMS[] = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*35\r\n";
-	char PROTOCOL_GPSSEARCHONLY[] = "$PMTK353,1,0,0,0,0*2A\r\n";
+	//char PROTOCOL_GPSSEARCHONLY[] = "$PMTK353,1,0,0,0,0*2A\r\n";
 	char PROTOCOL_NAVMODE[] = "PMTK886,2*2A\r\n";
+	//char PROTOCOL_NMEA_UPDATERATE[] = "PMTK220,100*2F\r\n";
 	L76LM33_SendCommand(usart_port, PROTOCOL_SETRMS);
-	L76LM33_SendCommand(usart_port, PROTOCOL_GPSSEARCHONLY);
+	//L76LM33_SendCommand(usart_port, PROTOCOL_GPSSEARCHONLY);
 	L76LM33_SendCommand(usart_port, PROTOCOL_NAVMODE);
+	//L76LM33_SendCommand(usart_port, PROTOCOL_NMEA_UPDATERATE); // CODE MATHIAS, Pense pas qu'il fonctionne
 
 	return 1; // OK
 }
