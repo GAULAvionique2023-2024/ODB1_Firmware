@@ -17,4 +17,4 @@
 ../Core/Src/main.c:680:13:MX_CRC_Init	1
 ../Core/Src/main.c:586:6:SystemClock_Config	1
 ../Core/Src/main.c:177:6:ROCKET_InitRoutine	5
-../Core/Src/main.c:490:5:main	8
+../Core/Src/main.c:490:5:main	7

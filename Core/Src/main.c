@@ -114,7 +114,7 @@ struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
 struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
 
 // Variables
-char rx_data[64];
+char rx_data[128];
 char send_data[32];
 GPS_Data gps_data;
 BMP280 bmp_data;
@@ -535,17 +535,17 @@ int main(void)
 		//STM32_ModeRoutine();
 
 		// CODE MATHIAS
-		USART_RX(GPS_USART_PORT, (uint8_t*)rx_data, 64); // Read GPS
+		USART_RX(GPS_USART_PORT, (uint8_t*)rx_data, 128); // Read GPS
 
-		printf("%s\r\n", rx_data); // Print GPS Trace buffer
-		printf("\r\nEND\r\n");
+		//printf("%s\r\n", rx_data); // Print GPS Trace buffer
+		//printf("\r\nEND\r\n");
 
 		// Loop GPS Trace buffer
 		int valid = 1;
-		for (int i = 0; i < 64; i++) {
+		for (int i = 0; i < 128; i++) {
 			if (rx_data[i] == '$') { // Trace start found
 				// Data validation
-				if (i > 22 || rx_data[i + 24] != '.' || rx_data[i + 29] != ',' || rx_data[i + 42] != ',') {
+				if (rx_data[i + 24] != '.' || rx_data[i + 29] != ',' || rx_data[i + 42] != ',') {
 					printf("Wrong data\r\n");
 					valid = 0;
 					break;
