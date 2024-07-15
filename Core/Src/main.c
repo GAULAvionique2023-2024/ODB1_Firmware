@@ -45,19 +45,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-// Debugging
-const char* ROCKET_BehaviorToString(uint8_t behavior) {
-
-    switch (behavior) {
-    /*
-        case FR_OK: return "Succeeded";
-        case FR_DISK_ERR: return "A hard error occurred in the low level disk I/O layer";
-        case FR_INT_ERR: return "Assertion failed";
-        default: return "Unknown error";
-    */
-    }
-}
-
 typedef struct {
 	uint8_t mode;
 	uint8_t pyro0;
@@ -120,12 +107,12 @@ ICM20602 icm_data;
 RFD900 rfd_data;
 HM10BLE ble_data;
 
-char L76LM33_buffer[NMEA_TRAME_RMC_SIZE]; // gps_data buffer
+uint8_t L76LM33_buffer[NMEA_TRAME_RMC_SIZE]; // gps_data buffer
 uint8_t HM10BLE_buffer[20];  // ble_data buffer
 ROCKET_Packet packet;
 
 static const float accZMin = 1.1;		// delta > 0.9 g
-static const float angleMin = 2;		// delta > 2 deg
+static const float angleMin = 5;		// delta > 5 deg
 static const float tempMin = 1;			// delta > 1 C
 static const float pressMin = 10;		// delta > 10 Pa
 /* USER CODE END PV */
@@ -183,6 +170,7 @@ void ROCKET_InitRoutine(void) {
 	MX_TIM2_Init();
 	MX_ADC1_Init();
 	MX_CRC_Init();
+	MX_FATFS_Init();
 
 	printf("|----------Starting----------|\r\n");
 	Buzz(&htim3, TIM_CHANNEL_4, START);
@@ -224,7 +212,7 @@ void ROCKET_InitRoutine(void) {
 	printf(packet.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
 	// SD Card
 	/*
-	packet.header_states.sd = MEM2067_SDCardDetection() == 1 ? 0x01 : 0x00;
+	packet.header_states.sd = MEM2067_Mount() == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.sd ? "(+) SD card detected in MEM2067...\r\n" : "(-) No SD card detected in MEM2067...\r\n");
 	*/
 	// Bluetooth
@@ -243,6 +231,7 @@ uint8_t ROCKET_ModeRoutine(void) {
     switch (packet.header_states.mode) {
         case MODE_PREFLIGHT:
         	BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
+        	/*
         	if (HM10BLE_Connection(&ble_data, BT_USART_PORT, HM10BLE_buffer) == 1) {
 				packet.header_states.ble = 0x01;
 				printf("(+) HM10BLE connection succeeded...\r\n");
@@ -251,7 +240,7 @@ uint8_t ROCKET_ModeRoutine(void) {
 			} else {
 				packet.header_states.ble = 0x00;
 			}
-
+			*/
             header_states = (packet.header_states.mode << 6) | (packet.header_states.pyro0 << 5) | (packet.header_states.pyro1 << 4)
                             | (packet.header_states.accelerometer << 3) | (packet.header_states.barometer << 2) | (packet.header_states.gps << 1)
 							| packet.header_states.sd;
@@ -374,68 +363,59 @@ uint8_t ROCKET_Behavior(void) {
 	float old_temp = bmp_data.temp_C;
 	float old_press = bmp_data.pressure_Pa;
 
-	// Detect z
+	// Detect Z
 	if(icm_data.accZ > 0) {
 		behavior |= (1 << 0);	// up
-		printf("Up\n");
 	} else {
 		behavior &= ~(1 << 0);	// down
-		printf("Down\n");
 	}
 	if(icm_data.accZ <= accZMin && icm_data.accZ >= -accZMin) {
 		behavior |= (1 << 1);	// idle z
 		printf("Idle\n");
 	} else{
 		behavior &= ~(1 << 1);	// move z
-		printf("Move\n");
 	}
-	// Y
-	// Right
+	// East
 	if(icm_data.angleRoll >= angleMin) {
 		if(icm_data.angleRoll <= 45) {
-			behavior |= (1 << 2); // up with deviation to right
-			printf("Y: up with deviation to right\n");
+			behavior |= (1 << 2); // deviation +
 		} else if(icm_data.angleRoll > 45) {
-			behavior &= ~(1 << 2);	// right with deviation to up
-			printf("Y: right with deviation to up\n");
+			behavior &= ~(1 << 2);	// deviation ++
 		}
+		printf("East: %0.1f\n", icm_data.angleRoll);
 	} else {
 		behavior |= (1 << 2);
 	}
-	// Left
+	// West
 	if(icm_data.angleRoll <= -angleMin) {
 		if(icm_data.angleRoll >= -45) {
-			behavior |= (1 << 3); // up with deviation to left
-			printf("Y: up with deviation to left\n");
+			behavior |= (1 << 3); // deviation +
 		} else if(icm_data.angleRoll < -45) {
-			behavior &= ~(1 << 3);	// left with deviation to up
-			printf("Y: left with deviation to up\n");
+			behavior &= ~(1 << 3);	// deviation +
 		}
+		printf("West: %0.1f\n", icm_data.angleRoll);
 	} else {
 		behavior |= (1 << 3);
 	}
-	// X
-	// Right
+	// Sud
 	if(icm_data.anglePitch <= -angleMin) {
 		if(icm_data.anglePitch >= -45) {
-			behavior |= (1 << 4); // up with deviation to left
-			printf("X: up with deviation to right\n");
+			behavior |= (1 << 4); // deviation +
 		} else if(icm_data.anglePitch < -45) {
-			behavior &= ~(1 << 4);	// left with deviation to up
-			printf("X: right with deviation to up\n");
+			behavior &= ~(1 << 4);	// deviation ++
 		}
+		printf("South: %0.1f\n", icm_data.anglePitch);
 	} else {
 		behavior |= (1 << 4);
 	}
-	// Left
+	// Nord
 	if(icm_data.anglePitch >= angleMin) {
 		if(icm_data.anglePitch <= 45) {
-			behavior |= (1 << 5); // up with deviation to right
-			printf("X: up with deviation to left\n");
+			behavior |= (1 << 5); // deviation +
 		} else if(icm_data.anglePitch > 45) {
-			behavior &= ~(1 << 5);	// right with deviation to up
-			printf("X: left with deviation to up\n");
+			behavior &= ~(1 << 5);	// deviation ++
 		}
+		printf("North: %0.1f\n", icm_data.anglePitch);
 	} else {
 		behavior |= (1 << 5);
 	}
@@ -449,12 +429,108 @@ uint8_t ROCKET_Behavior(void) {
 	BMP280_ReadPressure(&bmp_data);
 	if(bmp_data.pressure_Pa > old_press + pressMin || bmp_data.pressure_Pa < old_press - pressMin) {
 		behavior |= (1 << 7);
-
 	} else {
 		behavior &= ~(1 << 7);
 	}
 
 	return behavior;
+}
+
+static void SD_Card_Test(void)
+{
+  FATFS FatFs;
+  FIL Fil;
+  FRESULT FR_Status;
+  FATFS *FS_Ptr;
+  UINT RWC, WWC; // Read/Write Word Counter
+  DWORD FreeClusters;
+  uint32_t TotalSize, FreeSpace;
+  char RW_Buffer[200];
+  do
+  {
+    //------------------[ Mount The SD Card ]--------------------
+    FR_Status = f_mount(&FatFs, "", 1);
+    if (FR_Status != FR_OK)
+    {
+      printf("Error! While Mounting SD Card, Error Code: (%i)\r\n", FR_Status);
+      break;
+    }
+    printf("SD Card Mounted Successfully! \r\n\n");
+    //------------------[ Get & Print The SD Card Size & Free Space ]--------------------
+    f_getfree("", &FreeClusters, &FS_Ptr);
+    TotalSize = (uint32_t)((FS_Ptr->n_fatent - 2) * FS_Ptr->csize * 0.5);
+    FreeSpace = (uint32_t)(FreeClusters * FS_Ptr->csize * 0.5);
+    printf("Total SD Card Size: %lu Bytes\r\n", TotalSize);
+    printf("Free SD Card Space: %lu Bytes\r\n\n", FreeSpace);
+    //------------------[ Open A Text File For Write & Write Data ]--------------------
+    //Open the file
+    FR_Status = f_open(&Fil, "TextFileWrite.txt", FA_WRITE | FA_READ | FA_CREATE_ALWAYS);
+    if(FR_Status != FR_OK)
+    {
+      printf("Error! While Creating/Opening A New Text File, Error Code: (%i)\r\n", FR_Status);
+      break;
+    }
+    printf("Text File Created & Opened! Writing Data To The Text File..\r\n\n");
+    // (1) Write Data To The Text File [ Using f_puts() Function ]
+    f_puts("Hello! From STM32 To SD Card Over SPI, Using f_puts()\n", &Fil);
+    // (2) Write Data To The Text File [ Using f_write() Function ]
+    strcpy(RW_Buffer, "Hello! From STM32 To SD Card Over SPI, Using f_write()\r\n");
+    f_write(&Fil, RW_Buffer, strlen(RW_Buffer), &WWC);
+    // Close The File
+    f_close(&Fil);
+    //------------------[ Open A Text File For Read & Read Its Data ]--------------------
+    // Open The File
+    FR_Status = f_open(&Fil, "TextFileWrite.txt", FA_READ);
+    if(FR_Status != FR_OK)
+    {
+      printf("Error! While Opening (TextFileWrite.txt) File For Read.. \r\n");
+      break;
+    }
+    // (1) Read The Text File's Data [ Using f_gets() Function ]
+    f_gets(RW_Buffer, sizeof(RW_Buffer), &Fil);
+    printf("Data Read From (TextFileWrite.txt) Using f_gets():%s", RW_Buffer);
+    // (2) Read The Text File's Data [ Using f_read() Function ]
+    f_read(&Fil, RW_Buffer, f_size(&Fil), &RWC);
+    printf("Data Read From (TextFileWrite.txt) Using f_read():%s", RW_Buffer);
+    // Close The File
+    f_close(&Fil);
+    printf("File Closed! \r\n\n");
+    //------------------[ Open An Existing Text File, Update Its Content, Read It Back ]--------------------
+    // (1) Open The Existing File For Write (Update)
+    FR_Status = f_open(&Fil, "TextFileWrite.txt", FA_OPEN_EXISTING | FA_WRITE);
+    FR_Status = f_lseek(&Fil, f_size(&Fil)); // Move The File Pointer To The EOF (End-Of-File)
+    if(FR_Status != FR_OK)
+    {
+      printf("Error! While Opening (TextFileWrite.txt) File For Update.. \r\n");
+      break;
+    }
+    // (2) Write New Line of Text Data To The File
+    FR_Status = f_puts("This New Line Was Added During Update!\r\n", &Fil);
+    f_close(&Fil);
+    memset(RW_Buffer,'\0',sizeof(RW_Buffer)); // Clear The Buffer
+    // (3) Read The Contents of The Text File After The Update
+    FR_Status = f_open(&Fil, "TextFileWrite.txt", FA_READ); // Open The File For Read
+    f_read(&Fil, RW_Buffer, f_size(&Fil), &RWC);
+    printf("Data Read From (TextFileWrite.txt) After Update:%s", RW_Buffer);
+    f_close(&Fil);
+    //------------------[ Delete The Text File ]--------------------
+    // Delete The File
+    /*
+    FR_Status = f_unlink(TextFileWrite.txt);
+    if (FR_Status != FR_OK){
+        sprintf(TxBuffer, "Error! While Deleting The (TextFileWrite.txt) File.. \r\n");
+        UART_Print(TxBuffer);
+    }
+    */
+  } while(0);
+  //------------------[ Test Complete! Unmount The SD Card ]--------------------
+  FR_Status = f_mount(NULL, "", 0);
+  if (FR_Status != FR_OK)
+  {
+      printf("Error! While Un-mounting SD Card, Error Code: (%i)\r\n", FR_Status);
+  } else{
+      printf("SD Card Un-mounted Successfully! \r\n");
+  }
 }
 /* USER CODE END 0 */
 
@@ -466,7 +542,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	ROCKET_InitRoutine();
+	//ROCKET_InitRoutine();
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -495,6 +571,7 @@ int main(void)
   MX_CRC_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
+  SD_Card_Test();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -502,7 +579,7 @@ int main(void)
 	while (1)
 	{
 		// TODO: conditions flight mode change
-		//STM32_ModeRoutine();
+		//ROCKET_Behavior();
 	}
     /* USER CODE END WHILE */
 

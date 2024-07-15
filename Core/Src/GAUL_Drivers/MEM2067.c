@@ -6,75 +6,70 @@
  */
 
 #include "GAUL_Drivers/MEM2067.h"
+#include "fatfs.h"
 
-
-extern FATFS USERFatFS;
-extern char USERPath[4];
+char TxBuffer[250];
 
 // Debugging
 const char* FATFS_ErrorToString(FRESULT result) {
 
     switch (result) {
-        case FR_OK: return "Succeeded";
-        case FR_DISK_ERR: return "A hard error occurred in the low level disk I/O layer";
-        case FR_INT_ERR: return "Assertion failed";
-        case FR_NOT_READY: return "The physical drive cannot work";
-        case FR_NO_FILE: return "Could not find the file";
-        case FR_NO_PATH: return "Could not find the path";
-        case FR_INVALID_NAME: return "The path name format is invalid";
-        case FR_DENIED: return "Access denied due to prohibited access or directory full";
-        case FR_EXIST: return "Access denied due to prohibited access";
-        case FR_INVALID_OBJECT: return "The file/directory object is invalid";
-        case FR_WRITE_PROTECTED: return "The physical drive is write protected";
-        case FR_INVALID_DRIVE: return "The logical drive number is invalid";
-        case FR_NOT_ENABLED: return "The volume has no work area";
-        case FR_NO_FILESYSTEM: return "There is no valid FAT volume";
-        case FR_MKFS_ABORTED: return "The f_mkfs() aborted due to any parameter error";
-        case FR_TIMEOUT: return "Could not get a grant to access the volume within defined period";
-        case FR_LOCKED: return "The operation is rejected according to the file sharing policy";
-        case FR_NOT_ENOUGH_CORE: return "LFN working buffer could not be allocated";
-        case FR_TOO_MANY_OPEN_FILES: return "Number of open files > _FS_SHARE";
-        case FR_INVALID_PARAMETER: return "Given parameter is invalid";
+        case FR_OK: return "Succeeded\r\n";
+        case FR_DISK_ERR: return "A hard error occurred in the low level disk I/O layer\r\n";
+        case FR_INT_ERR: return "Assertion failed\r\n";
+        case FR_NOT_READY: return "The physical drive cannot work\r\n";
+        case FR_NO_FILE: return "Could not find the file\r\n";
+        case FR_NO_PATH: return "Could not find the path\r\n";
+        case FR_INVALID_NAME: return "The path name format is invalid\r\n";
+        case FR_DENIED: return "Access denied due to prohibited access or directory full\r\n";
+        case FR_EXIST: return "Access denied due to prohibited access\r\n";
+        case FR_INVALID_OBJECT: return "The file/directory object is invalid\r\n";
+        case FR_WRITE_PROTECTED: return "The physical drive is write protected\r\n";
+        case FR_INVALID_DRIVE: return "The logical drive number is invalid\r\n";
+        case FR_NOT_ENABLED: return "The volume has no work area\r\n";
+        case FR_NO_FILESYSTEM: return "There is no valid FAT volume\r\n";
+        case FR_MKFS_ABORTED: return "The f_mkfs() aborted due to any parameter error\r\n";
+        case FR_TIMEOUT: return "Could not get a grant to access the volume within defined period\r\n";
+        case FR_LOCKED: return "The operation is rejected according to the file sharing policy\r\n";
+        case FR_NOT_ENOUGH_CORE: return "LFN working buffer could not be allocated\r\n";
+        case FR_TOO_MANY_OPEN_FILES: return "Number of open files > _FS_SHARE\r\n";
+        case FR_INVALID_PARAMETER: return "Given parameter is invalid\r\n";
         default: return "Unknown error";
     }
 }
 
-uint8_t MEM2067_WriteFATFS(const char *filename, uint8_t *data, uint16_t size) {
+uint8_t MEM2067_Mount(void) {
 
-    FIL file;
-    FRESULT result;
-    UINT bytes_written;
+	FATFS fatfs;
+	FIL fil;
+	FRESULT fr_result;
+	FATFS *fr_ptr;
+	UINT rwc, wwc;
+	DWORD free_clusters;
+	uint32_t total_size, free_space;
+	char rw_buffer[200];
 
-    result = f_open(&file, filename, FA_WRITE | FA_CREATE_ALWAYS);
-    if (result != FR_OK) {
-        printf("Error opening file: %s\n", FATFS_ErrorToString(result));
-        return 0;
-    }
+	//------------------[ Mount The SD Card ]--------------------
+	fr_result = f_mount(&fatfs, "", 1);
+	if(fr_result != FR_OK) {
+		return 0;
+	}
+	printf("Result: (%s)", FATFS_ErrorToString(fr_result));
+	//------------------[ Get & Print The SD Card Size & Free Space ]--------------------
+	f_getfree("", &free_clusters, &fr_ptr);
+	total_size = (uint32_t)((fr_ptr->n_fatent - 2) * fr_ptr->csize * 0.5);
+	free_space = (uint32_t)(free_clusters * fr_ptr->csize * 0.5);
+	printf("Total SD Card Size: %lu Bytes\r\n", total_size);
+	printf("Free SD Card Space: %lu Bytes\r\n\n", free_space);
 
-    result = f_write(&file, data, size, &bytes_written);
-    if (result != FR_OK || bytes_written != size) {
-        printf("Error writing: %s\n", FATFS_ErrorToString(result));
-        f_close(&file);
-        return 0;
-    }
-
-    f_close(&file);
-    return 1; // OK
+	return 1;
 }
+/*
+static void MEM2067_Read(const char *filename, ) {
 
-uint8_t MEM2067_SDCardDetection(void) {
-
-	memset(&USERFatFS, 0, sizeof(USERFatFS));
-	memset(USERPath, 0, sizeof(USERPath));
-
-    FRESULT res = f_mount(&USERFatFS, USERPath, 1);
-    if (res == FR_OK) {
-        f_mount(NULL, USERPath, 1);
-        printf(" -> SD card detected\r\n");
-        return 1; // OK
-    } else {
-        printf(" -> No SD card detected\r\n");
-        printf(" -> SD card error, result: %s\n", FATFS_ErrorToString(res));
-        return 0;
-    }
+	//------------------[ Open A Text File For Write & Write Data ]--------------------
+	//Open the file
+	fr_result = f_open(&fil, "log.txt", FA_WRITE | FA_READ | FA_CREATE_ALWAYS);
+	printf(FATFS_ErrorToString(fr_result));
 }
+*/
