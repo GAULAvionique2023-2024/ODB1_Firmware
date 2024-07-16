@@ -79,7 +79,6 @@ static uint8_t SD_ReadyWait(void)
 /* power on */
 static void SD_PowerOn(void)
 {
-	Init_GPIO(SD_CS_PORT, SD_CS_PIN, OUT2, O_GP_PP);
   uint8_t args[6];
   uint32_t cnt = 0x1FFF;
   /* transmit bytes to wake up */

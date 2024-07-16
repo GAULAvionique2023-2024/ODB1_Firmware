@@ -10,7 +10,6 @@
 
 #include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
-#include <ff.h>
 #include <fatfs.h>
 #include <stdint.h>
 #include <stdio.h>

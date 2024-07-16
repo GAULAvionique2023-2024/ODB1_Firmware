@@ -6,9 +6,6 @@
  */
 
 #include "GAUL_Drivers/MEM2067.h"
-#include "fatfs.h"
-
-char TxBuffer[250];
 
 // Debugging
 const char* FATFS_ErrorToString(FRESULT result) {
@@ -50,11 +47,15 @@ uint8_t MEM2067_Mount(void) {
 	char rw_buffer[200];
 
 	//------------------[ Mount The SD Card ]--------------------
+	Init_GPIO(PA, 4, OUT2, O_GP_PP);
+	SPI_Init(1);
+	Write_GPIO(PA, 4, HIGH);
 	fr_result = f_mount(&fatfs, "", 1);
 	if(fr_result != FR_OK) {
+		printf("Failed: %s", FATFS_ErrorToString(fr_result));
 		return 0;
 	}
-	printf("Result: (%s)", FATFS_ErrorToString(fr_result));
+	printf("Succeeded: %s", FATFS_ErrorToString(fr_result));
 	//------------------[ Get & Print The SD Card Size & Free Space ]--------------------
 	f_getfree("", &free_clusters, &fr_ptr);
 	total_size = (uint32_t)((fr_ptr->n_fatent - 2) * fr_ptr->csize * 0.5);
@@ -70,6 +71,6 @@ static void MEM2067_Read(const char *filename, ) {
 	//------------------[ Open A Text File For Write & Write Data ]--------------------
 	//Open the file
 	fr_result = f_open(&fil, "log.txt", FA_WRITE | FA_READ | FA_CREATE_ALWAYS);
-	printf(FATFS_ErrorToString(fr_result));
+	printf("Result: %s", FATFS_ErrorToString(fr_result));
 }
 */
