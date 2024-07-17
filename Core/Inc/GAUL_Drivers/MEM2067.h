@@ -16,7 +16,7 @@
 #include <string.h>
 
 uint8_t MEM2067_Mount(void);
-static void MEM2067_Read(const char *filename, uint8_t *data, uint16_t size);
-static void MEM2067_Write(const char *filename, uint8_t *data, uint16_t size);
+//static void MEM2067_Read(const char *filename, uint8_t *data, uint16_t size);
+//static void MEM2067_Write(const char *filename, uint8_t *data, uint16_t size);
 
 #endif /* INC_GAUL_DRIVERS_MEM2067_H_ */

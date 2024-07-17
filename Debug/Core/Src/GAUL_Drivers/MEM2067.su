@@ -1,2 +1,2 @@
 ../Core/Src/GAUL_Drivers/MEM2067.c:11:13:FATFS_ErrorToString	0	static
-../Core/Src/GAUL_Drivers/MEM2067.c:38:9:MEM2067_Mount	4168	static
+../Core/Src/GAUL_Drivers/MEM2067.c:70:9:MEM2067_Mount	8336	static
