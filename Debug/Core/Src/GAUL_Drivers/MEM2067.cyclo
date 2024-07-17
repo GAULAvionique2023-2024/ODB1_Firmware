@@ -1,2 +1,4 @@
 ../Core/Src/GAUL_Drivers/MEM2067.c:11:13:FATFS_ErrorToString	21
-../Core/Src/GAUL_Drivers/MEM2067.c:70:9:MEM2067_Mount	7
+../Core/Src/GAUL_Drivers/MEM2067.c:122:5:bufsize	2
+../Core/Src/GAUL_Drivers/MEM2067.c:70:9:MEM2067_Mount	4
+../Core/Src/GAUL_Drivers/MEM2067.c:130:6:bufclear	2

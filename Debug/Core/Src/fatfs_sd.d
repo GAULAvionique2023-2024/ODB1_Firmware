@@ -1,4 +1,4 @@
-FATFS/Target/user_diskio_spi.o: ../FATFS/Target/user_diskio_spi.c \
+Core/Src/fatfs_sd.o: ../Core/Src/fatfs_sd.c \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -28,25 +28,8 @@ FATFS/Target/user_diskio_spi.o: ../FATFS/Target/user_diskio_spi.c \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
- ../FATFS/Target/user_diskio_spi.h \
- ../Middlewares/Third_Party/FatFs/src/integer.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
- ../Middlewares/Third_Party/FatFs/src/integer.h \
- ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
- ../Middlewares/Third_Party/FatFs/src/diskio.h \
- ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/ffconf.h \
- ../Core/Inc/main.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_spi.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_system.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_gpio.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_exti.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_bus.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_cortex.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_rcc.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_utils.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_pwr.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_dma.h \
- ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h
+ ../Middlewares/Third_Party/FatFs/src/integer.h ../Core/Inc/fatfs_sd.h
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h:
@@ -76,23 +59,6 @@ FATFS/Target/user_diskio_spi.o: ../FATFS/Target/user_diskio_spi.c \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
-../FATFS/Target/user_diskio_spi.h:
-../Middlewares/Third_Party/FatFs/src/integer.h:
 ../Middlewares/Third_Party/FatFs/src/diskio.h:
 ../Middlewares/Third_Party/FatFs/src/integer.h:
-../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h:
-../Middlewares/Third_Party/FatFs/src/diskio.h:
-../Middlewares/Third_Party/FatFs/src/ff.h:
-../FATFS/Target/ffconf.h:
-../Core/Inc/main.h:
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_spi.h:
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_system.h:
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_gpio.h:
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_exti.h:
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_bus.h:
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_cortex.h:
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_rcc.h:
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_utils.h:
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_pwr.h:
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_dma.h:
-../Core/Inc/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h:
+../Core/Inc/fatfs_sd.h:

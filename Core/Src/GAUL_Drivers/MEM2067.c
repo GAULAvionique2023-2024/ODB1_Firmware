@@ -69,87 +69,70 @@ uint8_t MEM2067_Mount(void) {
 
 uint8_t MEM2067_Mount(void) {
 
-	 printf("\r\n~ SD card demo by kiwih ~\r\n\r\n");
+	FATFS fs;
+	FIL fil;
+	FRESULT fresult;
+	char buffer[BUFFER_SIZE];
 
-	  HAL_Delay(1000); //a short delay is important to let the SD card settle
+	UINT br, bw;
 
-	  //some variables for FatFs
-	  FATFS FatFs; 	//Fatfs handle
-	  FIL fil; 		//File handle
-	  FRESULT fres; //Result after operations
+	FATFS *pfr;
+	DWORD fre_clust;
+	uint32_t total, free_space;
 
-	  //Open the file system
-	  fres = f_mount(&FatFs, "", 1); //1=mount now
-	  if (fres != FR_OK) {
-		printf("f_mount error (%i)\r\n", fres);
-		while(1);
-	  }
+	fresult = f_mount(&fs, "/", 1);
+	if (fresult != FR_OK) printf ("ERROR!!! in mounting SD CARD...\n\n");
+	else printf("SD CARD mounted successfully...\n\n");
 
-	  //Let's get some statistics from the SD card
-	  DWORD free_clusters, free_sectors, total_sectors;
+	/* Create second file with read write access and open it */
+	fresult = f_open(&fil, "file2.txt", FA_CREATE_ALWAYS | FA_WRITE);
 
-	  FATFS* getFreeFs;
+	/* Writing text */
+	strcpy (buffer, "This is File2.txt, written using ...f_write... and it says Hello from Controllerstech\n");
 
-	  fres = f_getfree("", &free_clusters, &getFreeFs);
-	  if (fres != FR_OK) {
-		printf("f_getfree error (%i)\r\n", fres);
-		while(1);
-	  }
+	fresult = f_write(&fil, buffer, bufsize(buffer), &bw);
 
-	  //Formula comes from ChaN's documentation
-	  total_sectors = (getFreeFs->n_fatent - 2) * getFreeFs->csize;
-	  free_sectors = free_clusters * getFreeFs->csize;
+	/* Close file */
+	f_close(&fil);
 
-	  printf("SD card stats:\r\n%10lu KiB total drive space.\r\n%10lu KiB available.\r\n", total_sectors / 2, free_sectors / 2);
+	/* Open second file to read */
+	fresult = f_open(&fil, "file2.txt", FA_READ);
+	if (fresult == FR_OK)printf ("file2.txt is open and the data is shown below\n");
 
-	  //Now let's try to open file "test.txt"
-	  fres = f_open(&fil, "test.txt", FA_READ);
-	  if (fres != FR_OK) {
-		printf("f_open error (%i)\r\n");
-		while(1);
-	  }
-	  printf("I was able to open 'test.txt' for reading!\r\n");
+	/* Read data from the file
+	 * Please see the function details for the arguments
+	*/
+	f_read (&fil, buffer, f_size(&fil), &br);
+	printf(buffer);
+	printf("\n\n");
 
-	  //Read 30 bytes from "test.txt" on the SD card
-	  BYTE readBuf[30];
+	/* Close file */
+	f_close(&fil);
 
-	  //We can either use f_read OR f_gets to get data out of files
-	  //f_gets is a wrapper on f_read that does some string formatting for us
-	  TCHAR* rres = f_gets((TCHAR*)readBuf, 30, &fil);
-	  if(rres != 0) {
-		printf("Read string from 'test.txt' contents: %s\r\n", readBuf);
-	  } else {
-		printf("f_gets error (%i)\r\n", fres);
-	  }
+	//fresult = f_unlink("/file2.txt");
+	//if (fresult == FR_OK) printf("file2.txt removed successfully...\n");
 
-	  //Be a tidy kiwi - don't forget to close your file!
-	  f_close(&fil);
+	/* Unmount SDCARD */
+	fresult = f_mount(NULL, "/", 1);
+	if (fresult == FR_OK) printf ("SD CARD UNMOUNTED successfully...\n");
 
-	  //Now let's try and write a file "write.txt"
-	  fres = f_open(&fil, "write.txt", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-	  if(fres == FR_OK) {
-		printf("I was able to open 'write.txt' for writing\r\n");
-	  } else {
-		printf("f_open error (%i)\r\n", fres);
-	  }
+	return 1;
+}
 
-	  //Copy in a string
-	  strncpy((char*)readBuf, "a new file is made!", 19);
-	  UINT bytesWrote;
-	  fres = f_write(&fil, readBuf, 19, &bytesWrote);
-	  if(fres == FR_OK) {
-		printf("Wrote %i bytes to 'write.txt'!\r\n", bytesWrote);
-	  } else {
-		printf("f_write error (%i)\r\n");
-	  }
+int bufsize (char* buf)
+{
+	int i = 0;
+	while (*buf++ != '\0')
+		i++;
+	return i;
+}
 
-	  //Be a tidy kiwi - don't forget to close your file!
-	  f_close(&fil);
-
-	  //We're done, so de-mount the drive
-	  f_mount(NULL, "", 0);
-
-	  return 1;
+void bufclear(char* p_Buffer)
+{
+	for (int i = 0; i < BUFFER_SIZE; i++)
+	{
+		p_Buffer[i] = '\0';
+	}
 }
 /*
 static void MEM2067_Read(const char *filename, ) {

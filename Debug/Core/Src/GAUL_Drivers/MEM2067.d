@@ -45,7 +45,8 @@ Core/Src/GAUL_Drivers/MEM2067.o: ../Core/Src/GAUL_Drivers/MEM2067.c \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_dma.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
- ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h
+ ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
+ ../Core/Inc/fatfs_sd.h
 ../Core/Inc/GAUL_Drivers/MEM2067.h:
 ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/SPI_driver.h:
 ../Core/Inc/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h:
@@ -97,3 +98,4 @@ Core/Src/GAUL_Drivers/MEM2067.o: ../Core/Src/GAUL_Drivers/MEM2067.c \
 ../Middlewares/Third_Party/FatFs/src/diskio.h:
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 ../FATFS/Target/user_diskio.h:
+../Core/Inc/fatfs_sd.h:
