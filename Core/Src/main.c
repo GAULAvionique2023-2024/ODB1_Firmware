@@ -214,8 +214,8 @@ void ROCKET_InitRoutine(void) {
 	packet.header_states.gps = L76LM33_Init(GPS_USART_PORT) == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
 	// SD Card
-	//packet.header_states.sd = MEM2067_Mount() == 1 ? 0x01 : 0x00;
-	//printf(packet.header_states.sd ? "(+) SD card detected in MEM2067...\r\n" : "(-) No SD card detected in MEM2067...\r\n");
+	packet.header_states.sd = MEM2067_Mount() == 1 ? 0x01 : 0x00;
+	printf(packet.header_states.sd ? "(+) SD card detected in MEM2067...\r\n" : "(-) No SD card detected in MEM2067...\r\n");
 	// Bluetooth
 	HM10BLE_Init(&ble_data, BT_USART_PORT);
 }
@@ -476,7 +476,6 @@ int main(void)
   MX_CRC_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-  MEM2067_Mount();
   /* USER CODE END 2 */
 
   /* Infinite loop */
