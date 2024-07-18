@@ -7,7 +7,7 @@
 
 #include "GAUL_Drivers/L76LM33.h"
 
-char rx_buffer[BUFFER_SIZE];
+char gps_buffer[BUFFER_SIZE];
 uint16_t buffer_index = 0;
 
 uint8_t L76LM33_Init(unsigned short usart_port) {
@@ -27,7 +27,7 @@ uint8_t L76LM33_SendCommand(unsigned short usart_port, char *command) {
     if (command == NULL) {
         return 0; // Error
     }
-    USART_TX(usart_port, (uint8_t*)command, strlen(command));
+    USART_DMA_TX(usart_port, (uint8_t*)command, strlen(command));
     return 1; // OK
 }
 
@@ -43,13 +43,13 @@ uint8_t L76LM33_Read(unsigned short usart_port, char *rx_data, GPS_Data *gps_dat
         if (byte == '$') {
             buffer_index = 0;
         }
-        rx_buffer[buffer_index++] = byte;
+        gps_buffer[buffer_index++] = byte;
         if (buffer_index >= BUFFER_SIZE) {
             buffer_index = 0;
         }
         if (byte == '\n' && buffer_index > 0) {
-            rx_buffer[buffer_index] = '\0';
-            strcpy(rx_data, rx_buffer);
+            gps_buffer[buffer_index] = '\0';
+            strcpy(rx_data, gps_buffer);
             buffer_index = 0;
             if (NMEA_ValidTrame(rx_data)) {
                 printf("NMEA sentence: %s\n", rx_data);

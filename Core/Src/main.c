@@ -183,11 +183,11 @@ void ROCKET_InitRoutine(void) {
 	printf("(+) SPI1 succeeded...\r\n");
 	SPI_Init(2);
 	printf("(+) SPI2 succeeded...\r\n");
-	USART_Init(1);
+	USART_Init(1, 9600);
 	printf("(+) USART1 succeeded...\r\n");
-	USART_Init(2);
+	USART_Init(2, 9600);
 	printf("(+) USART2 succeeded...\r\n");
-	USART_Init(3);
+	USART_Init(3, 9600);
 	printf("(+) USART3 succeeded...\r\n");
 
 	printf("|----------Components initialization----------|\r\n");
@@ -218,6 +218,7 @@ void ROCKET_InitRoutine(void) {
 	// SD Card
 	packet.header_states.sd = MEM2067_Mount("log.txt") == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.sd ? "(+) SD card succeeded...\r\n" : "(-) SD card failed...\r\n");
+	MEM2067_Infos();
 	// Bluetooth
 	HM10BLE_Init(&ble_data, BT_USART_PORT);
 }

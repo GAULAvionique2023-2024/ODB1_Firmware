@@ -50,12 +50,12 @@ uint8_t HM10BLE_Disconnection(HM10BLE *devHM10, unsigned short usart_port, uint8
 
 uint8_t HM10BLE_Read(unsigned short usart_port, uint8_t *response, uint8_t size) {
 
-	USART_RX(usart_port, response, sizeof(response));
+	USART_DMA_RX(usart_port, response, sizeof(response));
 	return 1; // OK
 }
 
 uint8_t HM10BLE_Send(unsigned short usart_port, uint8_t *message, uint8_t size) {
 
-	USART_TX(usart_port, message, sizeof(message));
+	USART_DMA_TX(usart_port, message, sizeof(message));
 	return 1; // OK
 }
