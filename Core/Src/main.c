@@ -164,6 +164,7 @@ uint8_t ROCKET_SetMode(uint8_t mode) {
 
 void ROCKET_InitRoutine(void) {
 
+	/*
 	HAL_Init();
 	SystemClock_Config();
 	MX_USART1_UART_Init();
@@ -174,6 +175,7 @@ void ROCKET_InitRoutine(void) {
 	MX_ADC1_Init();
 	MX_CRC_Init();
 	MX_FATFS_Init();
+	*/
 
 	printf("|----------Starting----------|\r\n");
 	Buzz(&htim3, TIM_CHANNEL_4, START);
@@ -214,8 +216,8 @@ void ROCKET_InitRoutine(void) {
 	packet.header_states.gps = L76LM33_Init(GPS_USART_PORT) == 1 ? 0x01 : 0x00;
 	printf(packet.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
 	// SD Card
-	packet.header_states.sd = MEM2067_Mount() == 1 ? 0x01 : 0x00;
-	printf(packet.header_states.sd ? "(+) SD card detected in MEM2067...\r\n" : "(-) No SD card detected in MEM2067...\r\n");
+	packet.header_states.sd = MEM2067_Mount("log.txt") == 1 ? 0x01 : 0x00;
+	printf(packet.header_states.sd ? "(+) SD card succeeded...\r\n" : "(-) SD card failed...\r\n");
 	// Bluetooth
 	HM10BLE_Init(&ble_data, BT_USART_PORT);
 }
@@ -444,11 +446,6 @@ uint8_t ROCKET_Behavior(void) {
   */
 int main(void)
 {
-
-  /* USER CODE BEGIN 1 */
-	ROCKET_InitRoutine();
-  /* USER CODE END 1 */
-
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -475,6 +472,11 @@ int main(void)
   MX_ADC1_Init();
   MX_CRC_Init();
   MX_FATFS_Init();
+  /* USER CODE BEGIN 1 */
+  ROCKET_InitRoutine();
+  MEM2067_Unmount();
+  /* USER CODE END 1 */
+
   /* USER CODE BEGIN 2 */
   /* USER CODE END 2 */
 

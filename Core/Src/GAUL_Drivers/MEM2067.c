@@ -7,6 +7,18 @@
 
 #include "GAUL_Drivers/MEM2067.h"
 
+static FATFS fs;
+static FIL fil;
+static FRESULT fresult;
+static char buffer[BUFFER_SIZE];
+
+static FATFS *pfr;
+static DWORD fre_clust;
+static uint32_t total_space, free_space;
+
+void MEM2067_Write(char *filename, char* data);
+void MEM2067_Unmount(void);
+
 // Debugging
 const char* FATFS_ErrorToString(FRESULT result) {
 
@@ -34,89 +46,49 @@ const char* FATFS_ErrorToString(FRESULT result) {
         default: return "Unknown error";
     }
 }
-/*
-uint8_t MEM2067_Mount(void) {
 
-	FATFS fatfs;
-	FIL fil;
-	FRESULT fr_result;
-	FATFS *fr_ptr;
-	UINT rwc, wwc;
-	DWORD free_clusters;
-	uint32_t total_size, free_space;
-	char rw_buffer[200];
-
-
-	//------------------[ Mount The SD Card ]--------------------
-	Init_GPIO(PA, 4, OUT2, O_GP_PP);
-	SPI_Init(1);
-	Write_GPIO(PA, 4, HIGH);
-	fr_result = f_mount(&fatfs, "/", 1);
-	if(fr_result != FR_OK) {
-		printf("Failed: %s", FATFS_ErrorToString(fr_result));
-		return 0;
-	}
-	printf("Succeeded: %s", FATFS_ErrorToString(fr_result));
-	//------------------[ Get & Print The SD Card Size & Free Space ]--------------------
-	f_getfree("", &free_clusters, &fr_ptr);
-	total_size = (uint32_t)((fr_ptr->n_fatent - 2) * fr_ptr->csize * 0.5);
-	free_space = (uint32_t)(free_clusters * fr_ptr->csize * 0.5);
-	printf("Total SD Card Size: %lu Bytes\r\n", total_size);
-	printf("Free SD Card Space: %lu Bytes\r\n\n", free_space);
-
-	return 1;
-}*/
-
-uint8_t MEM2067_Mount(void) {
-
-	FATFS fs;
-	FIL fil;
-	FRESULT fresult;
-	char buffer[BUFFER_SIZE];
-
-	UINT br, bw;
-
-	FATFS *pfr;
-	DWORD fre_clust;
-	uint32_t total, free_space;
+uint8_t MEM2067_Mount(char* filename) {
 
 	fresult = f_mount(&fs, "/", 1);
-	if (fresult != FR_OK) printf ("ERROR!!! in mounting SD CARD...\n\n");
-	else printf("SD CARD mounted successfully...\n\n");
-
-	/* Create second file with read write access and open it */
-	fresult = f_open(&fil, "file2.txt", FA_CREATE_ALWAYS | FA_WRITE);
-
-	/* Writing text */
-	strcpy (buffer, "This is File2.txt, written using ...f_write... and it says Hello from Controllerstech\n");
-
-	fresult = f_write(&fil, buffer, bufsize(buffer), &bw);
-
-	/* Close file */
+	if (fresult != FR_OK){
+		printf(" -> SD Card Mount: %s", FATFS_ErrorToString(fresult));
+		return 0;
+	}
+	// Create file with read / write access and open it
+	MEM2067_Write(filename, "Date ...\n");
+	//TODO: add date et heure
 	f_close(&fil);
-
-	/* Open second file to read */
-	fresult = f_open(&fil, "file2.txt", FA_READ);
-	if (fresult == FR_OK)printf ("file2.txt is open and the data is shown below\n");
-
-	/* Read data from the file
-	 * Please see the function details for the arguments
-	*/
-	f_read (&fil, buffer, f_size(&fil), &br);
-	printf(buffer);
-	printf("\n\n");
-
-	/* Close file */
-	f_close(&fil);
-
-	//fresult = f_unlink("/file2.txt");
-	//if (fresult == FR_OK) printf("file2.txt removed successfully...\n");
-
-	/* Unmount SDCARD */
-	fresult = f_mount(NULL, "/", 1);
-	if (fresult == FR_OK) printf ("SD CARD UNMOUNTED successfully...\n");
 
 	return 1;
+}
+
+void MEM2067_Write(char *filename, char* data) {
+
+	fresult = f_open(&fil, filename, FA_OPEN_ALWAYS | FA_WRITE);
+	if (fresult != FR_OK){
+		printf(" -> SD Card open: %s", FATFS_ErrorToString(fresult));
+	}
+	f_lseek(&fil, f_size(&fil));
+	f_puts(data, &fil);
+
+	f_close(&fil);
+}
+
+void MEM2067_Unmount(void) {
+
+	fresult = f_mount(NULL, "/", 1);
+	if (fresult != FR_OK){
+		printf(" -> SD Card Mount: %s", FATFS_ErrorToString(fresult));
+	}
+}
+
+void MEM2067_Infos(void) {
+
+	f_getfree("", &fre_clust, &pfr);
+	total_space = (uint32_t)((pfr->n_fatent - 2) * pfr->csize * 0.5);
+	free_space = (uint32_t)(fre_clust * pfr->csize * 0.5);
+	printf(" -> Total SD Card Size: %lu Bytes\r\n", total_space);
+	printf(" -> Free SD Card Space: %lu Bytes\r\n\n", free_space);
 }
 
 int bufsize (char* buf)
@@ -134,12 +106,3 @@ void bufclear(char* p_Buffer)
 		p_Buffer[i] = '\0';
 	}
 }
-/*
-static void MEM2067_Read(const char *filename, ) {
-
-	//------------------[ Open A Text File For Write & Write Data ]--------------------
-	//Open the file
-	fr_result = f_open(&fil, "log.txt", FA_WRITE | FA_READ | FA_CREATE_ALWAYS);
-	printf("Result: %s", FATFS_ErrorToString(fr_result));
-}
-*/

@@ -13,6 +13,8 @@
 #include <string.h>
 #include <stdint.h>
 
+#define BUFFER_SIZE 512
+
 uint8_t L76LM33_Init(unsigned short usart_port);
 
 uint8_t L76LM33_Read(unsigned short usart_port, char *rx_data, GPS_Data *gps_data);
