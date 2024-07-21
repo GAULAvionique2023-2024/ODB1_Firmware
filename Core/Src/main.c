@@ -207,8 +207,8 @@ void ROCKET_InitRoutine(void) {
 		printf("(+) CD74HC4051 succeeded...\r\n");
 	}
 	// Barometer
-	//packet.header_states.barometer = BMP280_Init(&bmp_data, BMP_SPI_PORT) == 1 ? 0x01 : 0x00;
-	//printf(packet.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
+	packet.header_states.barometer = BMP280_Init(&bmp_data) == 1 ? 0x01 : 0x00;
+	printf(packet.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
 	// Accelerometer
 	packet.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x01 : 0x00;
 	printf(packet.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
@@ -252,7 +252,7 @@ uint8_t ROCKET_ModeRoutine(void) {
             packet.size = PREFLIGHT_DATASIZE;
             packet.data = (uint8_t *)malloc(packet.size * sizeof(uint8_t));
             // Altitude
-			STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa), packet, 0);
+			STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa, 1013.25), packet, 0);
 			 // Temperature
             STM32_i32To8((int32_t)bmp_data.temp_C, packet, 4);
             // Roll Pitch
@@ -274,7 +274,7 @@ uint8_t ROCKET_ModeRoutine(void) {
             packet.size = INFLIGHT_DATASIZE;
             packet.data = (uint8_t *)malloc(packet.size * sizeof(uint8_t));
             // Altitude
-            STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa), packet, 0);
+            STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa, 1013.25), packet, 0);
             // Temperature
             STM32_i32To8((int32_t)bmp_data.temp_C, packet, 4);
             // GPS
@@ -306,7 +306,7 @@ uint8_t ROCKET_ModeRoutine(void) {
             packet.size = POSTFLIGHT_DATASIZE;
             packet.data = (uint8_t *)malloc(packet.size * sizeof(uint8_t));
             // Altitude
-			STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa), packet, 0);
+			STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa, 1013.25), packet, 0);
 			// GPS
 			STM32_i32To8(gps_data.time, packet, 4);
 			STM32_i32To8(gps_data.latitude, packet, 8);
@@ -463,6 +463,12 @@ int main(void)
   icm_data.SPIx = SPI2;
   icm_data.cs_pin = 12;
   icm_data.cs_port = PB;
+  icm_data.int_pin = 10;
+  icm_data.int_port = PA;
+
+  bmp_data.SPIx = SPI2;
+  bmp_data.cs_pin = 8;
+  bmp_data.cs_port = PA;
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -482,7 +488,6 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -491,14 +496,17 @@ int main(void)
 	{
 		// TODO: conditions flight mode change
 		//ROCKET_Behavior();
-		 if(ICM20602_Data_Ready())
+		 //if(ICM20602_Data_Ready(&icm_data))
 			  {
-				  ICM20602_Update_All(&icm_data);
+				  //ICM20602_Update_All(&icm_data);
 
 				  //printf("Roll: %.2f	Pitch: %.2f \n", icm.angleRoll, icm.anglePitch);
-				  printf("Roll: %.2f	Pitch: %.2f \n", icm_data.kalmanAngleRoll, icm_data.kalmanAnglePitch);
+				  //printf("Roll: %.2f	Pitch: %.2f \n", icm_data.kalmanAngleRoll, icm_data.kalmanAnglePitch);
 
 			  }
+		 BMP280_Read_Temperature_Pressure(&bmp_data);
+		 //printf("Temp: %.2f	Pa: %.2f kPa: %.2f ", bmp_data.temp_C ,  bmp_data.pressure_Pa, bmp_data.pressure_Pa/1000.0f);
+		 printf("Altidute-> filter: %.2f	 No filter: %.2f	MSL: %.2f\n", bmp_data.altitude_filtered_m, bmp_data.altitude_m, bmp_data.altitude_MSL);
 	}
     /* USER CODE END WHILE */
 

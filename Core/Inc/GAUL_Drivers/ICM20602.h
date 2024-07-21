@@ -84,8 +84,11 @@
 typedef struct{
 
 	SPI_TypeDef *SPIx;
-	uint8_t cs_pin;
+	uint8_t 	cs_pin;
 	GPIO_TypeDef *cs_port;
+
+	uint8_t 	int_pin;
+	GPIO_TypeDef *int_port;
 
 	// Raw data
 	int16_t 	gyroXRaw;
@@ -118,7 +121,7 @@ uint8_t ICM20602_Init(ICM20602 *dev);
 
 void 	ICM20602_Update_All(ICM20602 *dev);
 void 	ICM20602_Remove_DC_Offset(ICM20602 *dev, uint8_t mean);
-int8_t  ICM20602_Data_Ready(void);
+int8_t ICM20602_Data_Ready(ICM20602 *dev);
 
 //Low level fonctions
 void ICM20602_Read(ICM20602 *dev, uint8_t address, uint8_t rxData[], uint8_t size);

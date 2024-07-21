@@ -19,14 +19,9 @@ void SPI_Init(SPI_TypeDef *SPIx) {
     } else if(SPIx == SPI2) {
         RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
 
-        Init_GPIO(PA, 8, OUT50, O_GP_PP); // CS
-        Init_GPIO(PB, 12, OUT50, O_GP_PP); // CS
         Init_GPIO(PB, 13, OUT50, O_AF_PP); // CLK
         Init_GPIO(PB, 14, IN, I_PP);    // MISO SPI2
         Init_GPIO(PB, 15, OUT50, O_AF_PP); // MOSI SPI2
-
-        Write_GPIO(PA, 8, HIGH);
-        Write_GPIO(PB, 12, HIGH);
 
         SPI2->CR1 = SPI_CR1_MSTR | SPI_CR1_BR_1 | SPI_CR1_BR_2 | SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_SPE;
     }
