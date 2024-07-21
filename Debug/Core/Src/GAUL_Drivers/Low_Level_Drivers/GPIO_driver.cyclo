@@ -1,4 +1,0 @@
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.c:3:6:Init_GPIO	5
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.c:35:5:Read_GPIO	4
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.c:57:6:Write_GPIO	5
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/GPIO_driver.c:78:6:Toggle_GPIO	2

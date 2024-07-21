@@ -135,8 +135,8 @@ uint8_t BMP280_ReadRegister(uint8_t reg) {
 
     uint8_t received_data;
     Write_GPIO(PA, 8, LOW); // Disable CS
-    SPI2_TX(&reg, 1);
-    SPI2_RX(&received_data, 1);
+    //SPI2_TX(&reg, 1);
+    //SPI2_RX(&received_data, 1);
     Write_GPIO(PA, 8, HIGH); // Enable CS
     return received_data;
 }
@@ -145,7 +145,7 @@ uint8_t BMP280_WriteRegister(uint8_t reg, uint8_t value) {
 
     uint8_t data[2] = {reg, value};
     Write_GPIO(PA, 8, LOW); // Disable CS
-    SPI2_TX(data, 2);
+    //SPI2_TX(data, 2);
     Write_GPIO(PA, 8, HIGH); // Enable CS
     return 1; // OK
 }

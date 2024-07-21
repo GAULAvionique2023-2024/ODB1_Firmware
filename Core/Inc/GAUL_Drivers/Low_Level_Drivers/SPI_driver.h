@@ -8,14 +8,11 @@
 #ifndef SRC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_SPI_DRIVER_H_
 #define SRC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_SPI_DRIVER_H_
 
+#include "main.h"
 #include <stdint.h>
 
-void SPI_Init(unsigned short spi);
-
-void SPI1_TX(uint8_t *data, int size);
-void SPI2_TX(uint8_t *data, int size);
-
-void SPI1_RX(uint8_t *data, int size);
-void SPI2_RX(uint8_t *data, int size);
+void SPI_Init(SPI_TypeDef *SPIx);
+int SPI_TX(SPI_TypeDef *SPIx, uint8_t *data, int size);
+int SPI_RX(SPI_TypeDef *SPIx, uint8_t *data, int size);
 
 #endif /* SRC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_SPI_DRIVER_H_ */

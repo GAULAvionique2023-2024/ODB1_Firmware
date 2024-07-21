@@ -1,16 +1,11 @@
-/*
- * SPI_driver.c
- *
- *  Created on: Feb 11, 2024
- *      Author: Luka
- */
-
 #include "main.h"
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 
-void SPI_Init(unsigned short spi) {
-    if(spi == 1) {
+#define TIMEOUT 1000  // Timeout value
+
+void SPI_Init(SPI_TypeDef *SPIx) {
+    if(SPIx == SPI1) {
         RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
 
         Init_GPIO(PA, 4, OUT50, O_GP_PP); // CS
@@ -21,10 +16,10 @@ void SPI_Init(unsigned short spi) {
         Write_GPIO(PA, 4, HIGH);
 
         SPI1->CR1 = SPI_CR1_MSTR | SPI_CR1_BR_1 | SPI_CR1_BR_2 | SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_SPE;
-    } else if(spi == 2) {
+    } else if(SPIx == SPI2) {
         RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
 
-        Init_GPIO(PA, 8, OUT50, O_GP_PP); // CS (optionnel)
+        Init_GPIO(PA, 8, OUT50, O_GP_PP); // CS
         Init_GPIO(PB, 12, OUT50, O_GP_PP); // CS
         Init_GPIO(PB, 13, OUT50, O_AF_PP); // CLK
         Init_GPIO(PB, 14, IN, I_PP);    // MISO SPI2
@@ -37,52 +32,50 @@ void SPI_Init(unsigned short spi) {
     }
 }
 
-void SPI1_TX(uint8_t *data, int size) {
-
-    for (int i = 0; i < size; ++i) {
-        while (!(SPI1->SR & SPI_SR_TXE)) {}
-        SPI1->DR = data[i];
+int SPI_TX(SPI_TypeDef *SPIx, uint8_t *data, int size) {
+    uint32_t timeout = TIMEOUT;
+    while (size--) {
+        // Attendre que le buffer TX soit vide
+        while (!(SPIx->SR & SPI_SR_TXE)) {
+            if (--timeout == 0) {
+                return -1; // Timeout
+            }
+        }
+        SPIx->DR = *data++; // Envoyer les données
     }
 
-    while (!(SPI1->SR & SPI_SR_TXE)) {}
-    while (SPI1->SR & SPI_SR_BSY) {}
+    // Attendre que la transmission soit terminée
+    timeout = TIMEOUT;
+    while (SPIx->SR & SPI_SR_BSY) {
+        if (--timeout == 0) {
+            return -1; // Timeout
+        }
+    }
 
-    uint8_t temp = SPI1->DR;
-    temp = SPI1->SR;
+    // Lire le registre pour vider le buffer RX
+    (void)SPIx->DR;
+    return 0; // Succès
 }
 
-void SPI2_TX(uint8_t *data, int size) {
+int SPI_RX(SPI_TypeDef *SPIx, uint8_t *data, int size) {
+    uint32_t timeout = TIMEOUT;
+    while (size--) {
+        // Envoyer un dummy byte pour générer un clock et recevoir des données
+        while (!(SPIx->SR & SPI_SR_TXE)) {
+            if (--timeout == 0) {
+                return -1; // Timeout
+            }
+        }
+        SPIx->DR = 0xFF; // Dummy byte
 
-    for (int i = 0; i < size; ++i) {
-        while (!(SPI2->SR & SPI_SR_TXE)) {}
-        SPI2->DR = data[i];
+        // Attendre que le buffer RX contienne des données
+        timeout = TIMEOUT;
+        while (!(SPIx->SR & SPI_SR_RXNE)) {
+            if (--timeout == 0) {
+                return -1; // Timeout
+            }
+        }
+        *data++ = SPIx->DR; // Lire les données
     }
-
-    while (!(SPI2->SR & SPI_SR_TXE)) {}
-    while (SPI2->SR & SPI_SR_BSY) {}
-
-    uint8_t temp = SPI2->DR;
-    temp = SPI2->SR;
-}
-
-void SPI1_RX(uint8_t *data, int size) {
-
-    while (size) {
-        while (SPI1->SR & SPI_SR_BSY) {}
-        SPI1->DR = 0;
-        while (!(SPI1->SR & SPI_SR_RXNE)) {}
-        *data++ = SPI1->DR;
-        --size;
-    }
-}
-
-void SPI2_RX(uint8_t *data, int size) {
-
-    while (size) {
-        while (SPI2->SR & SPI_SR_BSY) {}
-        SPI2->DR = 0;
-        while (!(SPI2->SR & SPI_SR_RXNE)) {}
-        *data++ = SPI2->DR;
-        --size;
-    }
+    return 0; // Succès
 }

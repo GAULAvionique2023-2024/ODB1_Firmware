@@ -83,6 +83,10 @@
 // Sensor struct
 typedef struct{
 
+	SPI_TypeDef *SPIx;
+	uint8_t cs_pin;
+	GPIO_TypeDef *cs_port;
+
 	// Raw data
 	int16_t 	gyroXRaw;
 	int16_t 	gyroYRaw;
@@ -117,7 +121,7 @@ void 	ICM20602_Remove_DC_Offset(ICM20602 *dev, uint8_t mean);
 int8_t  ICM20602_Data_Ready(void);
 
 //Low level fonctions
-void 	ICM20602_Read(uint8_t address, uint8_t rxData[], uint8_t size);
-void 	ICM20602_Write(uint8_t address, uint8_t value);
+void ICM20602_Read(ICM20602 *dev, uint8_t address, uint8_t rxData[], uint8_t size);
+void ICM20602_Write(ICM20602 *dev, uint8_t address, uint8_t value);
 
 #endif /* INC_ICM20602_H_*/

@@ -178,10 +178,10 @@ void ROCKET_InitRoutine(void) {
 	*/
 
 	printf("|----------Starting----------|\r\n");
-	Buzz(&htim3, TIM_CHANNEL_4, START);
-	SPI_Init(1);
+	//Buzz(&htim3, TIM_CHANNEL_4, START);
+	SPI_Init(SPI1);
 	printf("(+) SPI1 succeeded...\r\n");
-	SPI_Init(2);
+	SPI_Init(SPI2);
 	printf("(+) SPI2 succeeded...\r\n");
 	USART_Init(1, 9600);
 	printf("(+) USART1 succeeded...\r\n");
@@ -207,8 +207,8 @@ void ROCKET_InitRoutine(void) {
 		printf("(+) CD74HC4051 succeeded...\r\n");
 	}
 	// Barometer
-	packet.header_states.barometer = BMP280_Init(&bmp_data, BMP_SPI_PORT) == 1 ? 0x01 : 0x00;
-	printf(packet.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
+	//packet.header_states.barometer = BMP280_Init(&bmp_data, BMP_SPI_PORT) == 1 ? 0x01 : 0x00;
+	//printf(packet.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
 	// Accelerometer
 	packet.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x01 : 0x00;
 	printf(packet.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
@@ -460,7 +460,9 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  icm_data.SPIx = SPI2;
+  icm_data.cs_pin = 12;
+  icm_data.cs_port = PB;
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -479,6 +481,8 @@ int main(void)
   /* USER CODE END 1 */
 
   /* USER CODE BEGIN 2 */
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -487,6 +491,14 @@ int main(void)
 	{
 		// TODO: conditions flight mode change
 		//ROCKET_Behavior();
+		 if(ICM20602_Data_Ready())
+			  {
+				  ICM20602_Update_All(&icm_data);
+
+				  //printf("Roll: %.2f	Pitch: %.2f \n", icm.angleRoll, icm.anglePitch);
+				  printf("Roll: %.2f	Pitch: %.2f \n", icm_data.kalmanAngleRoll, icm_data.kalmanAnglePitch);
+
+			  }
 	}
     /* USER CODE END WHILE */
 

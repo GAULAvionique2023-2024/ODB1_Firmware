@@ -1,6 +1,0 @@
-../Core/Src/GAUL_Drivers/ICM20602.c:147:9:ICM20602_Data_Ready	1
-../Core/Src/GAUL_Drivers/ICM20602.c:152:6:ICM20602_Read	1
-../Core/Src/GAUL_Drivers/ICM20602.c:87:6:ICM20602_Update_All	1
-../Core/Src/GAUL_Drivers/ICM20602.c:162:6:ICM20602_Write	1
-../Core/Src/GAUL_Drivers/ICM20602.c:118:6:ICM20602_Remove_DC_Offset	2
-../Core/Src/GAUL_Drivers/ICM20602.c:14:9:ICM20602_Init	1

@@ -1,5 +1,0 @@
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:12:6:SPI_Init	8	static
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:40:6:SPI1_TX	0	static
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:54:6:SPI2_TX	0	static
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:68:6:SPI1_RX	0	static
-../Core/Src/GAUL_Drivers/Low_Level_Drivers/SPI_driver.c:79:6:SPI2_RX	0	static
