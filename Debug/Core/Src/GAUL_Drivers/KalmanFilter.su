@@ -1,0 +1,2 @@
+../Core/Src/GAUL_Drivers/KalmanFilter.c:15:6:kalman1D	32	static
+../Core/Src/GAUL_Drivers/KalmanFilter.c:27:6:getRollPitch	16	static

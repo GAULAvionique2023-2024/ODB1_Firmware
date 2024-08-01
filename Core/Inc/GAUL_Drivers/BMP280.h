@@ -93,5 +93,6 @@ float BMP280_PressureToAltitude(float pressure, float sea_level_pressure);
 void BMP280_Read_Calib_Data(BMP280 *dev);
 void BMP280_Write(BMP280 *dev, uint8_t address, uint8_t value);
 void BMP280_Read(BMP280 *dev, uint8_t addresse, uint8_t *rxData[], uint8_t size);
+uint8_t BMP280_SwapMode(uint8_t mode);
 
 #endif /* INC_GAUL_DRIVERS_BMP280_H_ */

@@ -55,8 +55,7 @@ uint8_t MEM2067_Mount(char* filename) {
 		return 0;
 	}
 	// Create file with read / write access and open it
-	MEM2067_Write(filename, "Date ...\n");
-	//TODO: add date et heure
+	MEM2067_Write(filename, "LOG\n");
 	f_close(&fil);
 
 	return 1;

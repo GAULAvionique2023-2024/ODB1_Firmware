@@ -15,14 +15,16 @@
 
 
 typedef struct {
+
+	USART_TypeDef *USARTx;
 	uint8_t 	header; 	// mode + states
 	uint8_t		*data; 		// Depend du mode
 	uint8_t 	*crc;
 	uint8_t 	size; 		// depend du mode
 } RFD900;
 
-void RFD900_Init(RFD900 *devRFD);
+int RFD900_Init(RFD900 *devRFD);
 
-uint8_t RFD900_Send(RFD900 *devRFD, unsigned short usart_port);
+uint8_t RFD900_Send(RFD900 *devRFD);
 
 #endif /* INC_GAUL_DRIVERS_RFD900_H_ */

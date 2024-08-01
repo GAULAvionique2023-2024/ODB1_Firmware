@@ -15,9 +15,14 @@
 
 #define BUFFER_SIZE 512
 
-uint8_t L76LM33_Init(unsigned short usart_port);
+typedef struct {
 
-uint8_t L76LM33_Read(unsigned short usart_port, char *rx_data, GPS_Data *gps_data);
-uint8_t L76LM33_SendCommand(unsigned short usart_port, char *command);
+	USART_TypeDef *USARTx;
+} L76LM33;
+
+uint8_t L76LM33_Init(L76LM33 *devL76L);
+
+uint8_t L76LM33_Read(L76LM33 *devL76L, char *rx_data, GPS_Data *gps_data);
+uint8_t L76LM33_SendCommand(L76LM33 *devL76L, char *command);
 
 #endif /* INC_GAUL_DRIVERS_L76LM33_H_ */

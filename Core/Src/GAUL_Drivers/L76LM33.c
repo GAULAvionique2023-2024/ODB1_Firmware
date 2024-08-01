@@ -10,28 +10,28 @@
 char gps_buffer[BUFFER_SIZE];
 uint16_t buffer_index = 0;
 
-uint8_t L76LM33_Init(unsigned short usart_port) {
+uint8_t L76LM33_Init(L76LM33 *devL76L) {
 
     char PROTOCOL_SETRMS[] = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*35\r\n";
     char PROTOCOL_GPSSEARCHONLY[] = "$PMTK353,1,0,0,0,0*2A\r\n";
     char PROTOCOL_NAVMODE[] = "PMTK886,2*2A\r\n";
-    L76LM33_SendCommand(usart_port, PROTOCOL_SETRMS);
-    L76LM33_SendCommand(usart_port, PROTOCOL_GPSSEARCHONLY);
-    L76LM33_SendCommand(usart_port, PROTOCOL_NAVMODE);
+    L76LM33_SendCommand(devL76L, PROTOCOL_SETRMS);
+    L76LM33_SendCommand(devL76L, PROTOCOL_GPSSEARCHONLY);
+    L76LM33_SendCommand(devL76L, PROTOCOL_NAVMODE);
 
     return 1; // OK
 }
 
-uint8_t L76LM33_SendCommand(unsigned short usart_port, char *command) {
+uint8_t L76LM33_SendCommand(L76LM33 *devL76L, char *command) {
 
     if (command == NULL) {
         return 0; // Error
     }
-    USART_DMA_TX(usart_port, (uint8_t*)command, strlen(command));
+    USART_TX(devL76L->USARTx, (uint8_t*)command, strlen(command));
     return 1; // OK
 }
 
-uint8_t L76LM33_Read(unsigned short usart_port, char *rx_data, GPS_Data *gps_data) {
+uint8_t L76LM33_Read(L76LM33 *devL76L, char *rx_data, GPS_Data *gps_data) {
 
     if (rx_data == NULL || gps_data == NULL) {
         return 0; // Error
@@ -39,7 +39,7 @@ uint8_t L76LM33_Read(unsigned short usart_port, char *rx_data, GPS_Data *gps_dat
 
     uint8_t byte;
     while (1) {
-        USART_RX(usart_port, &byte, 1);
+        USART_RX(devL76L->USARTx, &byte, 1);
         if (byte == '$') {
             buffer_index = 0;
         }

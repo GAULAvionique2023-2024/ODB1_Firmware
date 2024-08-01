@@ -1,0 +1,3 @@
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.c:14:6:USART_Init	4
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.c:46:5:USART_TX	6
+../Core/Src/GAUL_Drivers/Low_Level_Drivers/USART_driver.c:68:5:USART_RX	6
