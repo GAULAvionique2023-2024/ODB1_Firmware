@@ -67,13 +67,14 @@ typedef struct {
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
 #define MODE_PREFLIGHT 0x00
 #define PREFLIGHT_DATASIZE 28
 #define MODE_INFLIGHT 0x01
 #define INFLIGHT_DATASIZE 62
 #define MODE_POSTFLIGHT 0x02
 #define POSTFLIGHT_DATASIZE 34
+
+#define BMP280_BUFFERSIZE 10
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -106,20 +107,20 @@ ROCKET_Data rocket_data;
 // Buffers
 uint8_t L76LM33_buffer[NMEA_TRAME_RMC_SIZE]; // gps
 uint8_t HM10BLE_buffer[20];  // ble
+float BMP280_buffer[BMP280_BUFFERSIZE]; // altimeter bmp
 
 // Constants
 static const float accZMin = 1.1;		// delta > 0.9 g
+static const float accResMin = 2.0;		// delta > 2.0 g
 static const float angleMin = 5;		// delta > 5 deg
-static const float tempMin = 1;			// delta > 1 C
-static const float pressMin = 10;		// delta > 10 Pa
+int bufferIndex = 0;
+int descentCount = 0;
+int descentThreshold = 5;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_SPI1_Init(void);
-static void MX_USART1_UART_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_USART3_UART_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_ADC1_Init(void);
@@ -143,6 +144,36 @@ void STM32_i32To8(int32_t data, ROCKET_Data rocket_data, uint8_t index) {
 	rocket_data.data[index + 3] = (uint8_t)(data & 0xFF);
 }
 
+bool Altitude_Trend(const float newAltitude) {
+
+	bool isDescending = false;
+
+    BMP280_buffer[bufferIndex] = newAltitude;
+    bufferIndex = (bufferIndex + 1) % BMP280_BUFFERSIZE;
+
+    // Check trend
+    int descentDetected = 0;
+    for (uint8_t i = 0; i < BMP280_BUFFERSIZE - 1; i++) {
+        if (BMP280_buffer[i] > BMP280_buffer[i + 1]) {
+            descentDetected++;
+        }
+    }
+    // Check sequence
+    if (descentDetected >= descentThreshold) {
+        descentCount++;
+    } else {
+        descentCount = 0;
+    }
+
+    if (descentCount >= descentThreshold) {
+    	isDescending = true;
+    } else {
+    	isDescending = false;
+    }
+
+    return isDescending;
+}
+
 uint8_t ROCKET_SetMode(uint8_t mode) {
 
 	if(mode != MODE_PREFLIGHT && mode != MODE_INFLIGHT && mode != MODE_POSTFLIGHT) {
@@ -150,6 +181,36 @@ uint8_t ROCKET_SetMode(uint8_t mode) {
 	}
 	rocket_data.header_states.mode = mode;
 	return 1; // OK
+}
+
+// Debugging
+const char* ROCKET_BehaviorToString(uint8_t behavior) {
+
+    switch (behavior) {
+    /*
+        case FR_OK: return "Succeeded\r\n";
+        case FR_DISK_ERR: return "A hard error occurred in the low level disk I/O layer\r\n";
+        case FR_INT_ERR: return "Assertion failed\r\n";
+        case FR_NOT_READY: return "The physical drive cannot work\r\n";
+        case FR_NO_FILE: return "Could not find the file\r\n";
+        case FR_NO_PATH: return "Could not find the path\r\n";
+        case FR_INVALID_NAME: return "The path name format is invalid\r\n";
+        case FR_DENIED: return "Access denied due to prohibited access or directory full\r\n";
+        case FR_EXIST: return "Access denied due to prohibited access\r\n";
+        case FR_INVALID_OBJECT: return "The file/directory object is invalid\r\n";
+        case FR_WRITE_PROTECTED: return "The physical drive is write protected\r\n";
+        case FR_INVALID_DRIVE: return "The logical drive number is invalid\r\n";
+        case FR_NOT_ENABLED: return "The volume has no work area\r\n";
+        case FR_NO_FILESYSTEM: return "There is no valid FAT volume\r\n";
+        case FR_MKFS_ABORTED: return "The f_mkfs() aborted due to any parameter error\r\n";
+        case FR_TIMEOUT: return "Could not get a grant to access the volume within defined period\r\n";
+        case FR_LOCKED: return "The operation is rejected according to the file sharing policy\r\n";
+        case FR_NOT_ENOUGH_CORE: return "LFN working buffer could not be allocated\r\n";
+        case FR_TOO_MANY_OPEN_FILES: return "Number of open files > _FS_SHARE\r\n";
+        case FR_INVALID_PARAMETER: return "Given parameter is invalid\r\n";
+        */
+        default: return "Unknown rocket behavior\r\n";
+    }
 }
 
 void ROCKET_InitRoutine(void) {
@@ -318,6 +379,7 @@ uint8_t ROCKET_ModeRoutine(void) {
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5VAN), rocket_data, 32);
 
 			check = 1;
+			MEM2067_Unmount();
             break;
         default:
         	check = 0; // Error
@@ -346,16 +408,17 @@ uint8_t ROCKET_ModeRoutine(void) {
 
 uint8_t ROCKET_Behavior(void) {
 
+	ICM20602_Update_All(&icm_data);
+	BMP280_Read_Temperature_Pressure(&bmp_data);
+
 	uint8_t behavior = 0x00;
-	/* Orientation
+	/*
 	accZ -> 2bits (orientation / movement)
 	rollUp -> 2bits (east / west)
 	pitchUp -> 2bits (south / north)
 	altitude -> 1bit (check pyro)
 	mach lock -> 1bit (check pyro)
 	*/
-
-	ICM20602_Update_All(&icm_data);
 
 	// Orientation Z
 	if(icm_data.accZ > 0) {
@@ -389,14 +452,29 @@ uint8_t ROCKET_Behavior(void) {
 		behavior |= (1 << 4);
 		printf("South: %0.1f\n", icm_data.anglePitch);
 	} else {
-		behavior |= (1 << 4);
+		behavior &= ~(1 << 4);
 	}
 	// North
 	if(icm_data.anglePitch >= angleMin) {
 		behavior |= (1 << 5);
 		printf("North: %0.1f\n", icm_data.anglePitch);
 	} else {
-		behavior |= (1 << 5);
+		behavior &= ~(1 << 5);
+	}
+	// Altitude (buffer)
+	if(Altitude_Trend(bmp_data.altitude_filtered_m) == true) {
+		behavior |= (1 << 6);
+		printf("Rocket is descending\n");
+	} else {
+		behavior &= ~(1 << 6);
+	}
+	// Mach Lock (filtered acceleration xyz)
+	if(icm_data.accResult >= accResMin) {
+		behavior |= (1 << 7);
+		printf("Mach lock: Active\n");
+	} else {
+		behavior &= ~(1 << 7);
+		printf("Mach lock: Disable\n");
 	}
 
 	return behavior;
@@ -412,7 +490,6 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
   ROCKET_InitRoutine();
-  MEM2067_Unmount();
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -428,15 +505,6 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  icm_data.SPIx = SPI2;
-  icm_data.cs_pin = 12;
-  icm_data.cs_port = PB;
-  icm_data.int_pin = 10;
-  icm_data.int_port = PA;
-
-  bmp_data.SPIx = SPI2;
-  bmp_data.cs_pin = 8;
-  bmp_data.cs_port = PA;
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */

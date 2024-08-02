@@ -19,6 +19,7 @@ uint8_t ICM20602_Init(ICM20602 *dev)
     dev->accXRaw = 0.0f;
     dev->accYRaw = 0.0f;
     dev->accZRaw = 0.0f;
+    dev->accResult = 0.0f;
     dev->temperatureC = 0.0f;
 
     Init_GPIO(dev->cs_port, dev->cs_pin, OUT50, O_GP_PP); // CS
@@ -106,6 +107,7 @@ void ICM20602_Update_All(ICM20602 *dev)
     dev->accX = dev->accXRaw * 16.f / 32768.f;
     dev->accY = dev->accYRaw * 16.f / 32768.f;
     dev->accZ = dev->accZRaw * 16.f / 32768.f;
+    dev->accResult = sqrt(pow(dev->accX, 2) + pow(dev->accY, 2) + pow(dev->accZ, 2));
 
     // Calcul des angles Roll et Pitch
     dev->angleRoll = atan(dev->accY / sqrt(dev->accX * dev->accX + dev->accZ * dev->accZ)) * (180 / M_PI);

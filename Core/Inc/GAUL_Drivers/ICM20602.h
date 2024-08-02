@@ -107,6 +107,7 @@ typedef struct{
 	float 	accX;
 	float 	accY;
 	float 	accZ;
+	float 	accResult;
 
 	float 	temperatureC;
 

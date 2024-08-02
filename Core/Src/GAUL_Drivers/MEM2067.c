@@ -43,7 +43,7 @@ const char* FATFS_ErrorToString(FRESULT result) {
         case FR_NOT_ENOUGH_CORE: return "LFN working buffer could not be allocated\r\n";
         case FR_TOO_MANY_OPEN_FILES: return "Number of open files > _FS_SHARE\r\n";
         case FR_INVALID_PARAMETER: return "Given parameter is invalid\r\n";
-        default: return "Unknown error";
+        default: return "Unknown error\r\n";
     }
 }
 
