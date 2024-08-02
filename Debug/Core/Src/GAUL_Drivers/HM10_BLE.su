@@ -1,5 +1,0 @@
-../Core/Src/GAUL_Drivers/HM10_BLE.c:45:9:HM10BLE_Disconnection	0	static
-../Core/Src/GAUL_Drivers/HM10_BLE.c:50:9:HM10BLE_Read	8	static
-../Core/Src/GAUL_Drivers/HM10_BLE.c:56:9:HM10BLE_Send	8	static
-../Core/Src/GAUL_Drivers/HM10_BLE.c:14:9:HM10BLE_Init	16	static
-../Core/Src/GAUL_Drivers/HM10_BLE.c:31:9:HM10BLE_Connection	16	static

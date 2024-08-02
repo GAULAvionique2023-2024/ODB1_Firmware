@@ -1,7 +1,0 @@
-../Core/Src/GAUL_Drivers/MEM2067.c:23:13:FATFS_ErrorToString	0	static
-../Core/Src/GAUL_Drivers/MEM2067.c:64:6:MEM2067_Write	16	static
-../Core/Src/GAUL_Drivers/MEM2067.c:50:9:MEM2067_Mount	8	static
-../Core/Src/GAUL_Drivers/MEM2067.c:76:6:MEM2067_Unmount	8	static
-../Core/Src/GAUL_Drivers/MEM2067.c:84:6:MEM2067_Infos	16	static
-../Core/Src/GAUL_Drivers/MEM2067.c:93:5:bufsize	0	static
-../Core/Src/GAUL_Drivers/MEM2067.c:101:6:bufclear	0	static

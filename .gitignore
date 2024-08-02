@@ -1,5 +1,3 @@
-
-.settings/language.settings.xml
-*.prefs
-.settings/stm32cubeide.project.prefs
-/Release/
+.settings
+Release
+Debug
