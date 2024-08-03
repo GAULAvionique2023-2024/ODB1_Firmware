@@ -507,20 +507,26 @@ int main(void) {
     /* USER CODE BEGIN 2 */
     ROCKET_InitRoutine();
     /* USER CODE END 2 */
-
+    int skipped = 0;
+    int rdy = 0;
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
         // TODO: conditions flight mode change
         //ROCKET_Behavior();
-        //if(ICM20602_Data_Ready(&icm_data))
+    	rdy = ICM20602_Data_Ready(&icm_data);
+    	//HAL_Delay(200);
+       if(rdy)
         {
-            //ICM20602_Update_All(&icm_data);
+            ICM20602_Update_All(&icm_data);
 
             //printf("Roll: %.2f	Pitch: %.2f \n", icm.angleRoll, icm.anglePitch);
-            //printf("Roll: %.2f	Pitch: %.2f \n", icm_data.kalmanAngleRoll, icm_data.kalmanAnglePitch);
-
+           printf("Roll: %.2f	Pitch: %.2f \n", icm_data.kalmanAngleRoll, icm_data.kalmanAnglePitch);
+           printf("%d\n", skipped);
+           skipped = 0;
         }
+       else
+    	   skipped++;
         //BMP280_Read_Temperature_Pressure(&bmp_data);
         //printf("Temp: %.2f	Pa: %.2f kPa: %.2f ", bmp_data.temp_C ,  bmp_data.pressure_Pa, bmp_data.pressure_Pa/1000.0f);
         //printf("Altidute-> filter: %.2f	 No filter: %.2f	MSL: %.2f\n", bmp_data.altitude_filtered_m, bmp_data.altitude_m, bmp_data.altitude_MSL);
