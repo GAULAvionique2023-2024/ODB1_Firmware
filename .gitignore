@@ -1,3 +1,4 @@
 .settings
 Release
 Debug
+**/Backup/*.bak
