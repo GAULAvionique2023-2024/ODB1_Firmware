@@ -1,7 +1,8 @@
 # ODB1_Firmware
 
-Some base code to test both sensor communication on the board, but it was just for test purpose and quick code, not clean.
+![GAUL Banner](doc/logo-full.webp)
 
+Code for the on-board computer (ODB1) of the GAUL.
 
 ## Drivers
 
