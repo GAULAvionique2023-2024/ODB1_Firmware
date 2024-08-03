@@ -11,36 +11,35 @@
 
 #include <math.h> // pour pow()
 
-uint8_t BMP280_Init(BMP280 *dev)
-{
-	Init_GPIO(dev->cs_port, dev->cs_pin, OUT50, O_GP_PP); // CS
-	Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
+uint8_t BMP280_Init(BMP280 *dev) {
+    Init_GPIO(dev->cs_port, dev->cs_pin, OUT50, O_GP_PP); // CS
+    Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
 
-	// Soft reset
+    // Soft reset
     BMP280_Write(dev, BMP280_REG_RESET, BMP280_RESET_WORD);
     HAL_Delay(2); // startup time in data sheet (2ms)
 
-	// Check ID
+    // Check ID
     uint8_t id;
     BMP280_Read(dev, BMP280_REG_ID, &id, sizeof(id));
-	if (id != BMP280_DEVICE_ID) {
-		return 0; // Error
-	}
+    if (id != BMP280_DEVICE_ID) {
+        return 0; // Error
+    }
 
     // Lire les données de calibration
-	BMP280_Read_Calib_Data(dev);
+    BMP280_Read_Calib_Data(dev);
 
     // Configurer les paramètres de mesure
     BMP280_Write(dev, BMP280_REG_CTRL_MEAS, BMP280_SETTING_CTRL_MEAS_NORMAL);
     BMP280_Write(dev, BMP280_REG_CONFIG, BMP280_SETTING_CONFIG_NORMAL);
 
     // Lire la pression de référence au démarrage
-	BMP280_Read_Temperature_Pressure(dev);
-	dev->pressure_ref = dev->pressure_Pa;
+    BMP280_Read_Temperature_Pressure(dev);
+    dev->pressure_ref = dev->pressure_Pa;
 
-	// Initialiser l'altitude filtrée avec l'altitude initiale
-	dev->altitude_filtered_m = 0.0f;
-	dev->alpha = BMP280_FILTER_FACTOR; // Ajustez ce facteur selon le niveau de lissage souhaité (entre 0 et 1)
+    // Initialiser l'altitude filtrée avec l'altitude initiale
+    dev->altitude_filtered_m = 0.0f;
+    dev->alpha = BMP280_FILTER_FACTOR; // Ajustez ce facteur selon le niveau de lissage souhaité (entre 0 et 1)
 
     return 1;
 }
@@ -110,9 +109,7 @@ void BMP280_Read_Temperature_Pressure(BMP280 *dev) {
     dev->altitude_MSL = BMP280_PressureToAltitude(dev->pressure_Pa / 100.0f, BMP280_HPA_SEA_LEVEL); // Convertir la pression en hPa et utiliser la pression au niveau de la mer par défaut
 }
 
-
-float BMP280_PressureToAltitude(float pressure, float sea_level_pressure)
-{
+float BMP280_PressureToAltitude(float pressure, float sea_level_pressure) {
     // Constants
     const float T0 = 288.15;     // Standard temperature at sea level in Kelvin
     const float L = 0.0065;      // Temperature lapse rate in K/m
@@ -125,8 +122,7 @@ float BMP280_PressureToAltitude(float pressure, float sea_level_pressure)
     return altitude;
 }
 
-void BMP280_Read_Calib_Data(BMP280 *dev)
-{
+void BMP280_Read_Calib_Data(BMP280 *dev) {
     uint8_t calib[24];
     BMP280_Read(dev, BMP280_REG_CALIB_00, calib, 24);
 
@@ -145,44 +141,42 @@ void BMP280_Read_Calib_Data(BMP280 *dev)
     dev->calib_data.dig_P9 = (int16_t)(calib[23] << 8 | calib[22]);
 }
 
-void BMP280_Write(BMP280 *dev, uint8_t address, uint8_t value)
-{
+void BMP280_Write(BMP280 *dev, uint8_t address, uint8_t value) {
     address &= 0x7F;  // Write operation
 
-	Write_GPIO(PA, 8, LOW);
-	if (SPI_TX(dev->SPIx, &address, 1) != 0) { /* Handle timeout error */ }
-	if (SPI_TX(dev->SPIx, &value, 1) != 0) {   /* Handle timeout error */ }
-	Write_GPIO(PA, 8, HIGH);
+    Write_GPIO(PA, 8, LOW);
+    if (SPI_TX(dev->SPIx, &address, 1) != 0) { /* Handle timeout error */
+    }
+    if (SPI_TX(dev->SPIx, &value, 1) != 0) { /* Handle timeout error */
+    }
+    Write_GPIO(PA, 8, HIGH);
 
-	HAL_Delay(20);
+    HAL_Delay(20);
 }
 
-void BMP280_Read(BMP280 *dev, uint8_t address, uint8_t *rxData[], uint8_t size)
-{
+void BMP280_Read(BMP280 *dev, uint8_t address, uint8_t *rxData[], uint8_t size) {
     address |= 0x80;  // read operation
 
-	Write_GPIO(dev->cs_port, dev->cs_pin, LOW);
-	if (SPI_TX(dev->SPIx, &address, 1) != 0)
-	{
-		Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
-		return;
-	}
-	if (SPI_RX(dev->SPIx, rxData, size) != 0)
-	{
-		Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
-		return;
-	}
-	Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
+    Write_GPIO(dev->cs_port, dev->cs_pin, LOW);
+    if (SPI_TX(dev->SPIx, &address, 1) != 0) {
+        Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
+        return;
+    }
+    if (SPI_RX(dev->SPIx, rxData, size) != 0) {
+        Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
+        return;
+    }
+    Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
 }
 
 uint8_t BMP280_SwapMode(uint8_t mode) {
 
-	if(BMP280_ReadRegister(BMP280_REG_CTRL_MEAS) != mode) {
-		BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, mode); // BMP280_SETTING_CTRL_MEAS_NORMAL (0x57) ou BMP280_SETTING_CTRL_MEAS_LOW (0x54)
-		printf("BMP mode set to: %i/n", BMP280_SETTING_CTRL_MEAS_NORMAL);
-		return 1; // OK
-	} else {
-		printf("BMP mode set error...");
-		return 0; // Error (no change)
-	}
+    if (BMP280_ReadRegister(BMP280_REG_CTRL_MEAS) != mode) {
+        BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, mode); // BMP280_SETTING_CTRL_MEAS_NORMAL (0x57) ou BMP280_SETTING_CTRL_MEAS_LOW (0x54)
+        printf("BMP mode set to: %i/n", BMP280_SETTING_CTRL_MEAS_NORMAL);
+        return 1; // OK
+    } else {
+        printf("BMP mode set error...");
+        return 0; // Error (no change)
+    }
 }

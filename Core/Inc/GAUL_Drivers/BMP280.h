@@ -63,42 +63,40 @@
 #define BMP280_HPA_SEA_LEVEL 1013.25f
 #define BMP280_FILTER_FACTOR 0.1f
 
-
 typedef struct {
-    uint16_t 	dig_T1;
-    int16_t 	dig_T2;
-    int16_t 	dig_T3;
-    uint16_t 	dig_P1;
-    int16_t 	dig_P2;
-    int16_t 	dig_P3;
-    int16_t 	dig_P4;
-    int16_t 	dig_P5;
-    int16_t 	dig_P6;
-    int16_t 	dig_P7;
-    int16_t 	dig_P8;
-    int16_t 	dig_P9;
+    uint16_t dig_T1;
+    int16_t dig_T2;
+    int16_t dig_T3;
+    uint16_t dig_P1;
+    int16_t dig_P2;
+    int16_t dig_P3;
+    int16_t dig_P4;
+    int16_t dig_P5;
+    int16_t dig_P6;
+    int16_t dig_P7;
+    int16_t dig_P8;
+    int16_t dig_P9;
 } BMP280_CalibData;
 
 typedef struct {
 
-	SPI_TypeDef* 		SPIx;
-	uint8_t 			cs_pin;
-	GPIO_TypeDef* 		cs_port;
+    SPI_TypeDef *SPIx;
+    uint8_t cs_pin;
+    GPIO_TypeDef *cs_port;
 
-	float 				pressure_Pa;
-	float				pressure_kPa;
+    float pressure_Pa;
+    float pressure_kPa;
 
-	float				altitude_MSL;
-	float				altitude_m;
-	float 				altitude_filtered_m;
-	float 				alpha; // Facteur de lissage pour le filtre EMA
+    float altitude_MSL;
+    float altitude_m;
+    float altitude_filtered_m;
+    float alpha; // Facteur de lissage pour le filtre EMA
 
-
-    float 				temp_C;
-    BMP280_CalibData 	calib_data;
-    int32_t 			t_fine;
-    float 				temperature_ref;
-    float 				pressure_ref;
+    float temp_C;
+    BMP280_CalibData calib_data;
+    int32_t t_fine;
+    float temperature_ref;
+    float pressure_ref;
 } BMP280;
 
 uint8_t BMP280_Init(BMP280 *dev);

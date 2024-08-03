@@ -11,8 +11,7 @@
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 
-uint8_t ICM20602_Init(ICM20602 *dev)
-{
+uint8_t ICM20602_Init(ICM20602 *dev) {
     dev->gyroXRaw = 0.0f;
     dev->gyroYRaw = 0.0f;
     dev->gyroZRaw = 0.0f;
@@ -32,55 +31,63 @@ uint8_t ICM20602_Init(ICM20602 *dev)
     // Réinitialiser ICM20602
     ICM20602_Write(dev, ICM20602_REG_PWR_MGMT_1, 0x80);
     ICM20602_Read(dev, ICM20602_REG_WHO_AM_I, &rxData, 1);
-        if (rxData != 0x12) return 0;
+    if (rxData != 0x12)
+        return 0;
 
     // Verrouiller la communication SPI
     ICM20602_Write(dev, ICM20602_REG_I2C_IF, 0x40);
     ICM20602_Read(dev, ICM20602_REG_I2C_IF, &rxData, 1);
-        if (rxData != 0x40) return 0;
+    if (rxData != 0x40)
+        return 0;
 
     // Activer le capteur de température
     ICM20602_Write(dev, ICM20602_REG_PWR_MGMT_1, 0x01);
     ICM20602_Read(dev, ICM20602_REG_PWR_MGMT_1, &rxData, 1);
-        if (rxData != 0x01) return 0;
+    if (rxData != 0x01)
+        return 0;
 
     // Définir la fréquence d'échantillonnage à 1000Hz et appliquer un filtre logiciel
     ICM20602_Write(dev, ICM20602_REG_SMPLRT_DIV, 0x00);
     ICM20602_Read(dev, ICM20602_REG_SMPLRT_DIV, &rxData, 1);
-		if (rxData != 0x00) return 0;
+    if (rxData != 0x00)
+        return 0;
 
     // Gyro LPF fc 20Hz(bit2:0-100) à un taux d'échantillonnage de 1kHz
     ICM20602_Write(dev, ICM20602_REG_CONFIG, 0x05);
     ICM20602_Read(dev, ICM20602_REG_CONFIG, &rxData, 1);
-		if (rxData != 0x05) return 0;
+    if (rxData != 0x05)
+        return 0;
 
     // Gyro 2000DPS
     ICM20602_Write(dev, ICM20602_REG_GYRO_CONFIG, 0x18);
     ICM20602_Read(dev, ICM20602_REG_CONFIG, &rxData, 1);
-        if (rxData != 0x18) return 0;
+    if (rxData != 0x18)
+        return 0;
 
     // Sensibilité de l'accéléromètre 16g
     ICM20602_Write(dev, ICM20602_REG_ACCEL_CONFIG, 0x18);
     ICM20602_Read(dev, ICM20602_REG_ACCEL_CONFIG, &rxData, 1);
-        if (rxData != 0x18) return 0;
+    if (rxData != 0x18)
+        return 0;
 
     // ACCEL_CONFIG2 0x1D
     ICM20602_Write(dev, ICM20602_REG_ACCEL_CONFIG2, 0x03); // Acc FCHOICE 1kHz(bit3-0), DLPF fc 44.8Hz(bit2:0-011)
     ICM20602_Read(dev, ICM20602_REG_ACCEL_CONFIG2, &rxData, 1);
-        if (rxData != 0x03) return 0;
+    if (rxData != 0x03)
+        return 0;
 
     // Activer les interruptions
     ICM20602_Write(dev, ICM20602_REG_INT_ENABLE, 0x01);
     ICM20602_Read(dev, ICM20602_REG_INT_ENABLE, &rxData, 1);
-        if (rxData != 0x01) return 0;
+    if (rxData != 0x01)
+        return 0;
 
     ICM20602_Remove_DC_Offset(dev, 2);
 
     return 1;
 }
 
-void ICM20602_Update_All(ICM20602 *dev)
-{
+void ICM20602_Update_All(ICM20602 *dev) {
     uint8_t rxData[14];
 
     // Lire les données brutes depuis le capteur
@@ -117,13 +124,11 @@ void ICM20602_Update_All(ICM20602 *dev)
     getRollPitch(dev);
 }
 
-void ICM20602_Remove_DC_Offset(ICM20602 *dev, uint8_t mean)
-{
-    int16_t offset[3] = {0, 0, 0};
+void ICM20602_Remove_DC_Offset(ICM20602 *dev, uint8_t mean) {
+    int16_t offset[3] = { 0, 0, 0 };
     uint8_t rxData[6];
 
-    for (int8_t i = 0; i < mean; i++)
-    {
+    for (int8_t i = 0; i < mean; i++) {
         // Lire les données brutes du gyroscope
         ICM20602_Read(dev, ICM20602_REG_GYRO_XOUT_H, rxData, 6);
 
@@ -147,36 +152,33 @@ void ICM20602_Remove_DC_Offset(ICM20602 *dev, uint8_t mean)
     ICM20602_Write(dev, ICM20602_REG_ZG_OFFS_USRL, offset[2] * -2);
 }
 
-int8_t ICM20602_Data_Ready(ICM20602 *dev)
-{
-	return Read_GPIO(dev->int_port, dev->int_pin);
+int8_t ICM20602_Data_Ready(ICM20602 *dev) {
+    return Read_GPIO(dev->int_port, dev->int_pin);
 }
 
-void ICM20602_Read(ICM20602 *dev, uint8_t address, uint8_t rxData[], uint8_t size)
-{
+void ICM20602_Read(ICM20602 *dev, uint8_t address, uint8_t rxData[], uint8_t size) {
     address |= 0x80;  // read operation
 
     Write_GPIO(dev->cs_port, dev->cs_pin, LOW);
-    if (SPI_TX(dev->SPIx, &address, 1) != 0)
-    { /* Handle timeout error */
-    	Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
-    	return;
+    if (SPI_TX(dev->SPIx, &address, 1) != 0) { /* Handle timeout error */
+        Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
+        return;
     }
-    if (SPI_RX(dev->SPIx, rxData, size) != 0)
-    {/* Handle timeout error */
-    	Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
-		return;
+    if (SPI_RX(dev->SPIx, rxData, size) != 0) {/* Handle timeout error */
+        Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
+        return;
     }
     Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
 }
 
-void ICM20602_Write(ICM20602 *dev, uint8_t address, uint8_t value)
-{
-	address &= 0x7F;  // Write operation
+void ICM20602_Write(ICM20602 *dev, uint8_t address, uint8_t value) {
+    address &= 0x7F;  // Write operation
 
-	Write_GPIO(dev->cs_port, dev->cs_pin, LOW);
-    if (SPI_TX(dev->SPIx, &address, 1) != 0) { /* Handle timeout error */ }
-    if (SPI_TX(dev->SPIx, &value, 1) != 0) {   /* Handle timeout error */ }
+    Write_GPIO(dev->cs_port, dev->cs_pin, LOW);
+    if (SPI_TX(dev->SPIx, &address, 1) != 0) { /* Handle timeout error */
+    }
+    if (SPI_TX(dev->SPIx, &value, 1) != 0) { /* Handle timeout error */
+    }
     Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
 
     HAL_Delay(20);

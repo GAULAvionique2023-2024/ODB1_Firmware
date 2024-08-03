@@ -16,8 +16,7 @@
 #define BUFFER_SIZE 512
 
 typedef struct {
-
-	USART_TypeDef *USARTx;
+    USART_TypeDef *USARTx;
 } L76LM33;
 
 uint8_t L76LM33_Init(L76LM33 *devL76L);

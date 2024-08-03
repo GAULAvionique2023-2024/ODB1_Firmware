@@ -5,7 +5,7 @@
 #define TIMEOUT 100  // Timeout value
 
 void SPI_Init(SPI_TypeDef *SPIx) {
-    if(SPIx == SPI1) {
+    if (SPIx == SPI1) {
         RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
 
         Init_GPIO(PA, 4, OUT50, O_GP_PP); // CS
@@ -16,7 +16,7 @@ void SPI_Init(SPI_TypeDef *SPIx) {
         Write_GPIO(PA, 4, HIGH);
 
         SPI1->CR1 = SPI_CR1_MSTR | SPI_CR1_BR_1 | SPI_CR1_BR_2 | SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_SPE;
-    } else if(SPIx == SPI2) {
+    } else if (SPIx == SPI2) {
         RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
 
         Init_GPIO(PB, 13, OUT50, O_AF_PP); // CLK

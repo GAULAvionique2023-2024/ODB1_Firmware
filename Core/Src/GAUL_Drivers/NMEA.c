@@ -9,19 +9,16 @@
 
 // Fonction pour convertir un float en tableau de uint8_t
 int32_t NMEA_FloatToBytes(float value) {
-
     return (int32_t)value;
 }
 
 // Fonction pour convertir une chaîne de caractères en float
 float NMEA_CharToFloat(char *data) {
-
     return (float)atof(data);
 }
 
 // Fonction pour décoder une trame NMEA GPRMC
 uint8_t NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
-
     if (!nmea_sentence || !gps_data) {
         return 0;
     }
@@ -36,55 +33,55 @@ uint8_t NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
     int valid = 1;
 
     // Valeurs par default
-	gps_data->latitude = DEFAULT_LATITUDE;
-	gps_data->latitude_indicator = DEFAULT_INDICATOR;
-	gps_data->longitude = DEFAULT_LONGITUDE;
-	gps_data->longitude_indicator = DEFAULT_INDICATOR;
-	gps_data->speed_knots = DEFAULT_SPEED;
-	gps_data->track_angle = DEFAULT_ANGLE;
+    gps_data->latitude = DEFAULT_LATITUDE;
+    gps_data->latitude_indicator = DEFAULT_INDICATOR;
+    gps_data->longitude = DEFAULT_LONGITUDE;
+    gps_data->longitude_indicator = DEFAULT_INDICATOR;
+    gps_data->speed_knots = DEFAULT_SPEED;
+    gps_data->track_angle = DEFAULT_ANGLE;
 
     // Extraire chaque champ de la trame
     token = strtok(copy, ",");
     while (token != NULL && valid) {
         switch (field_index) {
-            case 0:
-                if (strcmp(token, "$GPRMC") != 0) {
-                    valid = 0;
-                }
-                break;
-            case 1:
-            	printf("time: %s\r\n", token);
-            	gps_data->time = NMEA_FloatToBytes(NMEA_CharToFloat(token));
-                break;
-            case 2:
-                if (strcmp(token, "A") != 0) {
-                    valid = 0;
-                }
-                break;
-            case 3:
-            	printf("latitude: %s\r\n", token);
-            	gps_data->latitude = NMEA_FloatToBytes(NMEA_CharToFloat(token));
-                break;
-            case 4:
-            	printf("latitude_indicator: %s\r\n", token);
-                gps_data->latitude_indicator = (uint8_t)token[0];
-                break;
-            case 5:
-            	printf("longitude: %s\r\n", token);
-                gps_data->longitude = NMEA_FloatToBytes(NMEA_CharToFloat(token));
-                break;
-            case 6:
-            	printf("longitude_indicator: %s\r\n", token);
-                gps_data->longitude_indicator = (uint8_t)token[0];
-                break;
-            case 7:
-            	printf("speed: %s\r\n", token);
-                gps_data->speed_knots = NMEA_FloatToBytes(NMEA_CharToFloat(token));
-                break;
-            case 8:
-            	printf("angle: %s\r\n", token);
-                gps_data->track_angle = NMEA_FloatToBytes(NMEA_CharToFloat(token));
-                break;
+        case 0:
+            if (strcmp(token, "$GPRMC") != 0) {
+                valid = 0;
+            }
+            break;
+        case 1:
+            printf("time: %s\r\n", token);
+            gps_data->time = NMEA_FloatToBytes(NMEA_CharToFloat(token));
+            break;
+        case 2:
+            if (strcmp(token, "A") != 0) {
+                valid = 0;
+            }
+            break;
+        case 3:
+            printf("latitude: %s\r\n", token);
+            gps_data->latitude = NMEA_FloatToBytes(NMEA_CharToFloat(token));
+            break;
+        case 4:
+            printf("latitude_indicator: %s\r\n", token);
+            gps_data->latitude_indicator = (uint8_t)token[0];
+            break;
+        case 5:
+            printf("longitude: %s\r\n", token);
+            gps_data->longitude = NMEA_FloatToBytes(NMEA_CharToFloat(token));
+            break;
+        case 6:
+            printf("longitude_indicator: %s\r\n", token);
+            gps_data->longitude_indicator = (uint8_t)token[0];
+            break;
+        case 7:
+            printf("speed: %s\r\n", token);
+            gps_data->speed_knots = NMEA_FloatToBytes(NMEA_CharToFloat(token));
+            break;
+        case 8:
+            printf("angle: %s\r\n", token);
+            gps_data->track_angle = NMEA_FloatToBytes(NMEA_CharToFloat(token));
+            break;
         }
         token = strtok(NULL, ",");
         field_index++;
@@ -96,7 +93,6 @@ uint8_t NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data) {
 
 // Fonction pour vérifier la validité d'une trame NMEA
 uint8_t NMEA_ValidTrame(const char *nmea_sentence) {
-
     char *copy = strdup(nmea_sentence);
     if (!copy) {
         return 0;

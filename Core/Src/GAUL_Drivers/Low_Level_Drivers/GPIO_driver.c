@@ -5,17 +5,19 @@ void Init_GPIO(unsigned short port, unsigned short pin, unsigned short dir, unsi
     unsigned short tPIN = pin;
     unsigned short offset = (pin < 8) ? GPIO_CRL : GPIO_CRH;
 
-    if (pin >= 8) tPIN -= 8;
+    if (pin >= 8) {
+        tPIN -= 8;
+    }
 
     if (port == 1) {
         RCC_APB2ENR |= (1 << 2); // Activer PORT A
-        CR = (volatile unsigned long *)((unsigned long)GPIO_A + offset);
+        CR = (volatile unsigned long*)((unsigned long)GPIO_A + offset);
     } else if (port == 2) {
         RCC_APB2ENR |= (1 << 3); // Activer PORT B
-        CR = (volatile unsigned long *)((unsigned long)GPIO_B + offset);
+        CR = (volatile unsigned long*)((unsigned long)GPIO_B + offset);
     } else if (port == 3) {
         RCC_APB2ENR |= (1 << 4); // Activer PORT C
-        CR = (volatile unsigned long *)((unsigned long)GPIO_C + offset);
+        CR = (volatile unsigned long*)((unsigned long)GPIO_C + offset);
     }
 
     *CR &= ~(0xF << (tPIN * 4)); // Réinitialiser le pin cible
@@ -27,11 +29,11 @@ int Read_GPIO(unsigned short port, unsigned short pin) {
     unsigned long offset = GPIO_IDR;
 
     if (port == 1) {
-        IDR = (volatile unsigned long *)((unsigned long)GPIO_A + offset);
+        IDR = (volatile unsigned long*)((unsigned long)GPIO_A + offset);
     } else if (port == 2) {
-        IDR = (volatile unsigned long *)((unsigned long)GPIO_B + offset);
+        IDR = (volatile unsigned long*)((unsigned long)GPIO_B + offset);
     } else if (port == 3) {
-        IDR = (volatile unsigned long *)((unsigned long)GPIO_C + offset);
+        IDR = (volatile unsigned long*)((unsigned long)GPIO_C + offset);
     }
 
     return ((*IDR & (1 << pin)) >> pin);
@@ -42,11 +44,11 @@ void Write_GPIO(unsigned short port, unsigned short pin, unsigned short state) {
     unsigned long offset = GPIO_ODR;
 
     if (port == 1) {
-        ODR = (volatile unsigned long *)((unsigned long)GPIO_A + offset);
+        ODR = (volatile unsigned long*)((unsigned long)GPIO_A + offset);
     } else if (port == 2) {
-        ODR = (volatile unsigned long *)((unsigned long)GPIO_B + offset);
+        ODR = (volatile unsigned long*)((unsigned long)GPIO_B + offset);
     } else if (port == 3) {
-        ODR = (volatile unsigned long *)((unsigned long)GPIO_C + offset);
+        ODR = (volatile unsigned long*)((unsigned long)GPIO_C + offset);
     }
 
     if (state) {

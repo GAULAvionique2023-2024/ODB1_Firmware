@@ -34,12 +34,10 @@ DMA_HandleTypeDef hdma_tim2_pwm_ch2;
 static uint16_t ws2812_gpio_set_bits = 0;
 static uint16_t dma_buffer[DMA_BUFFER_SIZE];
 
-
-static void ws2812_timer2_init(void)
-{
-    TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-    TIM_MasterConfigTypeDef sMasterConfig = {0};
-    TIM_OC_InitTypeDef sConfigOC = {0};
+static void ws2812_timer2_init(void) {
+    TIM_ClockConfigTypeDef sClockSourceConfig = { 0 };
+    TIM_MasterConfigTypeDef sMasterConfig = { 0 };
+    TIM_OC_InitTypeDef sConfigOC = { 0 };
 
     htimer2.Instance = TIM2;
     htimer2.Init.Prescaler = 0;
@@ -71,8 +69,7 @@ static void ws2812_timer2_init(void)
     HAL_TIM_PWM_ConfigChannel(&htimer2, &sConfigOC, TIM_CHANNEL_2);
 }
 
-static void ws2812_dma_start(GPIO_TypeDef *gpio_bank)
-{
+static void ws2812_dma_start(GPIO_TypeDef *gpio_bank) {
     /* Peripheral clock enable */
     __HAL_RCC_TIM2_CLK_ENABLE();
 
@@ -116,14 +113,13 @@ static void ws2812_dma_start(GPIO_TypeDef *gpio_bank)
     HAL_DMA_Init(&hdma_tim2_pwm_ch2);
 
     HAL_DMA_Start(&hdma_tim2_update, (uint32_t)&ws2812_gpio_set_bits, (uint32_t)&gpio_bank->BSRR, DMA_BUFFER_SIZE);
-	HAL_DMA_Start(&hdma_tim2_pwm_ch1, (uint32_t)dma_buffer, (uint32_t) &gpio_bank->BRR, DMA_BUFFER_SIZE);
+    HAL_DMA_Start(&hdma_tim2_pwm_ch1, (uint32_t)dma_buffer, (uint32_t)&gpio_bank->BRR, DMA_BUFFER_SIZE);
     HAL_DMA_Start(&hdma_tim2_pwm_ch2, (uint32_t)&ws2812_gpio_set_bits, (uint32_t)&gpio_bank->BRR, DMA_BUFFER_SIZE);
 
-	__HAL_TIM_ENABLE_DMA(&htimer2, TIM_DMA_UPDATE);
-	__HAL_TIM_ENABLE_DMA(&htimer2, TIM_DMA_CC1);
-	__HAL_TIM_ENABLE_DMA(&htimer2, TIM_DMA_CC2);
+    __HAL_TIM_ENABLE_DMA(&htimer2, TIM_DMA_UPDATE);
+    __HAL_TIM_ENABLE_DMA(&htimer2, TIM_DMA_CC1);
+    __HAL_TIM_ENABLE_DMA(&htimer2, TIM_DMA_CC2);
 }
-
 
 /*
  * Unpack the bits of ch_val and pack them into the bit positions of cur0-cur7 that correspond to
@@ -167,7 +163,6 @@ static void ws2812_dma_start(GPIO_TypeDef *gpio_bank)
     : [ch_val]"r" (ch_val)                          \
     : "r0", "cc");  /* r0 is a temp variable */
 
-
 /*
  * Unpack the bits for one byte of one channel, and pack them into the bit positions of
  * the cur0 - cur7 variables, corresponding to the GPIO number for that channel.
@@ -181,13 +176,11 @@ static void ws2812_dma_start(GPIO_TypeDef *gpio_bank)
         UNPACK_CHANNEL(gpio_num);                           \
     }
 
-static void fill_dma_buffer(uint16_t *dest, int pos, const struct led_channel_info *channels)
-{
+static void fill_dma_buffer(uint16_t *dest, int pos, const struct led_channel_info *channels) {
     register uint16_t cur0 = 0, cur1 = 0, cur2 = 0, cur3 = 0, cur4 = 0, cur5 = 0, cur6 = 0, cur7 = 0;
 
     uint8_t ch_val;
-    HANDLE_CHANNEL( 0, WS2812_CH0_GPIO);
-
+    HANDLE_CHANNEL(0, WS2812_CH0_GPIO);
 
     dest[0] = cur0;
     dest[1] = cur1;
@@ -199,8 +192,7 @@ static void fill_dma_buffer(uint16_t *dest, int pos, const struct led_channel_in
     dest[7] = cur7;
 }
 
-void WS2812_Refresh(const struct led_channel_info *channels)
-{
+void WS2812_Refresh(const struct led_channel_info *channels) {
     int cycles = 0;
     int i;
     int pos = 0;
@@ -214,7 +206,7 @@ void WS2812_Refresh(const struct led_channel_info *channels)
     /* Pre-fill the DMA buffer, because we won't start filling things on-the-fly until the first
      * half has already been transferred.
      */
-    for (i = 0; i < DMA_BUFFER_SIZE; i+= 8) {
+    for (i = 0; i < DMA_BUFFER_SIZE; i += 8) {
         fill_dma_buffer(dma_buffer + i, pos, channels);
         pos++;
     }
@@ -225,9 +217,9 @@ void WS2812_Refresh(const struct led_channel_info *channels)
     /* We're going to use our standard timer to generate the RESET pulse, so for now just run the
      * timer without any DMA.
      */
-	__HAL_TIM_DISABLE_DMA(&htimer2, TIM_DMA_UPDATE);
-	__HAL_TIM_DISABLE_DMA(&htimer2, TIM_DMA_CC1);
-	__HAL_TIM_DISABLE_DMA(&htimer2, TIM_DMA_CC2);
+    __HAL_TIM_DISABLE_DMA(&htimer2, TIM_DMA_UPDATE);
+    __HAL_TIM_DISABLE_DMA(&htimer2, TIM_DMA_CC1);
+    __HAL_TIM_DISABLE_DMA(&htimer2, TIM_DMA_CC2);
 
     __HAL_TIM_DISABLE(&htimer2);
 
@@ -241,7 +233,8 @@ void WS2812_Refresh(const struct led_channel_info *channels)
      * and just count out ~225 update intervals
      */
     for (i = 0; i < 225; i++) {
-        while (!__HAL_TIM_GET_FLAG(&htimer2, TIM_FLAG_UPDATE));
+        while (!__HAL_TIM_GET_FLAG(&htimer2, TIM_FLAG_UPDATE))
+            ;
         __HAL_TIM_CLEAR_FLAG(&htimer2, TIM_FLAG_UPDATE);
     }
 
@@ -261,7 +254,7 @@ void WS2812_Refresh(const struct led_channel_info *channels)
     /* Enable the timer.... and so it begins */
     __HAL_TIM_ENABLE(&htimer2);
 
-    while(1) {
+    while (1) {
         /* Wait for DMA full-transfer or half-transfer event. This tells us when to fill the next buffer */
         if (!(DMA1->ISR & (DMA_ISR_TCIF5 | DMA_ISR_HTIF5))) {
             cycles++;
@@ -280,7 +273,7 @@ void WS2812_Refresh(const struct led_channel_info *channels)
         /* Unpack one new byte from each channel, into eight words in our DMA buffer
          * Each 16-bit word in the DMA buffer contains to one bit of the output byte (from each channel)
          */
-        for (i = 0; i < DMA_BUFFER_FILL_SIZE; i+= 8) {
+        for (i = 0; i < DMA_BUFFER_FILL_SIZE; i += 8) {
             fill_dma_buffer(dest + i, pos, channels);
             pos++;
         }
@@ -294,13 +287,12 @@ void WS2812_Refresh(const struct led_channel_info *channels)
     /* Set all LED GPIOs back to 0 */
     GPIOB->BRR = ws2812_gpio_set_bits;
 
-	__HAL_DMA_DISABLE(&hdma_tim2_update);
-	__HAL_DMA_DISABLE(&hdma_tim2_pwm_ch1);
-	__HAL_DMA_DISABLE(&hdma_tim2_pwm_ch2);
+    __HAL_DMA_DISABLE(&hdma_tim2_update);
+    __HAL_DMA_DISABLE(&hdma_tim2_pwm_ch1);
+    __HAL_DMA_DISABLE(&hdma_tim2_pwm_ch2);
 }
 
-void WS2812_Init()
-{
+void WS2812_Init() {
     /* DMA controller clock enable */
     __HAL_RCC_DMA1_CLK_ENABLE();
 
@@ -312,8 +304,7 @@ void WS2812_Init()
     ws2812_timer2_init();
 }
 
-void WS2812_Solid_Colors(struct pixel *framebuffer, const struct led_channel_info *channels, uint8_t r, uint8_t g, uint8_t b)
-{
+void WS2812_Solid_Colors(struct pixel *framebuffer, const struct led_channel_info *channels, uint8_t r, uint8_t g, uint8_t b) {
     int red_offset, green_offset, blue_offset, i;
 
     red_offset = 0;

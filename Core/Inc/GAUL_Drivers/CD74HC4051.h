@@ -33,9 +33,7 @@
 #define VREFLIPO1 2.91338
 #define VREFLIPO3 2.93817
 
-
 uint8_t CD74HC4051_Init(ADC_HandleTypeDef *hadc);
 uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyro_channel, float vref);
-
 
 #endif /* INC_GAUL_DRIVERS_CD74HC4051_H_ */

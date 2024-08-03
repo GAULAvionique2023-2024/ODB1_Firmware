@@ -19,11 +19,11 @@
 #include <string.h>
 
 uint8_t MEM2067_Mount(char *filename);
-void MEM2067_Write(char *filename, char* data);
+void MEM2067_Write(char *filename, char *data);
 void MEM2067_Unmount(void);
 void MEM2067_Infos(void);
 
-int bufsize (char* buf);
-void bufclear(char* p_Buffer);
+int bufsize(char *buf);
+void bufclear(char *p_Buffer);
 
 #endif /* INC_GAUL_DRIVERS_MEM2067_H_ */
