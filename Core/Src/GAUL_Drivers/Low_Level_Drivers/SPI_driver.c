@@ -2,7 +2,7 @@
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 
-#define TIMEOUT 100  // Timeout value
+#define TIMEOUT 200  // Timeout value
 
 void SPI_Init(SPI_TypeDef *SPIx) {
     if (SPIx == SPI1) {
