@@ -76,7 +76,7 @@ uint8_t ICM20602_Init(ICM20602 *dev) {
     if (rxData != 0x03)
         return 0;
 
-    // ACCEL_CONFIG2 0x1D
+    // Config INT PIN
     ICM20602_Write(dev, ICM20602_REG_INT_PIN_CFG, 0x28);// Active HIGH, Push-Pull, LATCH, Any read clear
     ICM20602_Read(dev, ICM20602_REG_INT_PIN_CFG, &rxData, 1);
     if (rxData != 0x28)
