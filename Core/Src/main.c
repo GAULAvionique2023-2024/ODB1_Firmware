@@ -487,26 +487,16 @@ uint8_t ROCKET_Behavior(void) {
  * @retval int
  */
 int main(void) {
-
     /* USER CODE BEGIN 1 */
-    ROCKET_InitRoutine();
     /* USER CODE END 1 */
-
-    /* MCU Configuration--------------------------------------------------------*/
-
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
-
     /* USER CODE BEGIN Init */
-
     /* USER CODE END Init */
-
     /* Configure the system clock */
     SystemClock_Config();
-
     /* USER CODE BEGIN SysInit */
     /* USER CODE END SysInit */
-
     /* Initialize all configured peripherals */
     MX_SPI1_Init();
     MX_TIM3_Init();
@@ -515,7 +505,7 @@ int main(void) {
     MX_CRC_Init();
     MX_FATFS_Init();
     /* USER CODE BEGIN 2 */
-
+    ROCKET_InitRoutine();
     /* USER CODE END 2 */
 
     /* Infinite loop */
