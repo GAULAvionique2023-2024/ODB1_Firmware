@@ -60,7 +60,7 @@ uint8_t ICM20602_Init(ICM20602 *dev) {
 
     // Gyro 2000DPS
     ICM20602_Write(dev, ICM20602_REG_GYRO_CONFIG, 0x18);
-    ICM20602_Read(dev, ICM20602_REG_CONFIG, &rxData, 1);
+    ICM20602_Read(dev, ICM20602_REG_GYRO_CONFIG, &rxData, 1);
     if (rxData != 0x18)
         return 0;
 
@@ -74,6 +74,12 @@ uint8_t ICM20602_Init(ICM20602 *dev) {
     ICM20602_Write(dev, ICM20602_REG_ACCEL_CONFIG2, 0x03); // Acc FCHOICE 1kHz(bit3-0), DLPF fc 44.8Hz(bit2:0-011)
     ICM20602_Read(dev, ICM20602_REG_ACCEL_CONFIG2, &rxData, 1);
     if (rxData != 0x03)
+        return 0;
+
+    // ACCEL_CONFIG2 0x1D
+    ICM20602_Write(dev, ICM20602_REG_INT_PIN_CFG, 0x28);// Active HIGH, Push-Pull, LATCH, Any read clear
+    ICM20602_Read(dev, ICM20602_REG_INT_PIN_CFG, &rxData, 1);
+    if (rxData != 0x28)
         return 0;
 
     // Activer les interruptions
