@@ -30,24 +30,38 @@
 #define BMP280_REG_TEMP_XLSB   0xFC
 #define BMP280_REG_CALIB_00    0x88
 
-//Setting ctrl_meas register (data acquisition options -> indoor navigation osrs_p x16, osrs_t x2, irrcoeff 16)
-//Temperature (osrs_t)    17bit resolution    010 (± 0.0025)
-//Pressure (osrs_p)       20bit resolution    101 (± 0.0003)
-//Power mode              normal              11  (sleep 00 ; force 01/10 ; normal 11)
-//010;101;11 = 0x57 (normal)
-#define BMP280_SETTING_CTRL_MEAS_NORMAL 0x57
-#define BMP280_SETTING_CTRL_MEAS_LOW 0x54
+// Setting ctrl_meas (data acquisition) register (temp/press oversampling and power mode)
+// Temperature (osrs_t)    osrs_t x2    010
+// Pressure (osrs_p)       osrs_p x8    100
+// Power mode              normal       11  (sleep 00 ; force 01/10 ; normal 11)
+// 010;100;11 = 0x53 (low)
+#define BMP280_SETTING_CTRL_MEAS_LOW 0x53
 
-//Setting config register (date, filter, interfaces options)
-//Stanby time    0.5ms   000
-//IIR filter     4x      010
+// Setting ctrl_meas (data acquisition) register (temp/press oversampling and power mode)
+// Temperature (osrs_t)    osrs_t x2    010
+// Pressure (osrs_p)       osrs_p x16   101
+// Power mode              normal       11  (sleep 00 ; force 01/10 ; normal 11)
+// 010;101;11 = 0x57 (normal)
+#define BMP280_SETTING_CTRL_MEAS_NORMAL 0x57
+
+//Setting config register (rate, filter, interface options)
+//Stanby time    62.5ms  001
+//IIR filter     16x     100
 //Bit 1          N/A     0
 //Spi3w          4wire   0
-//00001000 = 0x08
-#define BMP280_SETTING_CONFIG 0x08
+//001;100;00 = 0x30
+#define BMP280_SETTING_CONFIG_LOW 0x30
 
-#define HPA_SEA_LEVEL 1013.25f
-#define FILTER_FACTOR 0.1f
+//Setting config register (rate, filter, interface options)
+//Stanby time    0.5ms   000
+//IIR filter     16x     100
+//Bit 1          N/A     0
+//Spi3w          4wire   0
+//000;100;00 = 0x10
+#define BMP280_SETTING_CONFIG_NORMAL 0x10
+
+#define BMP280_HPA_SEA_LEVEL 1013.25f
+#define BMP280_FILTER_FACTOR 0.1f
 
 
 typedef struct {

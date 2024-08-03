@@ -1,37 +1,38 @@
 /*
  * BMP280.c
  *
+ * Le BMP280 est un baromètre utilisé pour avoir l'altitude de la fusée.
+ *
  *  Created on: May 18, 2024
  *      Author: gagno
  */
 
 #include "GAUL_Drivers/BMP280.h"
 
-#include <math.h>
+#include <math.h> // pour pow()
 
 uint8_t BMP280_Init(BMP280 *dev)
 {
 	Init_GPIO(dev->cs_port, dev->cs_pin, OUT50, O_GP_PP); // CS
 	Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
 
-    // Réinitialiser le BMP280
+	// Soft reset
     BMP280_Write(dev, BMP280_REG_RESET, BMP280_RESET_WORD);
-    HAL_Delay(100); // Attendre la fin de la réinitialisation
-
-    BMP280_Write(dev, BMP280_REG_RESET, BMP280_RESET_WORD); // Reset
+    HAL_Delay(2); // startup time in data sheet (2ms)
 
 	// Check ID
     uint8_t id;
     BMP280_Read(dev, BMP280_REG_ID, &id, sizeof(id));
-	if (id != BMP280_DEVICE_ID)
+	if (id != BMP280_DEVICE_ID) {
 		return 0; // Error
+	}
 
     // Lire les données de calibration
 	BMP280_Read_Calib_Data(dev);
 
     // Configurer les paramètres de mesure
     BMP280_Write(dev, BMP280_REG_CTRL_MEAS, BMP280_SETTING_CTRL_MEAS_NORMAL);
-    BMP280_Write(dev, BMP280_REG_CONFIG, BMP280_SETTING_CONFIG);
+    BMP280_Write(dev, BMP280_REG_CONFIG, BMP280_SETTING_CONFIG_NORMAL);
 
     // Lire la pression de référence au démarrage
 	BMP280_Read_Temperature_Pressure(dev);
@@ -39,7 +40,7 @@ uint8_t BMP280_Init(BMP280 *dev)
 
 	// Initialiser l'altitude filtrée avec l'altitude initiale
 	dev->altitude_filtered_m = 0.0f;
-	dev->alpha = FILTER_FACTOR; // Ajustez ce facteur selon le niveau de lissage souhaité (entre 0 et 1)
+	dev->alpha = BMP280_FILTER_FACTOR; // Ajustez ce facteur selon le niveau de lissage souhaité (entre 0 et 1)
 
     return 1;
 }
@@ -106,7 +107,7 @@ void BMP280_Read_Temperature_Pressure(BMP280 *dev) {
     dev->altitude_filtered_m = dev->alpha * dev->altitude_m + (1 - dev->alpha) * dev->altitude_filtered_m;
 
     // Convertir la pression en altitude
-    dev->altitude_MSL = BMP280_PressureToAltitude(dev->pressure_Pa / 100.0f, HPA_SEA_LEVEL); // Convertir la pression en hPa et utiliser la pression au niveau de la mer par défaut
+    dev->altitude_MSL = BMP280_PressureToAltitude(dev->pressure_Pa / 100.0f, BMP280_HPA_SEA_LEVEL); // Convertir la pression en hPa et utiliser la pression au niveau de la mer par défaut
 }
 
 
