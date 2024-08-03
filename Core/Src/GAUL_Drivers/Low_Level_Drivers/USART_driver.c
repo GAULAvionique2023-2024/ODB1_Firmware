@@ -10,10 +10,9 @@
 
 #define TIMEOUT 1000  // Timeout value
 
-
 void USART_Init(USART_TypeDef *USARTx) {
 
-    if(USARTx == USART1) {
+    if (USARTx == USART1) {
         RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 
         Init_GPIO(PB, 6, OUT50, O_AF_PP); // TX
@@ -22,7 +21,7 @@ void USART_Init(USART_TypeDef *USARTx) {
         USART1->CR1 |= USART_CR1_UE; // Activer USART (0x0C)
         USART1->CR1 |= USART_CR1_TE; // Activer la transmission
         USART1->CR1 |= USART_CR1_RE; // Activer la réception
-    } else if(USARTx == USART2) {
+    } else if (USARTx == USART2) {
         RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
 
         Init_GPIO(PA, 2, OUT50, O_AF_PP); // TX
@@ -31,8 +30,8 @@ void USART_Init(USART_TypeDef *USARTx) {
         USART2->CR1 |= USART_CR1_UE; // Activer USART (0x10)
         USART2->CR1 |= USART_CR1_TE; // Activer la transmission
         USART2->CR1 |= USART_CR1_RE; // Activer la réception
-    } else if(USARTx == USART3) {
-        RCC->APB1ENR |= RCC_APB1ENR_USART3EN ;
+    } else if (USARTx == USART3) {
+        RCC->APB1ENR |= RCC_APB1ENR_USART3EN;
 
         Init_GPIO(PB, 10, OUT50, O_AF_PP); // TX
         Init_GPIO(PB, 11, IN, I_PP); // RX
@@ -45,44 +44,44 @@ void USART_Init(USART_TypeDef *USARTx) {
 
 int USART_TX(USART_TypeDef *USARTx, uint8_t *data, int size) {
 
-	uint32_t timeout = TIMEOUT;
-	while(size--) {
-		while(!(USARTx->SR & USART_SR_TXE)) {
-			if(--timeout == 0) {
-				return -1;
-			}
-		}
-		USARTx->DR = *data++;
-	}
+    uint32_t timeout = TIMEOUT;
+    while (size--) {
+        while (!(USARTx->SR & USART_SR_TXE)) {
+            if (--timeout == 0) {
+                return -1;
+            }
+        }
+        USARTx->DR = *data++;
+    }
 
-	timeout = TIMEOUT;
-	while(!(USARTx->SR & USART_SR_TC)) {
-		if(--timeout == 0) {
-			return -1;
-		}
-	}
-	(void)USARTx->DR;
-	return 0;
+    timeout = TIMEOUT;
+    while (!(USARTx->SR & USART_SR_TC)) {
+        if (--timeout == 0) {
+            return -1;
+        }
+    }
+    (void)USARTx->DR;
+    return 0;
 }
 
 int USART_RX(USART_TypeDef *USARTx, uint8_t *data, int size) {
 
-	uint32_t timeout = TIMEOUT;
-	while(size--) {
-		while(!(USARTx->SR & USART_SR_TXE)) {
-			if(--timeout == 0) {
-				return -1;
-			}
-		}
-		USARTx->DR = 0xFF;
+    uint32_t timeout = TIMEOUT;
+    while (size--) {
+        while (!(USARTx->SR & USART_SR_TXE)) {
+            if (--timeout == 0) {
+                return -1;
+            }
+        }
+        USARTx->DR = 0xFF;
 
-		timeout = TIMEOUT;
-		while(!(USARTx->SR & USART_SR_RXNE)) {
-			if(--timeout == 0) {
-				return -1;
-			}
-		}
-		*data++ = USARTx->DR;
-	}
-	return 0;
+        timeout = TIMEOUT;
+        while (!(USARTx->SR & USART_SR_RXNE)) {
+            if (--timeout == 0) {
+                return -1;
+            }
+        }
+        *data++ = USARTx->DR;
+    }
+    return 0;
 }

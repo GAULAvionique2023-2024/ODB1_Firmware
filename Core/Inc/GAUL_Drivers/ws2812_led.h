@@ -40,7 +40,6 @@ struct pixel {
     uint8_t b;
 };
 
-
 //Buffer for the LED Status
 #define FRAMEBUFFER_SIZE 24
 
@@ -54,7 +53,6 @@ struct pixel {
 
 /* How many channels (strips) of LEDs we want to control. This must not exceed 16. */
 #define WS2812_NUM_CHANNELS     1
-
 
 #define WS2812_CH0_GPIO      2
 

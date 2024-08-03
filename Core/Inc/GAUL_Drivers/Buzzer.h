@@ -14,24 +14,16 @@
 
 //Parametres
 typedef struct {
-
-    uint8_t 	nbBips;
-    int 		frequencyStart;
-    int 		frequencyEnd;
-    uint32_t 	delayModulation;
-    uint32_t 	delayPause;
-
+    uint8_t nbBips;
+    int frequencyStart;
+    int frequencyEnd;
+    uint32_t delayModulation;
+    uint32_t delayPause;
 } buzzParametres_t;
 
 //Routine
 typedef enum {
-
-	STOP,
-	START,
-	PENDING,
-	ARMED,
-	CRASH,
-
+    STOP, START, PENDING, ARMED, CRASH,
 } buzzRoutines_t;
 
 // Functions

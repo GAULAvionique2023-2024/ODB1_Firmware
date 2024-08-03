@@ -11,7 +11,6 @@
 #include "main.h"
 #include <stdint.h>
 
-
 void USART_Init(USART_TypeDef *USARTx);
 
 int USART_TX(USART_TypeDef *USARTx, uint8_t *data, int size);

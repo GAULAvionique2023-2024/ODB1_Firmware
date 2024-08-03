@@ -11,7 +11,6 @@ char gps_buffer[BUFFER_SIZE];
 uint16_t buffer_index = 0;
 
 uint8_t L76LM33_Init(L76LM33 *devL76L) {
-
     char PROTOCOL_SETRMS[] = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*35\r\n";
     char PROTOCOL_GPSSEARCHONLY[] = "$PMTK353,1,0,0,0,0*2A\r\n";
     char PROTOCOL_NAVMODE[] = "PMTK886,2*2A\r\n";
@@ -23,7 +22,6 @@ uint8_t L76LM33_Init(L76LM33 *devL76L) {
 }
 
 uint8_t L76LM33_SendCommand(L76LM33 *devL76L, char *command) {
-
     if (command == NULL) {
         return 0; // Error
     }
@@ -32,7 +30,6 @@ uint8_t L76LM33_SendCommand(L76LM33 *devL76L, char *command) {
 }
 
 uint8_t L76LM33_Read(L76LM33 *devL76L, char *rx_data, GPS_Data *gps_data) {
-
     if (rx_data == NULL || gps_data == NULL) {
         return 0; // Error
     }

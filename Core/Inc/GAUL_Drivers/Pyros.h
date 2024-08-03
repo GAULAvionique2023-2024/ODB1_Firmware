@@ -15,5 +15,4 @@
 void Pyro_Init(void);
 void Pyro_Fire(bool armed, char pyro);
 
-
 #endif /* INC_GAUL_DRIVERS_PYROS_H_ */

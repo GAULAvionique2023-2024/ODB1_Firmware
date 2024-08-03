@@ -11,10 +11,10 @@ uint32_t lastGetTick = 0;
 
 bool Delay_Wait(uint32_t delay) {
 
-	if((HAL_GetTick() - lastGetTick) >= delay) {
-		lastGetTick = HAL_GetTick();
-		return true;
-	} else {
-		return false;
-	}
+    if ((HAL_GetTick() - lastGetTick) >= delay) {
+        lastGetTick = HAL_GetTick();
+        return true;
+    } else {
+        return false;
+    }
 }

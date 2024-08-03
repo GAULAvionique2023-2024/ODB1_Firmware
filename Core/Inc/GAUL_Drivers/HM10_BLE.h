@@ -15,13 +15,13 @@
 #include <stdio.h>
 
 typedef struct {
-	bool hm10_status;
-	bool rfd_status;
-	bool icm_status;
-	bool l76lm33_status;
-	bool bmp_status;
-	uint8_t bat_status; // charge restante (peut-etre)
-	bool sd_status;
+    bool hm10_status;
+    bool rfd_status;
+    bool icm_status;
+    bool l76lm33_status;
+    bool bmp_status;
+    uint8_t bat_status; // charge restante (peut-etre)
+    bool sd_status;
 } HM10BLE;
 
 uint8_t HM10BLE_Init(HM10BLE *devHM10, unsigned short usart_port);
@@ -29,6 +29,5 @@ uint8_t HM10BLE_Connection(HM10BLE *devHM10, unsigned short usart_port, uint8_t 
 
 uint8_t HM10BLE_Read(unsigned short usart_port, uint8_t *response, uint8_t size);
 uint8_t HM10BLE_Send(unsigned short usart_port, uint8_t *message, uint8_t size);
-
 
 #endif /* INC_GAUL_DRIVERS_HM10_BLE_H_ */
