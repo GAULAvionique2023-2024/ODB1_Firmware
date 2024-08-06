@@ -413,11 +413,8 @@ int printt(const char *format, ...) {
     va_list args;
     va_start(args, format);
 
-    // Ajouter des fonctionnalités supplémentaires ici
-    // Par exemple, vous pouvez ajouter un timestamp avant chaque message
     printf("[%03d:%02d:%03d] ",run_timer.elapsed_time_m, run_timer.elapsed_time_s, run_timer.elapsed_time_remaining_ms);
 
-    // Appeler la fonction printf originale avec les arguments
     int ret = vprintf(format, args);
 
     va_end(args);
