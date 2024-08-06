@@ -31,11 +31,12 @@ static const float accZMin = 1.1;		// delta > 0.9 g
 static const float accResMin = 2.0;		// delta > 2.0 g
 static const float angleMin = 5;		// delta > 5 deg
 
-char* filename_log = "log.txt";
+extern char* filename_log;
 
 void ROCKET_InitRoutine(void) {
 
 	printt("|----------Starting----------|\r\n");
+	RunTimerInit(&run_timer);
 	//Buzz(&htim3, TIM_CHANNEL_4, START);
 	SPI_Init(SPI1);
 	printt("(+) SPI1 succeeded...\r\n");
@@ -99,8 +100,7 @@ void ROCKET_InitRoutine(void) {
 	MEM2067_Write(filename_log, time);
 }
 
-uint8_t ROCKET_Behavior(void)
-{
+uint8_t ROCKET_Behavior(void) {
 
     ICM20602_Update_All(&icm_data);
     BMP280_Read_Temperature_Pressure(&bmp_data);
@@ -155,14 +155,14 @@ uint8_t ROCKET_Behavior(void)
     } else {
         behavior &= ~(1 << 5);
     }
-    // Altitude (buffer)
+    // Altitude (falling)
     if (Altitude_Trend(bmp_data.altitude_filtered_m) == true) {
         behavior |= (1 << 6);
         printt("Rocket is descending\n");
     } else {
         behavior &= ~(1 << 6);
     }
-    // Mach Lock (filtered acceleration xyz)
+    // Mach Lock (vector norm acceleration)
     if (icm_data.accResult >= accResMin) {
         behavior |= (1 << 7);
         printt("Mach lock: Active\n");
@@ -174,8 +174,7 @@ uint8_t ROCKET_Behavior(void)
     return behavior;
 }
 
-uint8_t ROCKET_ModeRoutine(void)
-{
+uint8_t ROCKET_ModeRoutine(void) {
 
     uint8_t check = 0;
 
@@ -192,7 +191,6 @@ uint8_t ROCKET_ModeRoutine(void)
          rocket_data.header_states.ble = 0x01;
          printt("(+) HM10BLE connection succeeded...\r\n");
          printt(" -> En attente des valeurs de reference pour la temperature et de la pression(t;p)...\r\n");
-         // TODO: Set ref values temp + press
          } else {
          rocket_data.header_states.ble = 0x00;
          }
@@ -284,12 +282,11 @@ uint8_t ROCKET_ModeRoutine(void)
     rfd_data.header = header_states;
     rfd_data.size = rocket_data.size;
     rfd_data.data = rocket_data.data;
+    // TODO: check CRC
     uint16_t crc = CRC16_Calculate(rocket_data.data, rocket_data.size);
     rocket_data.crc16[0] = (uint8_t)(crc >> 8);
     rocket_data.crc16[1] = (uint8_t)(crc & 0xFF);
     rfd_data.crc = (uint8_t*)rocket_data.crc16;
-
-    // TODO: add MEM2067_Write()
 
     if (RFD900_Send(&rfd_data) == 1) {
         free(rocket_data.data);
@@ -302,19 +299,19 @@ uint8_t ROCKET_ModeRoutine(void)
     return check;
 }
 
-uint8_t ROCKET_SetMode(uint8_t mode)
-{
+uint8_t ROCKET_SetMode(uint8_t mode) {
 
     if (mode != MODE_PREFLIGHT && mode != MODE_INFLIGHT && mode != MODE_POSTFLIGHT) {
         return 0;
     }
     rocket_data.header_states.mode = mode;
+    MEM2067_Write(filename_log, ROCKET_ModeToString(mode));
     return 1; // OK
 }
 
 bool Altitude_Trend(const float newAltitude) {
 
-	bool isDescending = false;
+    bool isDescending = false;
 
     BMP280_buffer[bufferIndex] = newAltitude;
     bufferIndex = (bufferIndex + 1) % BMP280_BUFFERSIZE;
@@ -324,33 +321,33 @@ bool Altitude_Trend(const float newAltitude) {
     for (uint8_t i = 0; i < BMP280_BUFFERSIZE - 1; i++) {
         if (BMP280_buffer[i] > BMP280_buffer[i + 1]) {
             descentDetected++;
+            if (descentDetected >= descentThreshold) {
+                break;  // Stop the loop once threshold is reached
+            }
         }
     }
+
     // Check sequence
     if (descentDetected >= descentThreshold) {
         descentCount++;
     } else {
         descentCount = 0;
     }
-
     if (descentCount >= descentThreshold) {
-    	isDescending = true;
-    } else {
-    	isDescending = false;
+        isDescending = true;
     }
 
     return isDescending;
 }
 
-void STM32_u16To8(uint16_t data, ROCKET_Data rocket_data, uint8_t index)
-{
+
+void STM32_u16To8(uint16_t data, ROCKET_Data rocket_data, uint8_t index) {
 
     rocket_data.data[index] = (uint8_t)(data >> 8);
     rocket_data.data[index + 1] = (uint8_t)(data & 0xFF);
 }
 
-void STM32_i32To8(int32_t data, ROCKET_Data rocket_data, uint8_t index)
-{
+void STM32_i32To8(int32_t data, ROCKET_Data rocket_data, uint8_t index) {
 
     rocket_data.data[index] = (uint8_t)((data >> 24) & 0xFF);
     rocket_data.data[index + 1] = (uint8_t)((data >> 16) & 0xFF);
@@ -358,40 +355,46 @@ void STM32_i32To8(int32_t data, ROCKET_Data rocket_data, uint8_t index)
     rocket_data.data[index + 3] = (uint8_t)(data & 0xFF);
 }
 
-// Debugging
-const char* ROCKET_BehaviorToString(uint8_t behavior)
-{
+char* ROCKET_ModeToString(uint8_t mode) {
 
+	switch(mode) {
+	case 0x00: return "MODE_PREFLIGHT\r\n";
+	case 0x01: return "MODE_INFLIGHT\r\n";
+	case 0x02: return "MODE_POSTFLIGHT\r\n";
+	default: return "Unknown mode\r\n";
+	}
+}
+
+// Debugging
+const char* ROCKET_BehaviorToString(uint8_t behavior) {
+	//TODO: to do...
     switch (behavior) {
-    /*
-     case FR_OK: return "Succeeded\r\n";
-     case FR_DISK_ERR: return "A hard error occurred in the low level disk I/O layer\r\n";
-     case FR_INT_ERR: return "Assertion failed\r\n";
-     case FR_NOT_READY: return "The physical drive cannot work\r\n";
-     case FR_NO_FILE: return "Could not find the file\r\n";
-     case FR_NO_PATH: return "Could not find the path\r\n";
-     case FR_INVALID_NAME: return "The path name format is invalid\r\n";
-     case FR_DENIED: return "Access denied due to prohibited access or directory full\r\n";
-     case FR_EXIST: return "Access denied due to prohibited access\r\n";
-     case FR_INVALID_OBJECT: return "The file/directory object is invalid\r\n";
-     case FR_WRITE_PROTECTED: return "The physical drive is write protected\r\n";
-     case FR_INVALID_DRIVE: return "The logical drive number is invalid\r\n";
-     case FR_NOT_ENABLED: return "The volume has no work area\r\n";
-     case FR_NO_FILESYSTEM: return "There is no valid FAT volume\r\n";
-     case FR_MKFS_ABORTED: return "The f_mkfs() aborted due to any parameter error\r\n";
-     case FR_TIMEOUT: return "Could not get a grant to access the volume within defined period\r\n";
-     case FR_LOCKED: return "The operation is rejected according to the file sharing policy\r\n";
-     case FR_NOT_ENOUGH_CORE: return "LFN working buffer could not be allocated\r\n";
-     case FR_TOO_MANY_OPEN_FILES: return "Number of open files > _FS_SHARE\r\n";
-     case FR_INVALID_PARAMETER: return "Given parameter is invalid\r\n";
-     */
-    default:
-        return "Unknown rocket behavior\r\n";
+        case 0x00: return "Succeeded\r\n";
+        case 0x01: return "A hard error occurred in the low level disk I/O layer\r\n";
+        case 0x02: return "Assertion failed\r\n";
+        case 0x03: return "The physical drive cannot work\r\n";
+        case 0x04: return "Could not find the file\r\n";
+        case 0x05: return "Could not find the path\r\n";
+        case 0x06: return "The path name format is invalid\r\n";
+        case 0x07: return "Access denied due to prohibited access or directory full\r\n";
+        case 0x08: return "Access denied due to prohibited access\r\n";
+        case 0x09: return "The file/directory object is invalid\r\n";
+        case 0x0A: return "The physical drive is write protected\r\n";
+        case 0x0B: return "The logical drive number is invalid\r\n";
+        case 0x0C: return "The volume has no work area\r\n";
+        case 0x0D: return "There is no valid FAT volume\r\n";
+        case 0x0E: return "The f_mkfs() aborted due to any parameter error\r\n";
+        case 0x0F: return "Could not get a grant to access the volume within defined period\r\n";
+        case 0x10: return "The operation is rejected according to the file sharing policy\r\n";
+        case 0x11: return "LFN working buffer could not be allocated\r\n";
+        case 0x12: return "Number of open files > _FS_SHARE\r\n";
+        case 0x13: return "Given parameter is invalid\r\n";
+        default: return "Unknown rocket behavior\r\n";
     }
 }
 
-void RunTimerInit(RunTimer* dev)
-{
+void RunTimerInit(RunTimer* dev) {
+
 	  dev->start_time = HAL_GetTick();
 	  dev->elapsed_time_ms = 0;
 	  dev->elapsed_time_s = 0;
@@ -399,8 +402,8 @@ void RunTimerInit(RunTimer* dev)
 	  dev->elapsed_time_remaining_ms = 0;
 }
 
-void UpdateTime(RunTimer* dev)
-{
+void UpdateTime(RunTimer* dev) {
+
 	dev->elapsed_time_ms = HAL_GetTick() - dev->start_time;
 
 	// Convertir les millisecondes en secondes, minutes et millisecondes restantes
@@ -410,6 +413,7 @@ void UpdateTime(RunTimer* dev)
 }
 
 int printt(const char *format, ...) {
+
     va_list args;
     va_start(args, format);
 
@@ -422,6 +426,7 @@ int printt(const char *format, ...) {
 }
 
 int _write(int le, char *ptr, int len) {
+
     int DataIdx;
     for (DataIdx = 0; DataIdx < len; DataIdx++) {
         ITM_SendChar(*ptr++);
