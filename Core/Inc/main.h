@@ -43,6 +43,9 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "stdbool.h"
+#include "structs.h"
+
 
 /* USER CODE END Includes */
 
