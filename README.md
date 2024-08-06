@@ -1,3 +1,4 @@
+
 # ODB1_Firmware
 
 ![GAUL Banner](doc/logo-full.webp)
@@ -100,4 +101,31 @@ typedef struct{
 	float	kalmanAnglePitch;
 
 }ICM20602;
+```
+
+### RunTimer
+RunTimer is a timer that you can use to calculate the elapsed time for its creation. It has 2 functions for the moment.
+```c
+void  RunTimerInit(RunTimer*  dev);
+void  UpdateTime(RunTimer*  dev);
+```
+The first one is just an Init, and its where the timer begins. The second one, its update the timer. After the update you can access the attribute.
+```c
+typedef  struct  {
+	uint32_t  start_time;
+	uint32_t  elapsed_time_ms;
+	uint8_t  elapsed_time_s;
+	uint16_t  elapsed_time_m;
+	uint16_t  elapsed_time_remaining_ms;
+}  RunTimer;
+```
+
+### Printt(const  char  *format,  ...)
+printt() is an overloaded function that put a timestamp in front of your string. It needs a global Runtimer run_timer; I use a global struct here only for eliminating the need to pass the timer in parameters.
+```c
+printt("Hello World!");
+```
+Will appear like:
+```
+[01:24:457] Hello World!
 ```
