@@ -112,6 +112,7 @@ int main(void)
   while (1)
   {
 	rocket_behavior = ROCKET_Behavior();
+	ROCKET_ModeRoutine();
 
     if((rocket_behavior & ACCZ_MASK) != 0) {
     	if(bmp_data.altitude_filtered_m >= ALTITUDE_START) {
