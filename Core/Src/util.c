@@ -35,41 +35,41 @@ char* filename_log = "log.txt";
 
 void ROCKET_InitRoutine(void) {
 
-	printf("|----------Starting----------|\r\n");
+	printt("|----------Starting----------|\r\n");
 	//Buzz(&htim3, TIM_CHANNEL_4, START);
 	SPI_Init(SPI1);
-	printf("(+) SPI1 succeeded...\r\n");
+	printt("(+) SPI1 succeeded...\r\n");
 	SPI_Init(SPI2);
-	printf("(+) SPI2 succeeded...\r\n");
+	printt("(+) SPI2 succeeded...\r\n");
 	USART_Init(USART1);
-	printf("(+) USART1 succeeded...\r\n");
+	printt("(+) USART1 succeeded...\r\n");
 	USART_Init(USART2);
-	printf("(+) USART2 succeeded...\r\n");
+	printt("(+) USART2 succeeded...\r\n");
 	USART_Init(USART3);
-	printf("(+) USART3 succeeded...\r\n");
+	printt("(+) USART3 succeeded...\r\n");
 
-	printf("|----------Components initialization----------|\r\n");
+	printt("|----------Components initialization----------|\r\n");
 	ROCKET_SetMode(MODE_PREFLIGHT);
-	printf("(+) Mode flight: %i succeeded...\r\n", rocket_data.header_states.mode);
+	printt("(+) Mode flight: %i succeeded...\r\n", rocket_data.header_states.mode);
 	// LED RGB
 	WS2812_Init();
-	printf("(+) WS2812 succeeded...\r\n");
+	printt("(+) WS2812 succeeded...\r\n");
 	// Multiplexer
 	if (CD74HC4051_Init(&hadc1) != 1) {
-	  printf("(-) CD74HC4051 failed...\r\n");
+	  printt("(-) CD74HC4051 failed...\r\n");
 	} else {
 		rocket_data.header_states.pyro0 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_0, VREFPYRO);
 		rocket_data.header_states.pyro1 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_1, VREFPYRO);
-		printf(" -> Pyro0 state: %i\r\n", rocket_data.header_states.pyro0);
-		printf(" -> Pyro1 state: %i\r\n", rocket_data.header_states.pyro1);
-		printf("(+) CD74HC4051 succeeded...\r\n");
+		printt(" -> Pyro0 state: %i\r\n", rocket_data.header_states.pyro0);
+		printt(" -> Pyro1 state: %i\r\n", rocket_data.header_states.pyro1);
+		printt("(+) CD74HC4051 succeeded...\r\n");
 	}
 	// Barometer
 	bmp_data.SPIx = SPI2;
 	bmp_data.cs_pin = 8;
 	bmp_data.cs_port = PA;
 	rocket_data.header_states.barometer = BMP280_Init(&bmp_data) == 1 ? 0x01 : 0x00;
-	printf(rocket_data.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
+	printt(rocket_data.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
 	// Accelerometer
 	icm_data.SPIx = SPI2;
 	icm_data.cs_pin = 12;
@@ -77,18 +77,18 @@ void ROCKET_InitRoutine(void) {
 	icm_data.int_pin = 10;
 	icm_data.int_port = PA;
 	rocket_data.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x01 : 0x00;
-	printf(rocket_data.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
+	printt(rocket_data.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
 	// GPS
 	l76_data.USARTx = USART2;
 	rocket_data.header_states.gps = L76LM33_Init(&l76_data) == 1 ? 0x01 : 0x00;
-	printf(rocket_data.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
+	printt(rocket_data.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
 	// Radio
 	rfd_data.USARTx = USART1;
 	rocket_data.header_states.rfd = RFD900_Init(&rfd_data) == 1 ? 0x01 : 0x00;
-	printf(rocket_data.header_states.rfd ? "(+) RFD900 succeeded...\r\n" : "(-) RFD900 failed...\r\n");
+	printt(rocket_data.header_states.rfd ? "(+) RFD900 succeeded...\r\n" : "(-) RFD900 failed...\r\n");
 	// SD Card
 	rocket_data.header_states.sd = MEM2067_Mount(filename_log) == 1 ? 0x01 : 0x00;
-	printf(rocket_data.header_states.sd ? "(+) SD card succeeded...\r\n" : "(-) SD card failed...\r\n");
+	printt(rocket_data.header_states.sd ? "(+) SD card succeeded...\r\n" : "(-) SD card failed...\r\n");
 	MEM2067_Infos();
 	/*
 	// Bluetooth
