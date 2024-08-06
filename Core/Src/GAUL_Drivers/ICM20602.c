@@ -6,6 +6,7 @@
  */
 
 #include "math.h"
+#include "util.h"
 #include "GAUL_Drivers/ICM20602.h"
 #include "GAUL_Drivers/KalmanFilter.h"
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"

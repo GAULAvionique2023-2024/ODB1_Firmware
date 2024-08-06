@@ -5,9 +5,6 @@
  *      Author: meh
  */
 
-#ifndef INC_FATFS_SD_H_
-#define INC_FATFS_SD_H_
-
 #ifndef __FATFS_SD_H
 #define __FATFS_SD_H
 
@@ -37,6 +34,3 @@ DRESULT SD_disk_ioctl (BYTE pdrv, BYTE cmd, void* buff);
 #define SPI_TIMEOUT 1000
 
 #endif
-
-
-#endif /* INC_FATFS_SD_H_ */

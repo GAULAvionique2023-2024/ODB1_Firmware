@@ -26,6 +26,7 @@
 #include "stdio.h"
 #include "stdbool.h"
 #include "inttypes.h"
+#include "util.h"
 
 #include "GAUL_Drivers/WS2812_led.h"
 #include "GAUL_Drivers/BMP280.h"
@@ -83,11 +84,8 @@ typedef struct {
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
-
 CRC_HandleTypeDef hcrc;
-
 SPI_HandleTypeDef hspi1;
-
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
@@ -96,6 +94,7 @@ struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
 struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
 
 // Constructor
+RunTimer run_timer;
 GPS_Data gps_data;
 BMP280 bmp_data;
 ICM20602 icm_data;
@@ -215,8 +214,8 @@ const char* ROCKET_BehaviorToString(uint8_t behavior) {
 }
 
 void ROCKET_InitRoutine(void) {
-
     printf("|----------Starting----------|\r\n");
+    RunTimerInit(&run_timer);
     //Buzz(&htim3, TIM_CHANNEL_4, START);
     SPI_Init(SPI1);
     printf("(+) SPI1 succeeded...\r\n");
@@ -259,7 +258,7 @@ void ROCKET_InitRoutine(void) {
     icm_data.cs_port = PB;
     icm_data.int_pin = 10;
     icm_data.int_port = PA;
-    rocket_data.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x01 : 0x00;
+    rocket_data.header_states.accelerometer = ICM20602_Init(&icm_data) == 1 ? 0x01 : 0x00;
     printf(rocket_data.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
     // GPS
     l76_data.USARTx = USART2;
@@ -518,27 +517,23 @@ int main(void)
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
   ROCKET_InitRoutine();
-  int skipped = 0;
-  int rdy = 0;
+  // Initial time
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1) {
+  while (1)
+  {
+
     // TODO: conditions flight mode change
     //ROCKET_Behavior();
-    rdy = ICM20602_Data_Ready(&icm_data);
-    //HAL_Delay(200);
-    if(rdy) {
-      ICM20602_Update_All(&icm_data);
-
-      //printf("Roll: %.2f	Pitch: %.2f \n", icm.angleRoll, icm.anglePitch);
-      printf("Roll: %.2f	Pitch: %.2f \n", icm_data.kalmanAngleRoll, icm_data.kalmanAnglePitch);
-      printf("%d\n", skipped);
-      skipped = 0;
-    } else {
-      skipped++;
+    if(ICM20602_Data_Ready(&icm_data))
+    {
+		ICM20602_Update_All(&icm_data);
+		UpdateTime(&run_timer);
+		printf("%d:%d:%d: Roll: %.2f	Pitch: %.2f \n", run_timer.elapsed_time_m, run_timer.elapsed_time_s, run_timer.elapsed_time_remaining_ms, icm_data.kalmanAngleRoll, icm_data.kalmanAnglePitch);
     }
+    HAL_Delay(250);
     //BMP280_Read_Temperature_Pressure(&bmp_data);
     //printf("Temp: %.2f	Pa: %.2f kPa: %.2f ", bmp_data.temp_C ,  bmp_data.pressure_Pa, bmp_data.pressure_Pa/1000.0f);
     //printf("Altidute-> filter: %.2f	 No filter: %.2f	MSL: %.2f\n", bmp_data.altitude_filtered_m, bmp_data.altitude_m, bmp_data.altitude_MSL);
@@ -812,13 +807,7 @@ static void MX_TIM3_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-int _write(int le, char *ptr, int len) {
-    int DataIdx;
-    for (DataIdx = 0; DataIdx < len; DataIdx++) {
-        ITM_SendChar(*ptr++);
-    }
-    return len;
-}
+
 /* USER CODE END 4 */
 
 /**
