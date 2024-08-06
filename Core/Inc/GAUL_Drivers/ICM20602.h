@@ -77,50 +77,51 @@
 #define ICM20602_REG_ZA_OFFSET_H			0x7D
 #define ICM20602_REG_ZA_OFFSET_L			0x7E
 
+
 #define ICM20602_VAL_WHO_AM_I 				0x12
 
 // Sensor struct
-typedef struct {
+typedef struct{
 
-    SPI_TypeDef *SPIx;
-    uint8_t cs_pin;
-    GPIO_TypeDef *cs_port;
+	SPI_TypeDef *SPIx;
+	uint8_t 	cs_pin;
+	GPIO_TypeDef *cs_port;
 
-    uint8_t int_pin;
-    GPIO_TypeDef *int_port;
+	uint8_t 	int_pin;
+	GPIO_TypeDef *int_port;
 
-    // Raw data
-    int16_t gyroXRaw;
-    int16_t gyroYRaw;
-    int16_t gyroZRaw;
+	// Raw data
+	int16_t 	gyroXRaw;
+	int16_t 	gyroYRaw;
+	int16_t 	gyroZRaw;
 
-    int16_t accXRaw;
-    int16_t accYRaw;
-    int16_t accZRaw;
+	int16_t 	accXRaw;
+	int16_t 	accYRaw;
+	int16_t 	accZRaw;
 
-    // Real data
-    float gyroX;
-    float gyroY;
-    float gyroZ;
+	// Real data
+	float 	gyroX;
+	float 	gyroY;
+	float 	gyroZ;
 
-    float accX;
-    float accY;
-    float accZ;
-    float accResult;
+	float 	accX;
+	float 	accY;
+	float 	accZ;
+	float 	accResult;
 
-    float temperatureC;
+	float 	temperatureC;
 
-    float angleRoll;
-    float anglePitch;
-    float kalmanAngleRoll; // Gauche/Droite
-    float kalmanAnglePitch; // Haut/Bas
+	float	angleRoll;
+	float	anglePitch;
+	float	kalmanAngleRoll; // Gauche/Droite
+	float	kalmanAnglePitch; // Haut/Bas
 
-} ICM20602;
+}ICM20602;
 
 uint8_t ICM20602_Init(ICM20602 *dev);
 
-void ICM20602_Update_All(ICM20602 *dev);
-void ICM20602_Remove_DC_Offset(ICM20602 *dev, uint8_t mean);
+void 	ICM20602_Update_All(ICM20602 *dev);
+void 	ICM20602_Remove_DC_Offset(ICM20602 *dev, uint8_t mean);
 int8_t ICM20602_Data_Ready(ICM20602 *dev);
 
 //Low level fonctions
