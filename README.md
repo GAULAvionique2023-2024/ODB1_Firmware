@@ -178,7 +178,8 @@ Reads the calibration data from the BMP280 sensor.
 uint8_t BMP280_SwapMode(uint8_t mode);
 ```
 Swaps the mode of operation for the BMP280 sensor.
-You can use only 1 function, BMP280_Read_Temperature_Pressure to set temperature/pressure data in the struct. After that, you can use all variables in the BMP280's struct.
+You can use only 1 function, BMP280_Read_Temperature_Pressure to set temperature/pressure data in the struct. After that, you can use all variables in the BMP280's struct. 
+Otherwise, the function BMP280_SwapMode can be used to manually change the module's power consumption mode
 ```c
 typedef struct {
     SPI_TypeDef *SPIx;            // SPI interface for communication
