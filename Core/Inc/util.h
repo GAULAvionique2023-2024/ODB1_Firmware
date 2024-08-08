@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "stm32f1xx_hal.h"
 #include "main.h"

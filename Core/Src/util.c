@@ -34,6 +34,8 @@ static const float angleMin = 5;		// delta > 5 deg
 
 extern char* filename_log;
 
+extern bool isButton_push = false;
+
 void ROCKET_InitRoutine(void) {
 
 	printt("|----------Starting----------|\r\n");
@@ -185,6 +187,13 @@ uint8_t ROCKET_ModeRoutine(void) {
     rocket_data.crc16[0] = 0x00;
     rocket_data.crc16[1] = 0x00;
 
+    /*
+     * TODO: add debug mode button interrupt
+    if(Read_GPIO(PA, 9) == 1) {
+		ROCKET_SetMode(MODE_DEBUG);
+		printt("(+) Debug Mode: %i succeeded...\r\n", rocket_data.header_states.mode);
+    }
+	*/
     switch (rocket_data.header_states.mode) {
     case MODE_PREFLIGHT:
         //BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
@@ -269,6 +278,9 @@ uint8_t ROCKET_ModeRoutine(void) {
         check = 1;
         MEM2067_Unmount();
         break;
+    case MODE_DEBUG:
+    	// TODO: debug mode + wait ble connection
+    	break;
     default:
         check = 0; // Error
     }
