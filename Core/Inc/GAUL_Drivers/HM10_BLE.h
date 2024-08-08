@@ -15,6 +15,7 @@
 #include <stdio.h>
 
 typedef struct {
+	USART_TypeDef *USARTx;
     bool hm10_status;
     bool rfd_status;
     bool icm_status;
@@ -24,10 +25,11 @@ typedef struct {
     bool sd_status;
 } HM10BLE;
 
-uint8_t HM10BLE_Init(HM10BLE *devHM10, unsigned short usart_port);
-uint8_t HM10BLE_Connection(HM10BLE *devHM10, unsigned short usart_port, uint8_t *rx_buffer);
+uint8_t HM10BLE_Init(HM10BLE *devHM10);
+uint8_t HM10BLE_ConnectionStatus(HM10BLE *devHM10);
+uint8_t HM10BLE_SendCommand(HM10BLE *devHM10, uint8_t *command);
 
-uint8_t HM10BLE_Read(unsigned short usart_port, uint8_t *response, uint8_t size);
-uint8_t HM10BLE_Send(unsigned short usart_port, uint8_t *message, uint8_t size);
+uint8_t HM10BLE_Read(HM10BLE *devHM10, uint8_t *response, uint8_t size);
+uint8_t HM10BLE_Send(HM10BLE *devHM10, uint8_t *message, uint8_t size);
 
 #endif /* INC_GAUL_DRIVERS_HM10_BLE_H_ */

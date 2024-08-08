@@ -30,6 +30,8 @@
 #define INFLIGHT_DATASIZE 62
 #define MODE_POSTFLIGHT 0x02
 #define POSTFLIGHT_DATASIZE 34
+#define MODE_DEBUG 0x03
+
 #define BMP280_BUFFERSIZE 10
 
 #define ACCZ_MASK (1 << 1) // Mach Lock

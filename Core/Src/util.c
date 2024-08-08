@@ -22,6 +22,7 @@ extern TIM_HandleTypeDef htim3;
 
 // Buffers
 float BMP280_buffer[BMP280_BUFFERSIZE]; // altimeter bmp
+// TODO: add hm10 response buffer
 
 // Parameters
 int bufferIndex = 0;
@@ -77,7 +78,7 @@ void ROCKET_InitRoutine(void) {
 	icm_data.cs_port = PB;
 	icm_data.int_pin = 10;
 	icm_data.int_port = PA;
-	rocket_data.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x01 : 0x00;
+	rocket_data.header_states.accelerometer = ICM20602_Init(&icm_data) == 1 ? 0x01 : 0x00;
 	printt(rocket_data.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
 	// GPS
 	l76_data.USARTx = USART2;
@@ -93,7 +94,8 @@ void ROCKET_InitRoutine(void) {
 	MEM2067_Infos();
 	/*
 	// Bluetooth
-	HM10BLE_Init(&ble_data, BT_USART_PORT);
+	ble_data.USARTx = USART3;
+	HM10BLE_Init(&ble_data);
 	*/
 	char time[20];
 	itoa(gps_data.time, time, 10);
@@ -186,15 +188,7 @@ uint8_t ROCKET_ModeRoutine(void) {
     switch (rocket_data.header_states.mode) {
     case MODE_PREFLIGHT:
         //BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
-        /*
-         if (HM10BLE_Connection(&ble_data, BT_USART_PORT, HM10BLE_buffer) == 1) {
-         rocket_data.header_states.ble = 0x01;
-         printt("(+) HM10BLE connection succeeded...\r\n");
-         printt(" -> En attente des valeurs de reference pour la temperature et de la pression(t;p)...\r\n");
-         } else {
-         rocket_data.header_states.ble = 0x00;
-         }
-         */
+
         header_states = (rocket_data.header_states.mode << 6) | (rocket_data.header_states.pyro0 << 5) | (rocket_data.header_states.pyro1 << 4)
                 | (rocket_data.header_states.accelerometer << 3) | (rocket_data.header_states.barometer << 2) | (rocket_data.header_states.gps << 1)
                 | rocket_data.header_states.sd;
