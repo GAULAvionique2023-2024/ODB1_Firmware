@@ -85,9 +85,9 @@
 
 // Sensor struct
 typedef struct {
-  SPI_TypeDef *SPIx;
-  uint8_t cs_pin;
-  GPIO_TypeDef *cs_port;
+	SPI_TypeDef *SPIx;
+	uint8_t cs_pin;
+	GPIO_TypeDef *cs_port;
 
 	uint8_t 	int_pin;
 	GPIO_TypeDef *int_port;
@@ -106,19 +106,19 @@ typedef struct {
 	float 	gyroY;
 	float 	gyroZ;
 
-  float accX;
-  float accY;
-  float accZ;
+	float accX;
+	float accY;
+	float accZ;
 
-  float temperatureC;
-  float accResult;
+	float temperatureC;
+	float accResult;
 
-  double angle_pitch_acc;
-  double angle_roll_acc;
-  double angleX;
-  double angleY;
-  double kalmanRoll;
-  double kalmanPitch;
+	double angle_pitch_acc;
+	double angle_roll_acc;
+	double angleX;
+	double angleY;
+	double kalmanRoll;
+	double kalmanPitch;
 
 }ICM20602;
 

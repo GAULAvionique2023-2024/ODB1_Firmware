@@ -80,7 +80,7 @@ void ROCKET_InitRoutine(void) {
 	icm_data.cs_port = PB;
 	icm_data.int_pin = 10;
 	icm_data.int_port = PA;
-	rocket_data.header_states.accelerometer = ICM20602_Init(&icm_data) == 1 ? 0x01 : 0x00;
+	rocket_data.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x01 : 0x00;
 	printt(rocket_data.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
 	// GPS
 	l76_data.USARTx = USART2;

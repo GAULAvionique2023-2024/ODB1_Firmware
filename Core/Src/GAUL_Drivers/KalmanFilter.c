@@ -27,7 +27,7 @@ void KalmanFilter_Init(KalmanFilter *kf)
 
 double KalmanFilter_Update(KalmanFilter *kf, double newAngle, double newRate)
 {
-	kf->dt = ((double)HAL_GetTick() - kf->kt) / 1000;
+	kf->dt = (HAL_GetTick() - kf->kt) / 1000;
 
 	kf->rate = newRate - kf->bias;
 	kf->angle += kf->dt * kf->rate;
