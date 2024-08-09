@@ -20,7 +20,7 @@ typedef struct {
     uint8_t size; 		// depend du mode
 } RFD900;
 
-int RFD900_Init(RFD900 *devRFD);
+uint8_t RFD900_Init(RFD900 *devRFD);
 
 uint8_t RFD900_Send(RFD900 *devRFD);
 

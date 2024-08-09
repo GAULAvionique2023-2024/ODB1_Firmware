@@ -6,7 +6,6 @@
  */
 
 #include "math.h"
-#include "util.h"
 #include "GAUL_Drivers/ICM20602.h"
 #include "GAUL_Drivers/KalmanFilter.h"
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
@@ -128,30 +127,30 @@ void ICM20602_Update_All(ICM20602 *dev)
 		return;
 
 	uint8_t rxData[14];
-    ICM20602_Read(dev, ICM20602_REG_ACCEL_XOUT_H, rxData, 14);
+  ICM20602_Read(dev, ICM20602_REG_ACCEL_XOUT_H, rxData, 14);
 
-    // Lire les données brutes et appliquer les offsets
-    dev->accXRaw = (int16_t)((rxData[0] << 8) | rxData[1]);
-    dev->accYRaw = (int16_t)((rxData[2] << 8) | rxData[3]);
-    dev->accZRaw = (int16_t)((rxData[4] << 8) | rxData[5]);
-    dev->temperatureC = ((rxData[6] << 8) | rxData[7]) / 326.8f + 25;
-    dev->gyroXRaw = (int16_t)((rxData[8] << 8) | rxData[9]);
-    dev->gyroYRaw = (int16_t)((rxData[10] << 8) | rxData[11]);
-    dev->gyroZRaw = (int16_t)((rxData[12] << 8) | rxData[13]);
+  // Lire les données brutes et appliquer les offsets
+  dev->accXRaw = (int16_t)((rxData[0] << 8) | rxData[1]);
+  dev->accYRaw = (int16_t)((rxData[2] << 8) | rxData[3]);
+  dev->accZRaw = (int16_t)((rxData[4] << 8) | rxData[5]);
+  dev->temperatureC = ((rxData[6] << 8) | rxData[7]) / 326.8f + 25;
+  dev->gyroXRaw = (int16_t)((rxData[8] << 8) | rxData[9]);
+  dev->gyroYRaw = (int16_t)((rxData[10] << 8) | rxData[11]);
+  dev->gyroZRaw = (int16_t)((rxData[12] << 8) | rxData[13]);
 
-    // Convertir les valeurs brutes
-    dev->gyroX = dev->gyroXRaw * 2000.f / 32768.f;
-    dev->gyroY = dev->gyroYRaw * 2000.f / 32768.f;
-    dev->gyroZ = dev->gyroZRaw * 2000.f / 32768.f;
+  // Convertir les valeurs brutes
+  dev->gyroX = dev->gyroXRaw * 2000.f / 32768.f;
+  dev->gyroY = dev->gyroYRaw * 2000.f / 32768.f;
+  dev->gyroZ = dev->gyroZRaw * 2000.f / 32768.f;
 
-    dev->accX = dev->accXRaw * 16.f / 32768.f;
-    dev->accY = dev->accYRaw * 16.f / 32768.f;
-    dev->accZ = dev->accZRaw * 16.f / 32768.f;
+  dev->accX = dev->accXRaw * 16.f / 32768.f;
+  dev->accY = dev->accYRaw * 16.f / 32768.f;
+  dev->accZ = dev->accZRaw * 16.f / 32768.f;
 
-    dev->accResult = sqrt(dev->accX * dev->accX + dev->accY * dev->accY + dev->accZ * dev->accZ);
+  dev->accResult = sqrt(dev->accX * dev->accX + dev->accY * dev->accY + dev->accZ * dev->accZ);
 
-    // Calculer l'angle de pitch et roll à partir des accéléromètres
-    dev->angle_pitch_acc = -(atan2(dev->accX, sqrt(dev->accY*dev->accY + dev->accZ*dev->accZ))*180.0)/M_PI;
+  // Calculer l'angle de pitch et roll à partir des accéléromètres
+  dev->angle_pitch_acc = -(atan2(dev->accX, sqrt(dev->accY*dev->accY + dev->accZ*dev->accZ))*180.0)/M_PI;
 	dev->angle_roll_acc  = (atan2(dev->accY, dev->accZ)*180.0)/M_PI;
 
 	dev->kalmanPitch = KalmanFilter_Update(&kalmanPitch, dev->angle_pitch_acc, dev->gyroY);
@@ -206,26 +205,28 @@ void ICM20602_Read(ICM20602 *dev, uint8_t address, uint8_t rxData[], uint8_t siz
     address |= 0x80;  // read operation
 
     Write_GPIO(dev->cs_port, dev->cs_pin, LOW);
-    if (SPI_TX(dev->SPIx, &address, 1) != 0) { /* Handle timeout error */
-        Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
-        return;
+    if (SPI_TX(dev->SPIx, &address, 1) != 0)
+    { /* Handle timeout error */
+    	Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
+    	return;
     }
-    if (SPI_RX(dev->SPIx, rxData, size) != 0) {/* Handle timeout error */
-        Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
-        return;
+    if (SPI_RX(dev->SPIx, rxData, size) != 0)
+    {/* Handle timeout error */
+    	Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
+		return;
     }
     Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
 }
 
 void ICM20602_Write(ICM20602 *dev, uint8_t address, uint8_t value)
 {
-    address &= 0x7F;  // Write operation
 
-    Write_GPIO(dev->cs_port, dev->cs_pin, LOW);
-    if (SPI_TX(dev->SPIx, &address, 1) != 0) { /* Handle timeout error */
-    }
-    if (SPI_TX(dev->SPIx, &value, 1) != 0) { /* Handle timeout error */
-    }
+  address &= 0x7F;  // Write operation
+
+
+	Write_GPIO(dev->cs_port, dev->cs_pin, LOW);
+    if (SPI_TX(dev->SPIx, &address, 1) != 0) { /* Handle timeout error */ }
+    if (SPI_TX(dev->SPIx, &value, 1) != 0) {   /* Handle timeout error */ }
     Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
 
     HAL_Delay(5);

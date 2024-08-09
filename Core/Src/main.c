@@ -67,7 +67,11 @@ ROCKET_Data rocket_data;
 uint8_t L76LM33_buffer[NMEA_TRAME_RMC_SIZE]; // gps
 uint8_t HM10BLE_buffer[20];  // ble
 
+// Variables
 
+char* filename_log = "log.txt";
+uint8_t rocket_behavior = 0x00;
+bool pyro_armed = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -116,13 +120,34 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    // TODO: conditions flight mode change
-    //ROCKET_Behavior();
-	ICM20602_Update_All(&icm_data);
-	//printt("KalmanRoll: %+07.2f : KalmanPitch: %+07.2f\n", icm_data.kalmanRoll, icm_data.kalmanPitch);
-    BMP280_Read_Temperature_Pressure(&bmp_data);
-    //printt("Temp: %.2f	Pa: %.2f kPa: %.2f ", bmp_data.temp_C ,  bmp_data.pressure_Pa, bmp_data.pressure_Pa/1000.0f);
-    //printt("Altidute-> filter: %.2f	 No filter: %.2f	MSL: %.2f\n", bmp_data.altitude_filtered_m, bmp_data.altitude_m, bmp_data.altitude_MSL);
+	rocket_behavior = ROCKET_Behavior();
+	ROCKET_ModeRoutine();
+
+    if((rocket_behavior & ACCZ_MASK) != 0) {
+    	if(bmp_data.altitude_filtered_m >= ALTITUDE_START) {
+    		ROCKET_SetMode(MODE_INFLIGHT);
+    		pyro_armed = true;
+    	} else {
+    		ROCKET_SetMode(MODE_PREFLIGHT);
+    		pyro_armed = false;
+    	}
+    }
+    // Mach Lock
+    if((rocket_behavior & MACHLOCK_MASK) == 0) {
+    	// Altitude
+		if((rocket_behavior & ALTITUDE_MASK) != 0) {
+			Pyro_Fire(pyro_armed, 0);
+			ROCKET_SetMode(MODE_POSTFLIGHT);
+			// TODO: add altitude + time mem2067
+			MEM2067_Write(filename_log, "Time: ... / Altitude: ... -> Pyro1 release\r\n");
+			if(bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
+				Pyro_Fire(pyro_armed, 1);
+				// TODO: add altitude + time mem2067
+				MEM2067_Write(filename_log, "Time: ... / Altitude: ... -> Pyro2 release\r\n");
+			}
+		}
+	}
+    // TODO: add condition if flip -> release pyro1&2
 
     /* USER CODE END WHILE */
 

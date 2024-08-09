@@ -129,3 +129,92 @@ Will appear like:
 ```
 [01:24:457] Hello World!
 ```
+
+### Buzzer Driver
+The Buzzer driver provides functions and definitions for controlling a buzzer on the STM32 microcontroller. This driver allows you to manage buzzer behavior with different routines and parameters. Only one function is use.
+```c
+void Buzz(TIM_HandleTypeDef *htim, uint32_t channel, buzzRoutines_t routine);
+```
+The `buzzParametres_t` structure defines the parameters for buzzer control:
+```c
+typedef struct {
+    uint8_t nbBips;               // Number of beeps
+    int frequencyStart;           // Starting frequency of the beep
+    int frequencyEnd;             // Ending frequency of the beep
+    uint32_t delayModulation;     // Delay for frequency modulation
+    uint32_t delayPause;          // Delay between beeps
+} buzzParametres_t;
+```
+The buzzRoutines_t enumeration defines different sound routines implemented.
+```c
+typedef enum {
+    STOP,    // Stop buzzer
+    START,   // Start buzzer
+    PENDING, // Buzzer is pending
+    ARMED,   // Buzzer is armed
+    CRASH    // Buzzer indicates crash
+} buzzRoutines_t;
+```
+
+### BMP280 Driver
+The BMP280 driver provides functions and definitions for interacting with the BMP280 sensor on the STM32 microcontroller. This driver allows you to read temperature and pressure data, perform calibration and change consumption mode.
+```c
+uint8_t BMP280_Init(BMP280 *dev);
+```
+Initializes the BMP280 sensor with the specified parameters.
+```c
+void BMP280_Read_Temperature_Pressure(BMP280 *dev);
+```
+Reads the temperature and pressure data from the sensor.
+```c
+float BMP280_PressureToAltitude(float pressure, float sea_level_pressure);
+```
+Converts pressure readings to altitude based on sea level pressure.
+```c
+void BMP280_Read_Calib_Data(BMP280 *dev);
+```
+Reads the calibration data from the BMP280 sensor.
+```c
+uint8_t BMP280_SwapMode(uint8_t mode);
+```
+Swaps the mode of operation for the BMP280 sensor.
+You can use only 1 function, BMP280_Read_Temperature_Pressure to set temperature/pressure data in the struct. After that, you can use all variables in the BMP280's struct. 
+Otherwise, the function BMP280_SwapMode can be used to manually change the module's power consumption mode
+```c
+typedef struct {
+    SPI_TypeDef *SPIx;            // SPI interface for communication
+    uint8_t cs_pin;               // Chip select pin
+    GPIO_TypeDef *cs_port;        // Chip select port
+
+    float pressure_Pa;            // Pressure in Pascals
+    float pressure_kPa;           // Pressure in Kilopascals
+
+    float altitude_MSL;           // Altitude above Mean Sea Level
+    float altitude_m;             // Altitude in meters
+    float altitude_filtered_m;    // Filtered altitude in meters
+    float alpha;                  // Smoothing factor for EMA filter
+
+    float temp_C;                 // Temperature in degrees Celsius
+    BMP280_CalibData calib_data;  // Calibration data
+    int32_t t_fine;               // Fine temperature data
+    float temperature_ref;        // Temperature reference value
+    float pressure_ref;           // Pressure reference value
+} BMP280;
+```
+The `BMP280_CalibData` structure holds calibration data for the BMP280 sensor.
+```c
+typedef struct {
+    uint16_t dig_T1;  // Temperature calibration data
+    int16_t dig_T2;   // Temperature calibration data
+    int16_t dig_T3;   // Temperature calibration data
+    uint16_t dig_P1;  // Pressure calibration data
+    int16_t dig_P2;   // Pressure calibration data
+    int16_t dig_P3;   // Pressure calibration data
+    int16_t dig_P4;   // Pressure calibration data
+    int16_t dig_P5;   // Pressure calibration data
+    int16_t dig_P6;   // Pressure calibration data
+    int16_t dig_P7;   // Pressure calibration data
+    int16_t dig_P8;   // Pressure calibration data
+    int16_t dig_P9;   // Pressure calibration data
+} BMP280_CalibData;
+```

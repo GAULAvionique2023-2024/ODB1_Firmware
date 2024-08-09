@@ -77,48 +77,50 @@
 #define ICM20602_REG_ZA_OFFSET_H			0x7D
 #define ICM20602_REG_ZA_OFFSET_L			0x7E
 
+
 #define ICM20602_VAL_WHO_AM_I 				0x12
 
 #define ICM20602_GYRO_CALIB_PRECICION		4
 #define ICM20602_PI 						3.14159265358979323846f
 
+// Sensor struct
 typedef struct {
-    SPI_TypeDef *SPIx;
-    uint8_t cs_pin;
-    GPIO_TypeDef *cs_port;
+  SPI_TypeDef *SPIx;
+  uint8_t cs_pin;
+  GPIO_TypeDef *cs_port;
 
-    uint8_t int_pin;
-    GPIO_TypeDef *int_port;
+	uint8_t 	int_pin;
+	GPIO_TypeDef *int_port;
 
-    // Raw data
-    int16_t gyroXRaw;
-    int16_t gyroYRaw;
-    int16_t gyroZRaw;
+	// Raw data
+	int16_t 	gyroXRaw;
+	int16_t 	gyroYRaw;
+	int16_t 	gyroZRaw;
 
-    int16_t accXRaw;
-    int16_t accYRaw;
-    int16_t accZRaw;
+	int16_t 	accXRaw;
+	int16_t 	accYRaw;
+	int16_t 	accZRaw;
 
-    // Real data
-    float gyroX;
-    float gyroY;
-    float gyroZ;
+	// Real data
+	float 	gyroX;
+	float 	gyroY;
+	float 	gyroZ;
 
-    float accX;
-    float accY;
-    float accZ;
+  float accX;
+  float accY;
+  float accZ;
 
-    float temperatureC;
-    float accResult;
+  float temperatureC;
+  float accResult;
 
-    double angle_pitch_acc;
-    double angle_roll_acc;
-    double angleX;
-    double angleY;
-    double kalmanRoll;
-    double kalmanPitch;
+  double angle_pitch_acc;
+  double angle_roll_acc;
+  double angleX;
+  double angleY;
+  double kalmanRoll;
+  double kalmanPitch;
 
-} ICM20602;
+}ICM20602;
 
 uint8_t ICM20602_Init(ICM20602 *dev);
 void ICM20602_Update_All(ICM20602 *dev);
