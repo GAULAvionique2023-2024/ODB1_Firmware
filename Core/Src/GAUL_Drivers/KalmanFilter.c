@@ -7,27 +7,53 @@
 
 #include "GAUL_Drivers/KalmanFilter.h"
 
-float kalmanUncertaintyAngleRoll = 2 * 2;
-float kalmanUncertaintyAnglePitch = 2 * 2;
+void KalmanFilter_Init(KalmanFilter *kf)
+{
+    kf->Q_angle = Q_ANGLE;
+    kf->Q_bias = Q_BIAS;
+    kf->R_measure = R_MEASURE;
 
-float kalman1DOutput[] = { 0, 0 };
+    kf->angle = 0.0f;
+    kf->bias = 0.0f;
 
-void kalman1D(float kalmanState, float kalmanUncertainty, float kalmanInput, float kalmanMeasurment) {
-    kalmanState += kalmanInput * 0.004;
-    kalmanUncertainty += 0.004 * 0.004 * 4 * 4;
-    float kalmanGain = kalmanUncertainty * 1 / (1 * kalmanUncertainty + 3 * 3);
-    kalmanState += kalmanGain * (kalmanMeasurment - kalmanState);
-    kalmanUncertainty = (1 - kalmanGain) * kalmanUncertainty;
+    kf->dt = 0;
+    kf->kt = HAL_GetTick();
 
-    kalman1DOutput[0] = kalmanState;
-    kalman1DOutput[1] = kalmanUncertainty;
+    kf->P[0][0] = 0.0f;
+    kf->P[0][1] = 0.0f;
+    kf->P[1][0] = 0.0f;
+    kf->P[1][1] = 0.0f;
 }
 
-void getRollPitch(ICM20602 *dev) {
-    kalman1D(dev->kalmanAngleRoll, kalmanUncertaintyAngleRoll, dev->gyroX, dev->angleRoll);
-    dev->kalmanAngleRoll = kalman1DOutput[0];
-    kalmanUncertaintyAngleRoll = kalman1DOutput[1];
-    kalman1D(dev->kalmanAnglePitch, kalmanUncertaintyAnglePitch, dev->gyroY, dev->anglePitch);
-    dev->kalmanAnglePitch = kalman1DOutput[0];
-    kalmanUncertaintyAnglePitch = kalman1DOutput[1];
+double KalmanFilter_Update(KalmanFilter *kf, double newAngle, double newRate)
+{
+	kf->dt = ((double)HAL_GetTick() - kf->kt) / 1000;
+
+	kf->rate = newRate - kf->bias;
+	kf->angle += kf->dt * kf->rate;
+
+	kf->P[0][0] += kf->dt * (kf->P[1][1] + kf->P[0][1]) + kf->Q_angle * kf->dt;
+	kf->P[0][1] -= kf->dt * kf->P[1][1];
+	kf->P[1][0] -= kf->dt * kf->P[1][1];
+	kf->P[1][1] += kf->Q_bias * kf->dt;
+
+	kf->S = kf->P[0][0] + kf->R_measure;
+
+	kf->K[0] = kf->P[0][0] / kf->S;
+	kf->K[1] = kf->P[1][0] / kf->S;
+
+	kf->y = newAngle - kf->angle;
+
+	kf->angle += kf->K[0] * kf->y;
+	kf->bias += kf->K[1] * kf->y;
+
+	kf->P[0][0] -= kf->K[0] * kf->P[0][0];
+	kf->P[0][1] -= kf->K[0] * kf->P[0][1];
+	kf->P[1][0] -= kf->K[1] * kf->P[0][0];
+	kf->P[1][1] -= kf->K[1] * kf->P[0][1];
+
+	kf->kt = HAL_GetTick();
+
+	return kf->angle;
 }
+

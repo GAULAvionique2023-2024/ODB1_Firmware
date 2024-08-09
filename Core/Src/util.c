@@ -35,7 +35,7 @@ void ROCKET_InitRoutine(void)
 {
     printt("|----------Starting----------|\r\n");
     RunTimerInit(&run_timer);
-    Buzz(&htim3, TIM_CHANNEL_4, START);
+    //Buzz(&htim3, TIM_CHANNEL_4, START);
     SPI_Init(SPI1);
     printt("(+) SPI1 succeeded...\r\n");
     SPI_Init(SPI2);
@@ -77,7 +77,7 @@ void ROCKET_InitRoutine(void)
     icm_data.cs_port = PB;
     icm_data.int_pin = 10;
     icm_data.int_port = PA;
-    rocket_data.header_states.accelerometer = ICM20602_Init(&icm_data) == 1 ? 0x01 : 0x00;
+    rocket_data.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x01 : 0x00;
     printt(rocket_data.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
     // GPS
     l76_data.USARTx = USART2;
@@ -88,9 +88,9 @@ void ROCKET_InitRoutine(void)
     rocket_data.header_states.rfd = RFD900_Init(&rfd_data) == 1 ? 0x01 : 0x00;
     printt(rocket_data.header_states.rfd ? "(+) RFD900 succeeded...\r\n" : "(-) RFD900 failed...\r\n");
     // SD Card
-    rocket_data.header_states.sd = MEM2067_Mount("log.txt") == 1 ? 0x01 : 0x00;
-    printt(rocket_data.header_states.sd ? "(+) SD card succeeded...\r\n" : "(-) SD card failed...\r\n");
-    MEM2067_Infos();
+    //rocket_data.header_states.sd = MEM2067_Mount("log.txt") == 1 ? 0x01 : 0x00;
+    //printt(rocket_data.header_states.sd ? "(+) SD card succeeded...\r\n" : "(-) SD card failed...\r\n");
+    //MEM2067_Infos();
     /*
      // Bluetooth
      HM10BLE_Init(&ble_data, BT_USART_PORT);
@@ -116,7 +116,7 @@ uint8_t ROCKET_Behavior(void)
     // Orientation Z
     if (icm_data.accZ > 0) {
         behavior |= (1 << 0);	// up
-        printt("East: %0.1f\n", icm_data.angleRoll);
+        printt("East: %0.1f\n", icm_data.angleX);
     } else {
         behavior &= ~(1 << 0);	// down
     }
@@ -127,30 +127,30 @@ uint8_t ROCKET_Behavior(void)
         behavior &= ~(1 << 1);	// move z
     }
     // East
-    if (icm_data.angleRoll >= angleMin) {
+    if (icm_data.angleX >= angleMin) {
         behavior |= (1 << 2); // Detected
-        printt("East: %0.1f\n", icm_data.angleRoll);
+        printt("East: %0.1f\n", icm_data.angleX);
     } else {
         behavior &= ~(1 << 2); // Not detected
     }
     // West
-    if (icm_data.angleRoll <= -angleMin) {
+    if (icm_data.angleX <= -angleMin) {
         behavior |= (1 << 3); // Detected
-        printt("West: %0.1f\n", icm_data.angleRoll);
+        printt("West: %0.1f\n", icm_data.angleX);
     } else {
         behavior &= ~(1 << 3); // Not detected
     }
     // South
-    if (icm_data.anglePitch <= -angleMin) {
+    if (icm_data.angleY <= -angleMin) {
         behavior |= (1 << 4);
-        printt("South: %0.1f\n", icm_data.anglePitch);
+        printt("South: %0.1f\n", icm_data.angleY);
     } else {
         behavior &= ~(1 << 4);
     }
     // North
-    if (icm_data.anglePitch >= angleMin) {
+    if (icm_data.angleY >= angleMin) {
         behavior |= (1 << 5);
-        printt("North: %0.1f\n", icm_data.anglePitch);
+        printt("North: %0.1f\n", icm_data.angleY);
     } else {
         behavior &= ~(1 << 5);
     }
@@ -207,8 +207,8 @@ uint8_t ROCKET_ModeRoutine(void)
         // Temperature
         STM32_i32To8((int32_t)bmp_data.temp_C, rocket_data, 4);
         // Roll Pitch
-        STM32_i32To8((int32_t)icm_data.kalmanAngleRoll, rocket_data, 8);
-        STM32_i32To8((int32_t)icm_data.kalmanAnglePitch, rocket_data, 12);
+        STM32_i32To8((int32_t)icm_data.kalmanRoll, rocket_data, 8);
+        STM32_i32To8((int32_t)icm_data.kalmanPitch, rocket_data, 12);
         // V_Batt
         STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREFLIPO1), rocket_data, 20);
         STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 22);
@@ -245,8 +245,8 @@ uint8_t ROCKET_ModeRoutine(void)
         STM32_i32To8((int32_t)icm_data.accY, rocket_data, 46);
         STM32_i32To8((int32_t)icm_data.accZ, rocket_data, 50);
         // Roll Pitch
-        STM32_i32To8((int32_t)icm_data.kalmanAngleRoll, rocket_data, 54);
-        STM32_i32To8((int32_t)icm_data.kalmanAnglePitch, rocket_data, 58);
+        STM32_i32To8((int32_t)icm_data.kalmanRoll, rocket_data, 54);
+        STM32_i32To8((int32_t)icm_data.kalmanPitch, rocket_data, 58);
 
         check = 1;
         break;
@@ -390,8 +390,8 @@ const char* ROCKET_BehaviorToString(uint8_t behavior)
     }
 }
 
-void RunTimerInit(RunTimer* dev)
-{
+void RunTimerInit(RunTimer* dev) {
+
 	  dev->start_time = HAL_GetTick();
 	  dev->elapsed_time_ms = 0;
 	  dev->elapsed_time_s = 0;
@@ -399,8 +399,8 @@ void RunTimerInit(RunTimer* dev)
 	  dev->elapsed_time_remaining_ms = 0;
 }
 
-void UpdateTime(RunTimer* dev)
-{
+void UpdateTime(RunTimer* dev) {
+
 	dev->elapsed_time_ms = HAL_GetTick() - dev->start_time;
 
 	// Convertir les millisecondes en secondes, minutes et millisecondes restantes
@@ -412,7 +412,7 @@ void UpdateTime(RunTimer* dev)
 int printt(const char *format, ...) {
     va_list args;
     va_start(args, format);
-
+    UpdateTime(&run_timer);
     printf("[%03d:%02d:%03d] ",run_timer.elapsed_time_m, run_timer.elapsed_time_s, run_timer.elapsed_time_remaining_ms);
 
     int ret = vprintf(format, args);
@@ -420,6 +420,12 @@ int printt(const char *format, ...) {
     va_end(args);
     return ret;
 }
+
+uint32_t square(int32_t p_Number)
+{
+	return p_Number * p_Number;
+}
+
 
 int _write(int le, char *ptr, int len) {
     int DataIdx;

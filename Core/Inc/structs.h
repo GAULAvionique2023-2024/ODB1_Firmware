@@ -27,12 +27,12 @@ typedef struct {
     uint8_t size;
 } ROCKET_Data;
 
-typedef struct {
-    uint32_t start_time;
-    uint32_t elapsed_time_ms;
-    uint8_t elapsed_time_s;
-    uint16_t elapsed_time_m;
-    uint16_t elapsed_time_remaining_ms;
-} RunTimer;
+typedef  struct  {
+	uint32_t  start_time;
+	uint32_t  elapsed_time_ms;
+	uint8_t  elapsed_time_s;
+	uint16_t  elapsed_time_m;
+	uint16_t  elapsed_time_remaining_ms;
+}  RunTimer;
 
 #endif /* INC_STRUCTS_H_ */

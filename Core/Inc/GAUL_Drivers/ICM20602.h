@@ -79,9 +79,10 @@
 
 #define ICM20602_VAL_WHO_AM_I 				0x12
 
-// Sensor struct
-typedef struct {
+#define ICM20602_GYRO_CALIB_PRECICION		4
+#define ICM20602_PI 						3.14159265358979323846f
 
+typedef struct {
     SPI_TypeDef *SPIx;
     uint8_t cs_pin;
     GPIO_TypeDef *cs_port;
@@ -106,21 +107,22 @@ typedef struct {
     float accX;
     float accY;
     float accZ;
-    float accResult;
 
     float temperatureC;
+    float accResult;
 
-    float angleRoll;
-    float anglePitch;
-    float kalmanAngleRoll; // Gauche/Droite
-    float kalmanAnglePitch; // Haut/Bas
+    double angle_pitch_acc;
+    double angle_roll_acc;
+    double angleX;
+    double angleY;
+    double kalmanRoll;
+    double kalmanPitch;
 
 } ICM20602;
 
 uint8_t ICM20602_Init(ICM20602 *dev);
-
 void ICM20602_Update_All(ICM20602 *dev);
-void ICM20602_Remove_DC_Offset(ICM20602 *dev, uint8_t mean);
+void ICM20602_Calibrate(ICM20602 *dev, int8_t p_Sense);
 int8_t ICM20602_Data_Ready(ICM20602 *dev);
 
 //Low level fonctions
