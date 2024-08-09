@@ -27,7 +27,8 @@ typedef struct {
 
 uint8_t HM10BLE_Init(HM10BLE *devHM10);
 uint8_t HM10BLE_ConnectionStatus(HM10BLE *devHM10);
-uint8_t HM10BLE_SendCommand(HM10BLE *devHM10, uint8_t *command);
+uint8_t HM10BLE_SendParameters(HM10BLE *devHM10, uint8_t *command);
+uint8_t HM10BLE_CommandTask(HM10BLE *devHM10);
 
 uint8_t HM10BLE_Read(HM10BLE *devHM10, uint8_t *response, uint8_t size);
 uint8_t HM10BLE_Send(HM10BLE *devHM10, uint8_t *message, uint8_t size);

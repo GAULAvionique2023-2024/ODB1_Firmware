@@ -34,7 +34,7 @@ static const float angleMin = 5;		// delta > 5 deg
 
 extern char* filename_log;
 
-extern bool isButton_push = false;
+//extern bool isButton_push = false;
 
 void ROCKET_InitRoutine(void) {
 
