@@ -124,7 +124,10 @@ uint8_t ICM20602_Init(ICM20602 *dev)
 
 void ICM20602_Update_All(ICM20602 *dev)
 {
-    uint8_t rxData[14];
+	if(!ICM20602_Data_Ready(dev))
+		return;
+
+	uint8_t rxData[14];
     ICM20602_Read(dev, ICM20602_REG_ACCEL_XOUT_H, rxData, 14);
 
     // Lire les données brutes et appliquer les offsets

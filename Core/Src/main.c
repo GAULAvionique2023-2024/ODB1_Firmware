@@ -118,13 +118,9 @@ int main(void)
   {
     // TODO: conditions flight mode change
     //ROCKET_Behavior();
-    if(ICM20602_Data_Ready(&icm_data))
-    {
-		ICM20602_Update_All(&icm_data);
-		printt("KalmanRoll: %+07.2f : KalmanPitch: %+07.2f\n", icm_data.kalmanRoll, icm_data.kalmanPitch);
-    }
-
-    //BMP280_Read_Temperature_Pressure(&bmp_data);
+	ICM20602_Update_All(&icm_data);
+	//printt("KalmanRoll: %+07.2f : KalmanPitch: %+07.2f\n", icm_data.kalmanRoll, icm_data.kalmanPitch);
+    BMP280_Read_Temperature_Pressure(&bmp_data);
     //printt("Temp: %.2f	Pa: %.2f kPa: %.2f ", bmp_data.temp_C ,  bmp_data.pressure_Pa, bmp_data.pressure_Pa/1000.0f);
     //printt("Altidute-> filter: %.2f	 No filter: %.2f	MSL: %.2f\n", bmp_data.altitude_filtered_m, bmp_data.altitude_m, bmp_data.altitude_MSL);
 
