@@ -43,8 +43,11 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+
 CRC_HandleTypeDef hcrc;
+
 SPI_HandleTypeDef hspi1;
+
 TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
@@ -60,7 +63,6 @@ L76LM33 l76_data;
 RFD900 rfd_data;
 HM10BLE ble_data;
 ROCKET_Data rocket_data;
-
 // Buffers
 uint8_t L76LM33_buffer[NMEA_TRAME_RMC_SIZE]; // gps
 uint8_t HM10BLE_buffer[20];  // ble
@@ -93,6 +95,8 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
   /* USER CODE END 1 */
+  /* MCU Configuration--------------------------------------------------------*/
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
   /* USER CODE BEGIN Init */
   /* USER CODE END Init */
@@ -100,6 +104,8 @@ int main(void)
   SystemClock_Config();
   /* USER CODE BEGIN SysInit */
   /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
   MX_SPI1_Init();
   MX_TIM3_Init();
   MX_ADC1_Init();
@@ -107,7 +113,10 @@ int main(void)
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
   ROCKET_InitRoutine();
+
   /* USER CODE END 2 */
+
+  /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
@@ -141,6 +150,7 @@ int main(void)
     // TODO: add condition if flip -> release pyro1&2
 
     /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -363,7 +373,6 @@ static void MX_TIM3_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
 /**

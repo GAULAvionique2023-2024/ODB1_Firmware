@@ -121,7 +121,7 @@ uint8_t ROCKET_Behavior(void) {
     // Orientation Z
     if (icm_data.accZ > 0) {
         behavior |= (1 << 0);	// up
-        printt("East: %0.1f\n", icm_data.angleRoll);
+        printt("East: %0.1f\n", icm_data.angleX);
     } else {
         behavior &= ~(1 << 0);	// down
     }
@@ -132,30 +132,30 @@ uint8_t ROCKET_Behavior(void) {
         behavior &= ~(1 << 1);	// move z
     }
     // East
-    if (icm_data.angleRoll >= angleMin) {
+    if (icm_data.angleX >= angleMin) {
         behavior |= (1 << 2); // Detected
-        printt("East: %0.1f\n", icm_data.angleRoll);
+        printt("East: %0.1f\n", icm_data.angleX);
     } else {
         behavior &= ~(1 << 2); // Not detected
     }
     // West
-    if (icm_data.angleRoll <= -angleMin) {
+    if (icm_data.angleX <= -angleMin) {
         behavior |= (1 << 3); // Detected
-        printt("West: %0.1f\n", icm_data.angleRoll);
+        printt("West: %0.1f\n", icm_data.angleX);
     } else {
         behavior &= ~(1 << 3); // Not detected
     }
     // South
-    if (icm_data.anglePitch <= -angleMin) {
+    if (icm_data.angleY <= -angleMin) {
         behavior |= (1 << 4);
-        printt("South: %0.1f\n", icm_data.anglePitch);
+        printt("South: %0.1f\n", icm_data.angleY);
     } else {
         behavior &= ~(1 << 4);
     }
     // North
-    if (icm_data.anglePitch >= angleMin) {
+    if (icm_data.angleY >= angleMin) {
         behavior |= (1 << 5);
-        printt("North: %0.1f\n", icm_data.anglePitch);
+        printt("North: %0.1f\n", icm_data.angleY);
     } else {
         behavior &= ~(1 << 5);
     }
@@ -209,8 +209,8 @@ uint8_t ROCKET_ModeRoutine(void) {
         // Temperature
         STM32_i32To8((int32_t)bmp_data.temp_C, rocket_data, 4);
         // Roll Pitch
-        STM32_i32To8((int32_t)icm_data.kalmanAngleRoll, rocket_data, 8);
-        STM32_i32To8((int32_t)icm_data.kalmanAnglePitch, rocket_data, 12);
+        STM32_i32To8((int32_t)icm_data.kalmanRoll, rocket_data, 8);
+        STM32_i32To8((int32_t)icm_data.kalmanPitch, rocket_data, 12);
         // V_Batt
         STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREFLIPO1), rocket_data, 20);
         STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 22);
@@ -247,8 +247,8 @@ uint8_t ROCKET_ModeRoutine(void) {
         STM32_i32To8((int32_t)icm_data.accY, rocket_data, 46);
         STM32_i32To8((int32_t)icm_data.accZ, rocket_data, 50);
         // Roll Pitch
-        STM32_i32To8((int32_t)icm_data.kalmanAngleRoll, rocket_data, 54);
-        STM32_i32To8((int32_t)icm_data.kalmanAnglePitch, rocket_data, 58);
+        STM32_i32To8((int32_t)icm_data.kalmanRoll, rocket_data, 54);
+        STM32_i32To8((int32_t)icm_data.kalmanPitch, rocket_data, 58);
 
         check = 1;
         break;
@@ -422,7 +422,7 @@ int printt(const char *format, ...) {
 
     va_list args;
     va_start(args, format);
-
+    UpdateTime(&run_timer);
     printf("[%03d:%02d:%03d] ",run_timer.elapsed_time_m, run_timer.elapsed_time_s, run_timer.elapsed_time_remaining_ms);
 
     int ret = vprintf(format, args);
@@ -430,6 +430,12 @@ int printt(const char *format, ...) {
     va_end(args);
     return ret;
 }
+
+uint32_t square(int32_t p_Number)
+{
+	return p_Number * p_Number;
+}
+
 
 int _write(int le, char *ptr, int len) {
 

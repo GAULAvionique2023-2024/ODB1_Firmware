@@ -53,6 +53,7 @@ const char* ROCKET_BehaviorToString(uint8_t behavior);
 void RunTimerInit(RunTimer* dev);
 void UpdateTime(RunTimer* dev);
 int printt(const char *format, ...);
+uint32_t square(int32_t p_Number);
 int _write(int le, char *ptr, int len);
 
 #endif /* __UTIL_H */
