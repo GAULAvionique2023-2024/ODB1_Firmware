@@ -27,6 +27,9 @@
 #include "inttypes.h"
 #include "util.h"
 
+#include "GAUL_Drivers/Tests/L76LM33_tests.h"
+#include "GAUL_Drivers/Tests/NMEA_tests.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -116,14 +119,18 @@ int main(void)
   MX_ADC1_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-  ROCKET_InitRoutine();
+  //ROCKET_InitRoutine();
 
+  L76LM33_Init(&L76_data, &huart2);
+
+  NMEA_TESTS_ParseRMC_Log();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    /*
 	rocket_behavior = ROCKET_Behavior();
 	ROCKET_ModeRoutine();
 
@@ -152,6 +159,11 @@ int main(void)
 		}
 	}
     // TODO: add condition if flip -> release pyro1&2
+    */
+
+    L76LM33_TESTS_Read();
+
+    HAL_Delay(500);
 
     /* USER CODE END WHILE */
 
