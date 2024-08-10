@@ -25,7 +25,6 @@ uint8_t MEM2067_Mount(const char* filename) {
 	}
 	// Create file with read / write access and open it
 	MEM2067_Write(filename, "LOG\n");
-	f_close(&fil);
 
 	return 1;
 }
@@ -45,6 +44,8 @@ char *MEM2067_Read(const char *filename) {
 
 	fresult = f_open(&fil, filename, FA_OPEN_ALWAYS | FA_WRITE);
 	f_gets(data, sizeof(data), &fil);
+
+	f_close(&fil);
 
 	return data;
 }
@@ -69,10 +70,9 @@ int bufsize (char* buf)
 	return i;
 }
 
-void bufclear(char* p_Buffer)
-{
-	for (int i = 0; i < BUFFER_SIZE; i++)
-	{
+void bufclear(char* p_Buffer) {
+
+	for (int i = 0; i < BUFFER_SIZE; i++) {
 		p_Buffer[i] = '\0';
 	}
 }
