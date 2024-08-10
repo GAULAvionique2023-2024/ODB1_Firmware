@@ -20,6 +20,7 @@
 
 uint8_t MEM2067_Mount(const char *filename);
 void MEM2067_Write(const char *filename, const char *data);
+char *MEM2067_Read(const char *filename);
 void MEM2067_Unmount(void);
 void MEM2067_Infos(void);
 

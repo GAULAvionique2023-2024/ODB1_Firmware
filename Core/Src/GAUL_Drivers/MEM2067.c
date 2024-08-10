@@ -44,6 +44,19 @@ void MEM2067_Write(const char *filename, const char* data) {
 	f_close(&fil);
 }
 
+char *MEM2067_Read(const char *filename) {
+
+	char *data = "";
+
+	fresult = f_open(&fil, filename, FA_OPEN_ALWAYS | FA_WRITE);
+	if (fresult != FR_OK){
+		printf(" -> SD Card open: %s", FATFS_ErrorToString(fresult));
+	}
+	f_gets(data, sizeof(data), &fil);
+
+	return data;
+}
+
 void MEM2067_Unmount(void) {
 
 	fresult = f_mount(NULL, "/", 1);
