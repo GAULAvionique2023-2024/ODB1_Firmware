@@ -60,13 +60,12 @@ ICM20602 icm_data;
 L76LM33 L76_data;
 RFD900 rfd_data;
 HM10BLE ble_data;
+MEM2067 mem_data;
 ROCKET_Data rocket_data;
 // Buffers
 uint8_t HM10BLE_buffer[20];  // ble
 
 // Variables
-
-char* filename_log = "log.txt";
 uint8_t rocket_behavior = 0x00;
 bool pyro_armed = false;
 /* USER CODE END PV */
@@ -142,11 +141,11 @@ int main(void)
 			Pyro_Fire(pyro_armed, 0);
 			ROCKET_SetMode(MODE_POSTFLIGHT);
 			// TODO: add altitude + time mem2067
-			MEM2067_Write(filename_log, "Time: ... / Altitude: ... -> Pyro1 release\r\n");
+			MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro1 release\r\n");
 			if(bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
 				Pyro_Fire(pyro_armed, 1);
 				// TODO: add altitude + time mem2067
-				MEM2067_Write(filename_log, "Time: ... / Altitude: ... -> Pyro2 release\r\n");
+				MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro2 release\r\n");
 			}
 		}
 	}

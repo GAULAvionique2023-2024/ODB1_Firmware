@@ -12,6 +12,7 @@
 #include <math.h> // pour pow()
 
 uint8_t BMP280_Init(BMP280 *dev) {
+
     Init_GPIO(dev->cs_port, dev->cs_pin, OUT50, O_GP_PP); // CS
     Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
 
@@ -45,6 +46,7 @@ uint8_t BMP280_Init(BMP280 *dev) {
 }
 
 void BMP280_Read_Temperature_Pressure(BMP280 *dev) {
+
     uint8_t data[6];
 
     // Lire les données de pression et de température
@@ -123,6 +125,7 @@ float BMP280_PressureToAltitude(float pressure, float sea_level_pressure) {
 }
 
 void BMP280_Read_Calib_Data(BMP280 *dev) {
+
     uint8_t calib[24];
     BMP280_Read(dev, BMP280_REG_CALIB_00, calib, 24);
 
@@ -142,6 +145,7 @@ void BMP280_Read_Calib_Data(BMP280 *dev) {
 }
 
 void BMP280_Write(BMP280 *dev, uint8_t address, uint8_t value) {
+
     address &= 0x7F;  // Write operation
 
     Write_GPIO(PA, 8, LOW);
@@ -155,6 +159,7 @@ void BMP280_Write(BMP280 *dev, uint8_t address, uint8_t value) {
 }
 
 void BMP280_Read(BMP280 *dev, uint8_t address, uint8_t *rxData[], uint8_t size) {
+
     address |= 0x80;  // read operation
 
     Write_GPIO(dev->cs_port, dev->cs_pin, LOW);
@@ -173,10 +178,8 @@ uint8_t BMP280_SwapMode(uint8_t mode) {
 
     if (BMP280_ReadRegister(BMP280_REG_CTRL_MEAS) != mode) {
         BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, mode); // BMP280_SETTING_CTRL_MEAS_NORMAL (0x57) ou BMP280_SETTING_CTRL_MEAS_LOW (0x54)
-        printf("BMP mode set to: %i/n", BMP280_SETTING_CTRL_MEAS_NORMAL);
         return 1; // OK
     } else {
-        printf("BMP mode set error...");
         return 0; // Error (no change)
     }
 }
