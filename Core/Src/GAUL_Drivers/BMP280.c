@@ -23,7 +23,7 @@ uint8_t BMP280_Init(BMP280 *dev) {
     uint8_t id;
     BMP280_Read(dev, BMP280_REG_ID, &id, sizeof(id));
     if (id != BMP280_DEVICE_ID) {
-        return 0; // Error
+        return 1; // Error
     }
 
     // Lire les données de calibration
@@ -41,7 +41,7 @@ uint8_t BMP280_Init(BMP280 *dev) {
     dev->altitude_filtered_m = 0.0f;
     dev->alpha = BMP280_FILTER_FACTOR; // Ajustez ce facteur selon le niveau de lissage souhaité (entre 0 et 1)
 
-    return 1;
+    return 0;
 }
 
 void BMP280_Read_Temperature_Pressure(BMP280 *dev) {
