@@ -1,39 +1,38 @@
 /*
  * NMEA.h
  *
- *  Created on: May 12, 2024
- *      Author: gagnon
- *
- *  Edited on: Jul 4, 2024
- *      Autor: mathouqc
+ *  Created on: Mar 12, 2024
+ *      Author: gagno
  */
 
 #ifndef INC_GAUL_DRIVERS_NMEA_H
 #define INC_GAUL_DRIVERS_NMEA_H
 
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
 
-#define NMEA_MAX_TOKEN_TO_READ 7
-#define NMEA_MAX_RMC_LENGTH 90
+#define NMEA_TRAME_RMC_SIZE 67
 
-#define NMEA_OK 0
-#define NMEA_ERROR -1
-
-typedef struct {
-    uint8_t hours;      // Hours when GPS fix acquired (two digits)
-    uint8_t minutes;    // Minutes when GPS fix acquired (two digits)
-    float seconds;      // Seconds when GPS fix acquired
-} time_t;
+// Définition des valeurs par défaut en tant que macros
+#define DEFAULT_LATITUDE 	0x00000000
+#define DEFAULT_LONGITUDE 	0x00000000
+#define DEFAULT_SPEED 		0x00000000
+#define DEFAULT_ANGLE 		0x00000000
+#define DEFAULT_INDICATOR 	56 // "V"
 
 typedef struct {
-    time_t time;        // Time when GPS fix acquired
-    int32_t time_raw;
-    int8_t fix;         // 1: GPS Fix, 0: No GPS Fix
-    float latitude;     // Latitude in Decimal Degrees
-    float longitude;    // Longitude in Decimal Degrees
+    int32_t time;         			// Heure en bytes
+    int32_t latitude;     			// Latitude en bytes
+    uint8_t latitude_indicator; 	// Indicateur de latitude (N ou S)
+    int32_t longitude;				// Longitude en bytes
+    uint8_t longitude_indicator;	// Indicateur de longitude (E ou W)
+    int32_t speed_knots;			// Vitesse sur le fond en noeuds en bytes
+    int32_t track_angle;			// Route sur le fond en degres en bytes
 } GPS_Data;
 
-int8_t NMEA_ValidateRMC(const char *nmea_sentence);
-int8_t NMEA_ParseRMC(GPS_Data *gps_data, const char *nmea_sentence);
+uint8_t NMEA_Decode_GPRMC(const char *nmea_sentence, GPS_Data *gps_data);
+uint8_t NMEA_ValidTrame(const char *nmea_sentence);
 
 #endif /* INC_GAUL_DRIVERS_NMEA_H */
