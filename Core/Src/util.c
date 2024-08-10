@@ -9,14 +9,14 @@
 
 // Handlers
 extern ADC_HandleTypeDef hadc1;
+extern UART_HandleTypeDef huart2;
 
 // Structs
 extern RunTimer run_timer;
-extern GPS_Data gps_data;
 extern ROCKET_Data rocket_data;
 extern BMP280 bmp_data;
 extern ICM20602 icm_data;
-extern L76LM33 l76_data;
+extern L76LM33 L76_data;
 extern RFD900 rfd_data;
 extern TIM_HandleTypeDef htim3;
 
@@ -77,8 +77,7 @@ void ROCKET_InitRoutine(void) {
 	rocket_data.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x01 : 0x00;
 	printt(rocket_data.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
 	// GPS
-	l76_data.USARTx = USART2;
-	rocket_data.header_states.gps = L76LM33_Init(&l76_data) == 1 ? 0x01 : 0x00;
+	rocket_data.header_states.gps = L76LM33_Init(&L76_data, &huart2) == L76LM33_OK ? 0x01 : 0x00;
 	printt(rocket_data.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
 	// Radio
 	rfd_data.USARTx = USART1;
@@ -94,7 +93,7 @@ void ROCKET_InitRoutine(void) {
 	HM10BLE_Init(&ble_data);
 	*/
 	char time[20];
-	itoa(gps_data.time, time, 10);
+	itoa(L76_data.gps_data.time_raw, time, 10);
 	MEM2067_Write(filename_log, time);
 }
 
@@ -225,13 +224,13 @@ uint8_t ROCKET_ModeRoutine(void) {
         // Temperature
         STM32_i32To8((int32_t)bmp_data.temp_C, rocket_data, 4);
         // GPS
-        STM32_i32To8(gps_data.time, rocket_data, 8);
-        STM32_i32To8(gps_data.latitude, rocket_data, 12);
-        rocket_data.data[12] = gps_data.latitude_indicator;
-        STM32_i32To8(gps_data.time, rocket_data, 17);
-        rocket_data.data[17] = gps_data.longitude_indicator;
-        STM32_i32To8(gps_data.speed_knots, rocket_data, 22);
-        STM32_i32To8(gps_data.track_angle, rocket_data, 26);
+        STM32_i32To8(L76_data.gps_data.time_raw, rocket_data, 8);
+        STM32_i32To8(L76_data.gps_data.latitude, rocket_data, 12);
+        //rocket_data.data[12] = gps_data.latitude_indicator;
+        STM32_i32To8(L76_data.gps_data.longitude, rocket_data, 17);
+        //rocket_data.data[17] = gps_data.longitude_indicator;
+        //STM32_i32To8(gps_data.speed_knots, rocket_data, 22);
+        //STM32_i32To8(gps_data.track_angle, rocket_data, 26);
         // Gyro
         STM32_i32To8((int32_t)icm_data.gyroX, rocket_data, 30);
         STM32_i32To8((int32_t)icm_data.gyroY, rocket_data, 34);
@@ -256,13 +255,13 @@ uint8_t ROCKET_ModeRoutine(void) {
         // Altitude
         STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa, 1013.25), rocket_data, 0);
         // GPS
-        STM32_i32To8(gps_data.time, rocket_data, 4);
-        STM32_i32To8(gps_data.latitude, rocket_data, 8);
-        rocket_data.data[12] = gps_data.latitude_indicator;
-        STM32_i32To8(gps_data.time, rocket_data, 13);
-        rocket_data.data[17] = gps_data.longitude_indicator;
-        STM32_i32To8(gps_data.speed_knots, rocket_data, 18);
-        STM32_i32To8(gps_data.track_angle, rocket_data, 22);
+        STM32_i32To8(L76_data.gps_data.time_raw, rocket_data, 8);
+        STM32_i32To8(L76_data.gps_data.latitude, rocket_data, 12);
+        //rocket_data.data[12] = gps_data.latitude_indicator;
+        STM32_i32To8(L76_data.gps_data.longitude, rocket_data, 17);
+        //rocket_data.data[17] = gps_data.longitude_indicator;
+        //STM32_i32To8(gps_data.speed_knots, rocket_data, 22);
+        //STM32_i32To8(gps_data.track_angle, rocket_data, 26);
         // V_Batt
         STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREFLIPO1), rocket_data, 26);
         STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 28);
