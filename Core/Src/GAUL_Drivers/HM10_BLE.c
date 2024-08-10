@@ -21,17 +21,12 @@ const char *valid_commands[] = {
     "RFD",
     "SD"
 };
-
 #define NUM_COMMANDS (sizeof(valid_commands) / sizeof(valid_commands[0]))
 
-bool HM10BLE_SendParameters(HM10BLE *devHM10, uint8_t *parameter);
-uint8_t HM10BLE_Read(HM10BLE *devHM10, uint8_t *response, uint8_t size);
-uint8_t HM10BLE_Send(HM10BLE *devHM10, uint8_t *message, uint8_t size);
-bool HM10BLE_ValidCommand(const char *received_command);
-void HM10BLE_ExecuteCommand(HM10BLE *devHM10, const char *command);
-void HM10BLE_AvailableCommands(HM10BLE *devHM10);
 
 uint8_t HM10BLE_Init(HM10BLE *devHM10) {
+
+	devHM10->status = false;
 
     HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+RENEW\r\n"); // Reset all default parameters
     HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+RESET\r\n"); // Restart to apply changes
@@ -47,65 +42,21 @@ uint8_t HM10BLE_Init(HM10BLE *devHM10) {
     HAL_Delay(500);
     HM10BLE_SendParameters(devHM10, (uint8_t*)"AT\r\n"); // Check activity
 
-    // Initialize device status
-    devHM10->hm10_status = false;
-    devHM10->rfd_status = false;
-    devHM10->icm_status = false;
-    devHM10->l76lm33_status = false;
-    devHM10->bmp_status = false;
-    devHM10->bat_status = 0x00;
-    devHM10->sd_status = false;
-
     return 1; // OK
 }
 
 uint8_t HM10BLE_ConnectionStatus(HM10BLE *devHM10) {
 
-    uint8_t response[100];
+    uint8_t response[128];
 
     HM10BLE_Read(devHM10, response, sizeof(response));
     if(strstr((char*)response, "OK+CONN")) {
+    	devHM10->status = true;
         return 1;
     } else if(strstr((char*)response, "OK+LOST")) {
+    	devHM10->status = false;
         return 0;
     } else return 0;
-}
-
-uint8_t HM10BLE_CommandTask(HM10BLE *devHM10) {
-
-    char command[100];
-    memset(command, 0, sizeof(command));
-    bool isValid = false;
-
-    HM10BLE_Read(devHM10, (uint8_t*)command, sizeof(command));
-    isValid = HM10BLE_ValidCommand(command);
-    if(isValid) {
-        HM10BLE_ExecuteCommand(devHM10, command);
-        return 1; // OK
-    }
-    return 0; // Failed
-}
-
-bool HM10BLE_SendParameters(HM10BLE *devHM10, uint8_t *parameter) {
-
-    uint8_t response[100];
-
-    HM10BLE_Send(devHM10, parameter, strlen((char*)parameter));
-    HAL_Delay(100); // Delay
-    HM10BLE_Read(devHM10, response, sizeof(response));
-    return (strcmp((char*)response, "OK\r\n") == 0) ? true : false;
-}
-
-uint8_t HM10BLE_Read(HM10BLE *devHM10, uint8_t *response, uint8_t size) {
-
-    USART_RX(devHM10->USARTx, response, size);
-    return 1; // OK
-}
-
-uint8_t HM10BLE_Send(HM10BLE *devHM10, uint8_t *message, uint8_t size) {
-
-    USART_TX(devHM10->USARTx, message, size);
-    return 1; // OK
 }
 
 bool HM10BLE_ValidCommand(const char *received_command) {
@@ -157,4 +108,45 @@ void HM10BLE_ExecuteCommand(HM10BLE *devHM10, const char *command) {
     } else {
         HM10BLE_Send(devHM10, (uint8_t*)"Command unrecognized\r\n", strlen("Command unrecognized\r\n"));
     }
+}
+
+bool HM10BLE_SendParameters(HM10BLE *devHM10, uint8_t *parameter) {
+
+    uint8_t response[100];
+
+    HM10BLE_Send(devHM10, parameter, strlen((char*)parameter));
+    HAL_Delay(100); // Delay
+    HM10BLE_Read(devHM10, response, sizeof(response));
+    return (strcmp((char*)response, "OK\r\n") == 0) ? true : false;
+}
+
+uint8_t HM10BLE_CommandTask(HM10BLE *devHM10) {
+
+	if(devHM10->status == false) {
+		return 0;
+	}
+
+    char command[128];
+    memset(command, 0, sizeof(command));
+    bool isValid = false;
+
+    HM10BLE_Read(devHM10, (uint8_t*)command, sizeof(command));
+    isValid = HM10BLE_ValidCommand(command);
+    if(isValid) {
+        HM10BLE_ExecuteCommand(devHM10, command);
+        return 1; // OK
+    }
+    return 0; // Failed
+}
+
+uint8_t HM10BLE_Read(HM10BLE *devHM10, uint8_t *response, uint8_t size) {
+
+    USART_RX(devHM10->USARTx, response, size);
+    return 1; // OK
+}
+
+uint8_t HM10BLE_Send(HM10BLE *devHM10, uint8_t *message, uint8_t size) {
+
+    USART_TX(devHM10->USARTx, message, size);
+    return 1; // OK
 }

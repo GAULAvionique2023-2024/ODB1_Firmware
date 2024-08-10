@@ -18,10 +18,12 @@
 #include <stdio.h>
 #include <string.h>
 
-uint8_t MEM2067_Mount(char *filename);
-void MEM2067_Write(char *filename, char *data);
+uint8_t MEM2067_Mount(const char *filename);
+void MEM2067_Write(const char *filename, const char *data);
 void MEM2067_Unmount(void);
 void MEM2067_Infos(void);
+
+const char* FATFS_ErrorToString(FRESULT result);
 
 int bufsize(char *buf);
 void bufclear(char *p_Buffer);

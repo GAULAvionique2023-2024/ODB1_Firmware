@@ -16,13 +16,7 @@
 
 typedef struct {
 	USART_TypeDef *USARTx;
-    bool hm10_status;
-    bool rfd_status;
-    bool icm_status;
-    bool l76lm33_status;
-    bool bmp_status;
-    uint8_t bat_status; // charge restante (peut-etre)
-    bool sd_status;
+	bool status;
 } HM10BLE;
 
 uint8_t HM10BLE_Init(HM10BLE *devHM10);

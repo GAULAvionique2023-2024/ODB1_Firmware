@@ -27,8 +27,8 @@ typedef struct {
 
 typedef struct {
     time_t time;        // Time when GPS fix acquired
-    int32_t time_raw;
-    int8_t fix;         // 1: GPS Fix, 0: No GPS Fix
+    uint32_t time_raw;
+    uint8_t fix;         // 1: GPS Fix, 0: No GPS Fix
     float latitude;     // Latitude in Decimal Degrees
     float longitude;    // Longitude in Decimal Degrees
 } GPS_Data;

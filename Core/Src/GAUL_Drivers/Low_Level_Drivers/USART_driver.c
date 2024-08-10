@@ -8,7 +8,7 @@
 #include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 
-#define TIMEOUT 1000  // Timeout value
+#define TIMEOUT 200  // Timeout value
 
 void USART_Init(USART_TypeDef *USARTx) {
 
