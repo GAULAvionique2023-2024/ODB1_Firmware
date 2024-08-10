@@ -18,6 +18,7 @@ extern BMP280 bmp_data;
 extern ICM20602 icm_data;
 extern L76LM33 l76_data;
 extern RFD900 rfd_data;
+extern HM10BLE ble_data;
 extern TIM_HandleTypeDef htim3;
 
 // Buffers
@@ -88,11 +89,9 @@ void ROCKET_InitRoutine(void) {
 	rocket_data.header_states.sd = MEM2067_Mount(filename_log) == 1 ? 0x01 : 0x00;
 	printt(rocket_data.header_states.sd ? "(+) SD card succeeded...\r\n" : "(-) SD card failed...\r\n");
 	MEM2067_Infos();
-	/*
 	// Bluetooth
 	ble_data.USARTx = USART3;
 	HM10BLE_Init(&ble_data);
-	*/
 	char time[20];
 	itoa(gps_data.time, time, 10);
 	MEM2067_Write(filename_log, time);
