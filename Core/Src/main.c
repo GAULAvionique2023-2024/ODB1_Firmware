@@ -56,15 +56,13 @@ struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
 
 // Constructor
 RunTimer run_timer;
-GPS_Data gps_data;
 BMP280 bmp_data;
 ICM20602 icm_data;
-L76LM33 l76_data;
+L76LM33 L76_data;
 RFD900 rfd_data;
 HM10BLE ble_data;
 ROCKET_Data rocket_data;
 // Buffers
-uint8_t L76LM33_buffer[NMEA_TRAME_RMC_SIZE]; // gps
 uint8_t HM10BLE_buffer[20];  // ble
 
 // Variables
@@ -385,6 +383,9 @@ static void MX_USART2_UART_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+  L76LM33_RxCallback(&L76_data, huart);
+}
 /* USER CODE END 4 */
 
 /**
