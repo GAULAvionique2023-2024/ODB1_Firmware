@@ -16,18 +16,15 @@ static DWORD fre_clust;
 static uint32_t total_space, free_space;
 
 void MEM2067_Write(const char *filename, const char* data);
-void MEM2067_Unmount(void);
 
 uint8_t MEM2067_Mount(const char* filename) {
 
 	fresult = f_mount(&fs, "/", 1);
 	if (fresult != FR_OK){
-		printf(" -> SD Card Mount: %s", FATFS_ErrorToString(fresult));
 		return 0;
 	}
 	// Create file with read / write access and open it
 	MEM2067_Write(filename, "LOG\n");
-	f_close(&fil);
 
 	return 1;
 }
@@ -35,9 +32,6 @@ uint8_t MEM2067_Mount(const char* filename) {
 void MEM2067_Write(const char *filename, const char* data) {
 
 	fresult = f_open(&fil, filename, FA_OPEN_ALWAYS | FA_WRITE);
-	if (fresult != FR_OK){
-		printf(" -> SD Card open: %s", FATFS_ErrorToString(fresult));
-	}
 	f_lseek(&fil, f_size(&fil));
 	f_puts(data, &fil);
 
@@ -49,9 +43,6 @@ char *MEM2067_Read(const char *filename) {
 	char *data = "";
 
 	fresult = f_open(&fil, filename, FA_OPEN_ALWAYS | FA_WRITE);
-	if (fresult != FR_OK){
-		printf(" -> SD Card open: %s", FATFS_ErrorToString(fresult));
-	}
 	f_gets(data, sizeof(data), &fil);
 
 	return data;
@@ -60,18 +51,13 @@ char *MEM2067_Read(const char *filename) {
 void MEM2067_Unmount(void) {
 
 	fresult = f_mount(NULL, "/", 1);
-	if (fresult != FR_OK){
-		printf(" -> SD Card Mount: %s", FATFS_ErrorToString(fresult));
-	}
 }
 
-void MEM2067_Infos(void) {
+void MEM2067_Infos(MEM2067 *devMEM) {
 
 	f_getfree("", &fre_clust, &pfr);
-	total_space = (uint32_t)((pfr->n_fatent - 2) * pfr->csize * 0.5);
-	free_space = (uint32_t)(fre_clust * pfr->csize * 0.5);
-	printf(" -> Total SD Card Size: %lu Bytes\r\n", total_space);
-	printf(" -> Free SD Card Space: %lu Bytes\r\n\n", free_space);
+	devMEM->total_space = (uint32_t)((pfr->n_fatent - 2) * pfr->csize * 0.5);
+	devMEM->free_space = (uint32_t)(fre_clust * pfr->csize * 0.5);
 }
 
 int bufsize (char* buf)

@@ -173,10 +173,8 @@ uint8_t BMP280_SwapMode(uint8_t mode) {
 
     if (BMP280_ReadRegister(BMP280_REG_CTRL_MEAS) != mode) {
         BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, mode); // BMP280_SETTING_CTRL_MEAS_NORMAL (0x57) ou BMP280_SETTING_CTRL_MEAS_LOW (0x54)
-        printf("BMP mode set to: %i/n", BMP280_SETTING_CTRL_MEAS_NORMAL);
         return 1; // OK
     } else {
-        printf("BMP mode set error...");
         return 0; // Error (no change)
     }
 }

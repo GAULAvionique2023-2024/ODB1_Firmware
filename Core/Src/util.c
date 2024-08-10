@@ -36,8 +36,6 @@ static float BMP280_buffer[BMP280_BUFFERSIZE]; // altimeter bmp
 // Parameters
 static uint8_t header_states = 0x00;
 
-extern const char* filename_log;
-
 //extern bool isButton_push = false;
 
 void ROCKET_InitRoutine(void) {
@@ -88,9 +86,8 @@ void ROCKET_InitRoutine(void) {
 	rocket_data.header_states.rfd = RFD900_Init(&rfd_data) == 1 ? 0x01 : 0x00;
 	printt(rocket_data.header_states.rfd ? "(+) RFD900 succeeded...\r\n" : "(-) RFD900 failed...\r\n");
 	// SD Card
-	rocket_data.header_states.sd = MEM2067_Mount(filename_log) == 1 ? 0x01 : 0x00;
+	rocket_data.header_states.sd = MEM2067_Mount(FILENAME_LOG) == 1 ? 0x01 : 0x00;
 	printt(rocket_data.header_states.sd ? "(+) SD card succeeded...\r\n" : "(-) SD card failed...\r\n");
-	MEM2067_Infos();
 	// Bluetooth
 	ble_data.USARTx = USART3;
 	HM10BLE_Init(&ble_data);
@@ -290,7 +287,7 @@ uint8_t ROCKET_SetMode(const uint8_t mode) {
         return 0;
     }
     rocket_data.header_states.mode = mode;
-    MEM2067_Write(filename_log, ROCKET_ModeToString(mode));
+    MEM2067_Write(FILENAME_LOG, ROCKET_ModeToString(mode));
     return 1; // OK
 }
 
