@@ -92,19 +92,10 @@ typedef struct {
 	uint8_t 	int_pin;
 	GPIO_TypeDef *int_port;
 
-	// Raw data
-	int16_t 	gyroXRaw;
-	int16_t 	gyroYRaw;
-	int16_t 	gyroZRaw;
-
-	int16_t 	accXRaw;
-	int16_t 	accYRaw;
-	int16_t 	accZRaw;
-
 	// Real data
-	float 	gyroX;
-	float 	gyroY;
-	float 	gyroZ;
+	float gyroX;
+	float gyroY;
+	float gyroZ;
 
 	float accX;
 	float accY;
@@ -113,12 +104,12 @@ typedef struct {
 	float temperatureC;
 	float accResult;
 
-	double angle_pitch_acc;
-	double angle_roll_acc;
-	double angleX;
-	double angleY;
-	double kalmanRoll;
-	double kalmanPitch;
+	float angle_pitch_acc;
+	float angle_roll_acc;
+	float angleX;
+	float angleY;
+	float kalmanRoll;
+	float kalmanPitch;
 
 }ICM20602;
 

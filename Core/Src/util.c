@@ -40,18 +40,12 @@ void ROCKET_InitRoutine(void) {
 
 	printt("|----------Starting----------|\r\n");
 	RunTimerInit(&run_timer);
-	//Buzz(&htim3, TIM_CHANNEL_4, START);
+	Buzz(&htim3, TIM_CHANNEL_4, START);
 	SPI_Init(SPI1);
-	printt("(+) SPI1 succeeded...\r\n");
 	SPI_Init(SPI2);
-	printt("(+) SPI2 succeeded...\r\n");
 	USART_Init(USART1);
-	printt("(+) USART1 succeeded...\r\n");
 	USART_Init(USART2);
-	printt("(+) USART2 succeeded...\r\n");
 	USART_Init(USART3);
-	printt("(+) USART3 succeeded...\r\n");
-
 	printt("|----------Components initialization----------|\r\n");
 	ROCKET_SetMode(MODE_PREFLIGHT);
 	printt("(+) Mode flight: %i succeeded...\r\n", rocket_data.header_states.mode);
@@ -72,7 +66,7 @@ void ROCKET_InitRoutine(void) {
 	bmp_data.SPIx = SPI2;
 	bmp_data.cs_pin = 8;
 	bmp_data.cs_port = PA;
-	rocket_data.header_states.barometer = BMP280_Init(&bmp_data) == 1 ? 0x01 : 0x00;
+	rocket_data.header_states.barometer = BMP280_Init(&bmp_data) == 0 ? 0x01 : 0x00;
 	printt(rocket_data.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
 	// Accelerometer
 	icm_data.SPIx = SPI2;
@@ -294,14 +288,12 @@ uint8_t ROCKET_ModeRoutine(void) {
     rocket_data.crc16[1] = (uint8_t)(crc & 0xFF);
     rfd_data.crc = (uint8_t*)rocket_data.crc16;
 
-    if (RFD900_Send(&rfd_data) == 1) {
-        free(rocket_data.data);
+    if (RFD900_Send(&rfd_data) == 1)
         check = 1; // OK
-    } else {
-        free(rocket_data.data);
+    else
         check = 0; // ERROR
-    }
 
+    free(rocket_data.data);
     return check;
 }
 

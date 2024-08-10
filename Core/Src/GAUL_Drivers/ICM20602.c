@@ -15,16 +15,22 @@ extern RunTimer run_timer;
 KalmanFilter kalmanPitch;
 KalmanFilter kalmanRoll;
 
-uint8_t ICM20602_Init(ICM20602 *dev)
-{
-    dev->gyroXRaw = 0;
-    dev->gyroYRaw = 0;
-    dev->gyroZRaw = 0;
-    dev->accXRaw = 0;
-    dev->accYRaw = 0;
-    dev->accZRaw = 0;
+uint8_t ICM20602_Init(ICM20602 *dev){
+
     dev->accResult = 0.0f;
     dev->temperatureC = 0.0f;
+
+    uint8_t rxData;
+    uint8_t configArray[] = {
+    		ICM20602_REG_I2C_IF, 		0x40,
+			ICM20602_REG_PWR_MGMT_1, 	0x01,
+			ICM20602_REG_SMPLRT_DIV, 	0x00,
+			ICM20602_REG_CONFIG, 		0x05,
+			ICM20602_REG_GYRO_CONFIG,	0x18,
+			ICM20602_REG_ACCEL_CONFIG,	0x18,
+			ICM20602_REG_ACCEL_CONFIG2, 0x03,
+			ICM20602_REG_INT_PIN_CFG,	0x28,
+			ICM20602_REG_INT_ENABLE,	0x01};
 
     KalmanFilter_Init(&kalmanPitch);
     KalmanFilter_Init(&kalmanRoll);
@@ -32,8 +38,6 @@ uint8_t ICM20602_Init(ICM20602 *dev)
     Init_GPIO(dev->cs_port, dev->cs_pin, OUT50, O_GP_PP); // CS
     Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
     Init_GPIO(dev->int_port, dev->int_pin, IN, I_PP); // Init GPIO for the interrupt
-
-    uint8_t rxData;
 
     // Réinitialiser ICM20602
     ICM20602_Write(dev, ICM20602_REG_PWR_MGMT_1, 0x80);
@@ -43,129 +47,66 @@ uint8_t ICM20602_Init(ICM20602 *dev)
         return 1;
     }
 
-    // Verrouiller la communication SPI
-    ICM20602_Write(dev, ICM20602_REG_I2C_IF, 0x40);
-    ICM20602_Read(dev, ICM20602_REG_I2C_IF, &rxData, 1);
-    if (rxData != 0x40) {
-        printf("I2C_IF check failed: %02X\n", rxData);
-        return 1;
+    for(uint8_t i = 0; i < sizeof(configArray); i += 2)
+    {
+        ICM20602_Write(dev, configArray[i], configArray[i+1]);
+        ICM20602_Read(dev, configArray[i], &rxData, 1);
+        if (rxData != configArray[i+1])
+            return 1;
     }
 
-    // Activer le capteur de température
-    ICM20602_Write(dev, ICM20602_REG_PWR_MGMT_1, 0x01);
-    ICM20602_Read(dev, ICM20602_REG_PWR_MGMT_1, &rxData, 1);
-    if (rxData != 0x01) {
-        printf("PWR_MGMT_1 check failed: %02X\n", rxData);
-        return 1;
-    }
-
-    // Définir la fréquence d'échantillonnage à 1000Hz et appliquer un filtre logiciel
-    ICM20602_Write(dev, ICM20602_REG_SMPLRT_DIV, 0x00);
-    ICM20602_Read(dev, ICM20602_REG_SMPLRT_DIV, &rxData, 1);
-    if (rxData != 0x00) {
-        printf("SMPLRT_DIV check failed: %02X\n", rxData);
-        return 1;
-    }
-
-    // Gyro LPF fc 20Hz(bit2:0-100) à un taux d'échantillonnage de 1kHz
-    ICM20602_Write(dev, ICM20602_REG_CONFIG, 0x05);
-    ICM20602_Read(dev, ICM20602_REG_CONFIG, &rxData, 1);
-    if (rxData != 0x05) {
-        printf("CONFIG check failed: %02X\n", rxData);
-        return 1;
-    }
-
-    // Gyro 2000DPS
-    ICM20602_Write(dev, ICM20602_REG_GYRO_CONFIG, 0x18);
-    ICM20602_Read(dev, ICM20602_REG_GYRO_CONFIG, &rxData, 1);
-    if (rxData != 0x18) {
-        printf("GYRO_CONFIG check failed: %02X\n", rxData);
-        return 1;
-    }
-
-    // Sensibilité de l'accéléromètre 16g
-    ICM20602_Write(dev, ICM20602_REG_ACCEL_CONFIG, 0x18);
-    ICM20602_Read(dev, ICM20602_REG_ACCEL_CONFIG, &rxData, 1);
-    if (rxData != 0x18) {
-        printf("ACCEL_CONFIG check failed: %02X\n", rxData);
-        return 1;
-    }
-
-    // ACCEL_CONFIG2 0x1D
-    ICM20602_Write(dev, ICM20602_REG_ACCEL_CONFIG2, 0x03); // Acc FCHOICE 1kHz(bit3-0), DLPF fc 44.8Hz(bit2:0-011)
-    ICM20602_Read(dev, ICM20602_REG_ACCEL_CONFIG2, &rxData, 1);
-    if (rxData != 0x03) {
-        printf("ACCEL_CONFIG2 check failed: %02X\n", rxData);
-        return 1;
-    }
-
-    // Config INT PIN
-    ICM20602_Write(dev, ICM20602_REG_INT_PIN_CFG, 0x28); // Active HIGH, Push-Pull, LATCH, Any read clear
-    ICM20602_Read(dev, ICM20602_REG_INT_PIN_CFG, &rxData, 1);
-    if (rxData != 0x28) {
-        printf("INT_PIN_CFG check failed: %02X\n", rxData);
-        return 1;
-    }
-
-    // Activer les interruptions
-    ICM20602_Write(dev, ICM20602_REG_INT_ENABLE, 0x01);
-    ICM20602_Read(dev, ICM20602_REG_INT_ENABLE, &rxData, 1);
-    if (rxData != 0x01) {
-        printf("INT_ENABLE check failed: %02X\n", rxData);
-        return 1;
-    }
-
-    //ICM20602_Calibrate(dev, ICM20602_GYRO_CALIB_PRECICION);
+    ICM20602_Calibrate(dev, ICM20602_GYRO_CALIB_PRECICION);
 
     return 0;
 }
 
-void ICM20602_Update_All(ICM20602 *dev)
-{
+void ICM20602_Update_All(ICM20602 *dev){
+
 	if(!ICM20602_Data_Ready(dev))
 		return;
 
 	uint8_t rxData[14];
-  ICM20602_Read(dev, ICM20602_REG_ACCEL_XOUT_H, rxData, 14);
+	int16_t gyroRawX, gyroRawY, gyroRawZ;
+	int16_t accRawX, accRawY, accRawZ;
+	ICM20602_Read(dev, ICM20602_REG_ACCEL_XOUT_H, rxData, 14);
 
-  // Lire les données brutes et appliquer les offsets
-  dev->accXRaw = (int16_t)((rxData[0] << 8) | rxData[1]);
-  dev->accYRaw = (int16_t)((rxData[2] << 8) | rxData[3]);
-  dev->accZRaw = (int16_t)((rxData[4] << 8) | rxData[5]);
-  dev->temperatureC = ((rxData[6] << 8) | rxData[7]) / 326.8f + 25;
-  dev->gyroXRaw = (int16_t)((rxData[8] << 8) | rxData[9]);
-  dev->gyroYRaw = (int16_t)((rxData[10] << 8) | rxData[11]);
-  dev->gyroZRaw = (int16_t)((rxData[12] << 8) | rxData[13]);
+	// Lire les données brutes
+	accRawX = (int16_t)((rxData[0] << 8) | rxData[1]);
+	accRawY = (int16_t)((rxData[2] << 8) | rxData[3]);
+	accRawZ = (int16_t)((rxData[4] << 8) | rxData[5]);
+	dev->temperatureC = ((rxData[6] << 8) | rxData[7]) / 326.8f + 25;
+	gyroRawX = (int16_t)((rxData[8] << 8) | rxData[9]);
+	gyroRawY = (int16_t)((rxData[10] << 8) | rxData[11]);
+	gyroRawZ = (int16_t)((rxData[12] << 8) | rxData[13]);
 
-  // Convertir les valeurs brutes
-  dev->gyroX = dev->gyroXRaw * 2000.f / 32768.f;
-  dev->gyroY = dev->gyroYRaw * 2000.f / 32768.f;
-  dev->gyroZ = dev->gyroZRaw * 2000.f / 32768.f;
+	// Convertir les valeurs brutes
+	dev->gyroX = gyroRawX * 2000.f / 32768.f;
+	dev->gyroY = gyroRawY * 2000.f / 32768.f;
+	dev->gyroZ = gyroRawZ * 2000.f / 32768.f;
 
-  dev->accX = dev->accXRaw * 16.f / 32768.f;
-  dev->accY = dev->accYRaw * 16.f / 32768.f;
-  dev->accZ = dev->accZRaw * 16.f / 32768.f;
+	dev->accX = accRawX * 16.f / 32768.f;
+	dev->accY = accRawY * 16.f / 32768.f;
+	dev->accZ = accRawZ * 16.f / 32768.f;
 
-  dev->accResult = sqrt(dev->accX * dev->accX + dev->accY * dev->accY + dev->accZ * dev->accZ);
+	dev->accResult = sqrt(dev->accX * dev->accX + dev->accY * dev->accY + dev->accZ * dev->accZ);
 
-  // Calculer l'angle de pitch et roll à partir des accéléromètres
-  dev->angle_pitch_acc = -(atan2(dev->accX, sqrt(dev->accY*dev->accY + dev->accZ*dev->accZ))*180.0)/M_PI;
+	// Calculer l'angle de pitch et roll à partir des accéléromètres
+	dev->angle_pitch_acc = -(atan2(dev->accX, sqrt(dev->accY*dev->accY + dev->accZ*dev->accZ))*180.0)/M_PI;
 	dev->angle_roll_acc  = (atan2(dev->accY, dev->accZ)*180.0)/M_PI;
 
 	dev->kalmanPitch = KalmanFilter_Update(&kalmanPitch, dev->angle_pitch_acc, dev->gyroY);
 	dev->kalmanRoll = KalmanFilter_Update(&kalmanRoll, dev->angle_roll_acc, dev->gyroX);
 }
 
-void ICM20602_Calibrate(ICM20602 *dev, int8_t p_Sense)
-{
+void ICM20602_Calibrate(ICM20602 *dev, int8_t p_Sense){
+
     uint8_t rxData[6];
     int16_t gyroRawX, gyroRawY, gyroRawZ;
     int16_t xOffset = 0;
     int16_t yOffset = 0;
     int16_t zOffset = 0;
 
-    do
-    {
+    do{
         ICM20602_Read(dev, ICM20602_REG_GYRO_XOUT_H, rxData, 6);
         gyroRawX = (int16_t)((rxData[0] << 8) | rxData[1]);
         gyroRawY = (int16_t)((rxData[2] << 8) | rxData[3]);
@@ -194,35 +135,32 @@ void ICM20602_Calibrate(ICM20602 *dev, int8_t p_Sense)
              (gyroRawZ < -p_Sense || gyroRawZ > p_Sense));
 }
 
-int8_t ICM20602_Data_Ready(ICM20602 *dev)
-{
+int8_t ICM20602_Data_Ready(ICM20602 *dev){
+
     return Read_GPIO(dev->int_port, dev->int_pin);
 }
 
 void ICM20602_Read(ICM20602 *dev, uint8_t address, uint8_t rxData[], uint8_t size)
 {
+
     address |= 0x80;  // read operation
 
     Write_GPIO(dev->cs_port, dev->cs_pin, LOW);
-    if (SPI_TX(dev->SPIx, &address, 1) != 0)
-    { /* Handle timeout error */
+    if (SPI_TX(dev->SPIx, &address, 1) != 0){ /* Handle timeout error */
     	Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
     	return;
     }
-    if (SPI_RX(dev->SPIx, rxData, size) != 0)
-    {/* Handle timeout error */
+    if (SPI_RX(dev->SPIx, rxData, size) != 0){/* Handle timeout error */
     	Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
 		return;
     }
+
     Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
 }
 
-void ICM20602_Write(ICM20602 *dev, uint8_t address, uint8_t value)
-{
+void ICM20602_Write(ICM20602 *dev, uint8_t address, uint8_t value){
 
-  address &= 0x7F;  // Write operation
-
-
+	address &= 0x7F;  // Write operation
 	Write_GPIO(dev->cs_port, dev->cs_pin, LOW);
     if (SPI_TX(dev->SPIx, &address, 1) != 0) { /* Handle timeout error */ }
     if (SPI_TX(dev->SPIx, &value, 1) != 0) {   /* Handle timeout error */ }
