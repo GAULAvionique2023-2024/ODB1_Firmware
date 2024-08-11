@@ -16,18 +16,12 @@
 
 typedef struct {
 	USART_TypeDef *USARTx;
-    bool hm10_status;
-    bool rfd_status;
-    bool icm_status;
-    bool l76lm33_status;
-    bool bmp_status;
-    uint8_t bat_status; // charge restante (peut-etre)
-    bool sd_status;
+	bool status;
 } HM10BLE;
 
 uint8_t HM10BLE_Init(HM10BLE *devHM10);
 uint8_t HM10BLE_ConnectionStatus(HM10BLE *devHM10);
-uint8_t HM10BLE_SendParameters(HM10BLE *devHM10, uint8_t *command);
+bool HM10BLE_SendParameters(HM10BLE *devHM10, uint8_t *parameter);
 uint8_t HM10BLE_CommandTask(HM10BLE *devHM10);
 
 uint8_t HM10BLE_Read(HM10BLE *devHM10, uint8_t *response, uint8_t size);

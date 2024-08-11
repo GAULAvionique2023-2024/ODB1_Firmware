@@ -46,6 +46,7 @@ int8_t NMEA_ValidateRMC(const char *nmea_sentence) {
  * @retval NMEA_ERROR ERROR
  */
 int8_t NMEA_ParseRMC(GPS_Data *gps_data, const char *nmea_sentence) {
+
     if (!nmea_sentence || !gps_data) {
         return NMEA_ERROR; // Error, NULL sentence or structure
     }
@@ -57,7 +58,7 @@ int8_t NMEA_ParseRMC(GPS_Data *gps_data, const char *nmea_sentence) {
         return NMEA_ERROR; // Error while duplicating string
     }
 
-    int8_t tok_idx = 0; // Current field index
+    uint8_t tok_idx = 0; // Current field index
     char *token;
 
     // Read first field
@@ -69,7 +70,6 @@ int8_t NMEA_ParseRMC(GPS_Data *gps_data, const char *nmea_sentence) {
             if (strnlen(token, 6) < 6) { // hhmmss.sss = 10 char, minimum is 6 char
                 return NMEA_ERROR; // Error with sentence
             }
-
             if (strnlen(token, 10) > 6 && token[6] != '.') { // Ensure dot position only if seconds are float
                 return NMEA_ERROR; // Error with sentence
             }
@@ -89,13 +89,12 @@ int8_t NMEA_ParseRMC(GPS_Data *gps_data, const char *nmea_sentence) {
             char seconds[7] = "00.000"; // ss.sss\0 = 7 char
             strncpy(seconds, token+4, 6);
             gps_data->time.seconds = atof(seconds);
-
         } else if (tok_idx == 2) { // GPS FIX
             // Ensure validity is A or V, else throw error
             if (token[0] == 'A') {
-                gps_data->fix = 1; // GS Fix
+                gps_data->fix = 1; // GPS Fix
             } else if (token[0] == 'V') {
-                gps_data->fix = 0; // No GPD Fic
+                gps_data->fix = 0; // No GPS Fix
             } else {
                 return NMEA_ERROR; // Error with sentence
             }
@@ -105,7 +104,6 @@ int8_t NMEA_ParseRMC(GPS_Data *gps_data, const char *nmea_sentence) {
                 gps_data->longitude = 0;
                 break; // No fix, so lat/lon are empty
             }
-
         } else if (tok_idx == 3) { // LATITUDE
             // token = ddmm.mmmmmm (4 to 6 decimals)
             if (strnlen(token, 9) < 9 || token[4] != '.') { //strlen au lieu de strnlen puisqu'on utilise déjà strtok, donc il y a assurément un \0 à la fin?
