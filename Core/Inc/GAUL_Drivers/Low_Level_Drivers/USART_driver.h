@@ -8,12 +8,11 @@
 #ifndef INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_USART_DRIVER_H_
 #define INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_USART_DRIVER_H_
 
-#include "main.h"
-#include <stdint.h>
+#include "stm32f1xx_hal.h" // USART_TypeDef and int types
 
 void USART_Init(USART_TypeDef *USARTx);
 
-int USART_TX(USART_TypeDef *USARTx, uint8_t *data, int size);
-int USART_RX(USART_TypeDef *USARTx, uint8_t *data, int size);
+int8_t USART_TX(USART_TypeDef *USARTx, uint8_t *data, uint16_t size);
+int8_t USART_RX(USART_TypeDef *USARTx, uint8_t *data, uint16_t size);
 
 #endif /* INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_USART_DRIVER_H_ */
