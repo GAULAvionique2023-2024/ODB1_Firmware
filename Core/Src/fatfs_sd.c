@@ -26,7 +26,7 @@ static volatile DSTATUS Stat = STA_NOINIT;              /* 디스크 상태 Flag
 static uint8_t CardType;                                /* SD 타입 0:MMC, 1:SDC, 2:Block addressing */
 static uint8_t PowerFlag = 0;                           /* Power 상태 Flag */
 
-#define SD_CS_GPIO_Port PA
+#define SD_CS_GPIO_Port GPIOA
 #define SD_CS_Pin 4
 
 /* SPI Chip Select */

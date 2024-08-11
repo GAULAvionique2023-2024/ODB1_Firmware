@@ -369,7 +369,7 @@ int printt(const char *format, ...) {
     va_list args;
     va_start(args, format);
     UpdateTime(&run_timer);
-    printf("[%03d:%02d:%03d] ",run_timer.elapsed_time_m, run_timer.elapsed_time_s, run_timer.elapsed_time_remaining_ms);
+    sprintf("[%03d:%02d:%03d] ",run_timer.elapsed_time_m, run_timer.elapsed_time_s, run_timer.elapsed_time_remaining_ms);
 
     int ret = vprintf(format, args);
 

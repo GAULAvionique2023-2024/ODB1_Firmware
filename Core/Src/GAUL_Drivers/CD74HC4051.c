@@ -76,21 +76,21 @@ bool Pyro_Check(ADC_HandleTypeDef *hadc, uint8_t pyro_channel)
 {
 	bool pass = false;
 
-	Write_GPIO(PC, 13, LOW);
-	Write_GPIO(PC, 14, LOW);
-	Write_GPIO(PC, 15, LOW);
-	Write_GPIO(PA, 15, LOW); // Pyro_Test (inverse)
+	Write_GPIO(GPIOC, 13, LOW);
+	Write_GPIO(GPIOC, 14, LOW);
+	Write_GPIO(GPIOC, 15, LOW);
+	Write_GPIO(GPIOA, 15, LOW); // Pyro_Test (inverse)
 
 	if (pyro_channel == PYRO_CHANNEL_0)
-		Write_GPIO(PB, 4, HIGH); // Pyro_ON0
+		Write_GPIO(GPIOB, 4, HIGH); // Pyro_ON0
 	else if (pyro_channel == PYRO_CHANNEL_1)
-		Write_GPIO(PB, 5, HIGH); // Pyro_ON1
+		Write_GPIO(GPIOB, 5, HIGH); // Pyro_ON1
 	else
 		return false;
 
 	ADC_Start(hadc);
 
-	Write_GPIO(PB, 8, LOW); // MUL_E~ (inverse)
+	Write_GPIO(GPIOB, 8, LOW); // MUL_E~ (inverse)
 
 	HAL_Delay(10);
 	// Lecture
@@ -99,10 +99,10 @@ bool Pyro_Check(ADC_HandleTypeDef *hadc, uint8_t pyro_channel)
 	if(adc_value < PYRO_CONTINUITY_THRESHOLD)
 		pass = true;
 
-	Write_GPIO(PB, 8, HIGH); // MUL_E~ (inverse)
-	Write_GPIO(PB, 4, LOW); // Pyro_ON0
-	Write_GPIO(PB, 5, LOW); // Pyro_ON1
-	Write_GPIO(PA, 15, HIGH); // Pyro_Test~
+	Write_GPIO(GPIOB, 8, HIGH); // MUL_E~ (inverse)
+	Write_GPIO(GPIOB, 4, LOW); // Pyro_ON0
+	Write_GPIO(GPIOB, 5, LOW); // Pyro_ON1
+	Write_GPIO(GPIOA, 15, HIGH); // Pyro_Test~
 
 	return pass;
 }
