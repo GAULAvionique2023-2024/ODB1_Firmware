@@ -18,7 +18,6 @@ extern BMP280 bmp_data;
 extern ICM20602 icm_data;
 extern L76LM33 L76_data;
 extern RFD900 rfd_data;
-extern TIM_HandleTypeDef htim3;
 
 // Buffers
 float BMP280_buffer[BMP280_BUFFERSIZE]; // altimeter bmp
@@ -40,7 +39,7 @@ void ROCKET_InitRoutine(void) {
 
 	printt("|----------Starting----------|\r\n");
 	RunTimerInit(&run_timer);
-	Buzz(&htim3, TIM_CHANNEL_4, START);
+	//Buzz(TIM3, LL_TIM_CHANNEL_CH4, START);
 	SPI_Init(SPI1);
 	SPI_Init(SPI2);
 	USART_Init(USART1);
@@ -93,6 +92,7 @@ void ROCKET_InitRoutine(void) {
 	HM10BLE_Init(&ble_data);
 	*/
 	char time[20];
+
 	itoa(L76_data.gps_data.time_raw, time, 10);
 	MEM2067_Write(filename_log, time);
 }
