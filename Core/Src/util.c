@@ -19,7 +19,7 @@ extern ICM20602 icm_data;
 extern L76LM33 L76_data;
 extern RFD900 rfd_data;
 extern HM10BLE ble_data;
-extern TIM_HandleTypeDef htim3;
+
 
 // Definitions
 #define MAX_ROCKET_DATA_SIZE (INFLIGHT_DATASIZE > POSTFLIGHT_DATASIZE ? INFLIGHT_DATASIZE : POSTFLIGHT_DATASIZE)
@@ -42,7 +42,7 @@ void ROCKET_InitRoutine(void) {
 
 	printt("|----------Starting----------|\r\n");
 	RunTimerInit(&run_timer);
-	Buzz(&htim3, TIM_CHANNEL_4, START);
+	//Buzz(TIM3, LL_TIM_CHANNEL_CH4, START);
 	SPI_Init(SPI1);
 	SPI_Init(SPI2);
 	USART_Init(USART1);
@@ -58,8 +58,8 @@ void ROCKET_InitRoutine(void) {
 	if (CD74HC4051_Init(&hadc1) != 1) {
 	  printt("(-) CD74HC4051 failed...\r\n");
 	} else {
-		rocket_data.header_states.pyro0 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_0, VREFPYRO);
-		rocket_data.header_states.pyro1 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_1, VREFPYRO);
+		rocket_data.header_states.pyro0 = Pyro_Check(&hadc1, PYRO_CHANNEL_0);
+		rocket_data.header_states.pyro1 = Pyro_Check(&hadc1, PYRO_CHANNEL_1);
 		printt(" -> Pyro0 state: %i\r\n", rocket_data.header_states.pyro0);
 		printt(" -> Pyro1 state: %i\r\n", rocket_data.header_states.pyro1);
 		printt("(+) CD74HC4051 succeeded...\r\n");
@@ -93,6 +93,7 @@ void ROCKET_InitRoutine(void) {
 	HM10BLE_Init(&ble_data);
 	/*
 	char time[20];
+
 	itoa(L76_data.gps_data.time_raw, time, 10);
 	MEM2067_Write(filename_log, time);
 	*/
