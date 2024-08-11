@@ -22,9 +22,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "string.h"
-#include "stdio.h"
-#include "inttypes.h"
 #include "util.h"
 
 /* USER CODE END Includes */
@@ -40,12 +37,9 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 /* USER CODE END PM */
+
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
-
-SPI_HandleTypeDef hspi1;
-
-TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart2;
 
@@ -65,17 +59,18 @@ ROCKET_Data rocket_data;
 uint8_t HM10BLE_buffer[20];  // ble
 
 // Variables
+char* filename_log = "log.txt";
 uint8_t rocket_behavior = 0x00;
 bool pyro_armed = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_TIM3_Init(void);
 static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
+static void MX_SPI1_Init(void);
+void TIM3_Init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -107,12 +102,12 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_SPI1_Init();
   MX_USART2_UART_Init();
-  MX_TIM3_Init();
   MX_ADC1_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
+  MX_SPI1_Init();
+  TIM3_Init();
   ROCKET_InitRoutine();
 
   /* USER CODE END 2 */
@@ -250,103 +245,6 @@ static void MX_ADC1_Init(void)
 }
 
 /**
-  * @brief SPI1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI1_Init(void)
-{
-
-  /* USER CODE BEGIN SPI1_Init 0 */
-
-  /* USER CODE END SPI1_Init 0 */
-
-  /* USER CODE BEGIN SPI1_Init 1 */
-
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI1_Init 2 */
-
-  /* USER CODE END SPI1_Init 2 */
-
-}
-
-/**
-  * @brief TIM3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM3_Init(void)
-{
-
-  /* USER CODE BEGIN TIM3_Init 0 */
-
-  /* USER CODE END TIM3_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
-
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 127;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 20;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
-  HAL_TIM_MspPostInit(&htim3);
-
-}
-
-/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -380,8 +278,63 @@ static void MX_USART2_UART_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static void MX_SPI1_Init(void)
+{
+    /* Activer l'horloge pour le périphérique SPI1 */
+    RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; // Activer l'horloge SPI1
+
+    /* Configurer les broches pour SPI1 (MOSI, MISO, SCK) */
+    // Remplacez les définitions des broches par celles que vous utilisez
+    GPIOB->CRH &= ~(GPIO_CRH_MODE12 | GPIO_CRH_CNF12); // SCK (PB12)
+    GPIOB->CRH |= (GPIO_CRH_MODE12_1 | GPIO_CRH_CNF12_1); // PB12: Output, Max speed 2 MHz, Push-pull
+
+    GPIOB->CRH &= ~(GPIO_CRH_MODE15 | GPIO_CRH_CNF15); // MOSI (PB15)
+    GPIOB->CRH |= (GPIO_CRH_MODE15_1 | GPIO_CRH_CNF15_1); // PB15: Output, Max speed 2 MHz, Push-pull
+
+    GPIOB->CRH &= ~(GPIO_CRH_MODE14 | GPIO_CRH_CNF14); // MISO (PB14)
+    GPIOB->CRH |= (GPIO_CRH_CNF14_0); // PB14: Input floating
+
+    /* Configurer le périphérique SPI1 */
+    SPI1->CR1 = 0; // Réinitialiser CR1
+    SPI1->CR1 |= (SPI_CR1_MSTR |                // Mode maître
+                  SPI_CR1_BR_1 |                 // Baud rate prescaler: f_PCLK/32
+                  SPI_CR1_CPOL |                 // CLK Polarity Low
+                  SPI_CR1_CPHA |                 // CLK Phase 1 Edge
+                  SPI_CR1_LSBFIRST |             // MSB first
+                  SPI_CR1_SSM |                  // Software slave management
+                  SPI_CR1_SSI |                  // Internal slave select
+                  SPI_CR1_RXONLY);               // Réception uniquement
+
+    // Activer le SPI1
+    SPI1->CR1 |= SPI_CR1_SPE; // Activer SPI1
+}
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   L76LM33_RxCallback(&L76_data, huart);
+}
+
+void TIM3_Init(void) {
+    // Activer l'horloge pour TIM3
+    RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
+
+    // Configurer le Prescaler et la Période
+    TIM3->PSC = 127;
+    TIM3->ARR = 20;
+
+    // Configurer le Mode de Compteur
+    TIM3->CR1 &= ~TIM_CR1_DIR;    // Compteur ascendant
+    TIM3->CR1 &= ~TIM_CR1_CMS;    // Mode de compteur aligné sur le bord
+    TIM3->CR1 |= TIM_CR1_ARPE;    // Auto-reload preload enable
+
+    // Configurer le Mode PWM pour le canal 4
+    TIM3->CCMR2 &= ~TIM_CCMR2_OC4M;       // Clear output compare mode bits
+    TIM3->CCMR2 |= (6 << TIM_CCMR2_OC4M_Pos); // PWM mode 1 (OC4M bits = 110)
+    TIM3->CCMR2 &= ~TIM_CCMR2_OC4PE;      // Disable preload (OC4PE bit)
+    TIM3->CCER |= TIM_CCER_CC4E;          // Enable output for channel 4
+    TIM3->CCR4 = 0;                       // Initial pulse width
+
+    // Démarrer le Timer
+    TIM3->CR1 |= TIM_CR1_CEN;
 }
 /* USER CODE END 4 */
 
