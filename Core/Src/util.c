@@ -30,12 +30,12 @@ extern HM10BLE ble_data;
 // Buffers
 static uint8_t rocket_data_buffer[MAX_ROCKET_DATA_SIZE];
 static float BMP280_buffer[BMP280_BUFFERSIZE]; // altimeter bmp
+static char runtimer_buffer[128] = {"0"};
 // TODO: add hm10 response buffer
 
 // Parameters
 static uint8_t header_states = 0x00;
 
-//extern bool isButton_push = false;
 
 void ROCKET_InitRoutine(void) {
 
@@ -90,12 +90,10 @@ void ROCKET_InitRoutine(void) {
 	// Bluetooth
 	ble_data.USARTx = USART3;
 	HM10BLE_Init(&ble_data);
-	/*
-	char time[20];
 
-	itoa(L76_data.gps_data.time_raw, time, 10);
-	MEM2067_Write(filename_log, time);
-	*/
+	UpdateTime(&run_timer);
+	sprintf(runtimer_buffer, "[%03d:%02d:%03d]",run_timer.elapsed_time_m, run_timer.elapsed_time_s, run_timer.elapsed_time_remaining_ms);
+
 	// Set const variable
 	header_states = (rocket_data.header_states.mode << 6) | (rocket_data.header_states.pyro0 << 5) | (rocket_data.header_states.pyro1 << 4)
 					| (rocket_data.header_states.accelerometer << 3) | (rocket_data.header_states.barometer << 2) | (rocket_data.header_states.gps << 1)
@@ -153,13 +151,6 @@ uint8_t ROCKET_ModeRoutine(void) {
 	memset(rocket_data.crc16, 0, sizeof(rocket_data.crc16));
 	rocket_data.data = rocket_data_buffer;
 
-    /*
-     * TODO: add debug mode button interrupt
-    if(Read_GPIO(PA, 9) == 1) {
-		ROCKET_SetMode(MODE_DEBUG);
-		printt("(+) Debug Mode: %i succeeded...\r\n", rocket_data.header_states.mode);
-    }
-	*/
     switch (rocket_data.header_states.mode) {
     case MODE_PREFLIGHT:
         //BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
@@ -255,8 +246,11 @@ uint8_t ROCKET_SetMode(const uint8_t mode) {
     if (mode != MODE_PREFLIGHT && mode != MODE_INFLIGHT && mode != MODE_POSTFLIGHT && mode != MODE_DEBUG) {
         return 0;
     }
-    rocket_data.header_states.mode = mode;
-    MEM2067_Write(FILENAME_LOG, ROCKET_ModeToString(mode));
+
+    if(rocket_data.header_states.mode != mode) {
+		rocket_data.header_states.mode = mode;
+		MEM2067_Write(FILENAME_LOG, ROCKET_ModeToString(mode));
+    }
     return 1; // OK
 }
 
