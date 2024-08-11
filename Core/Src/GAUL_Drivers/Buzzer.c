@@ -42,3 +42,4 @@ void Buzz(TIM_TypeDef *TIMx, uint32_t channel, buzzRoutines_t routine) {
     LL_TIM_CC_DisableChannel(TIMx, channel);  // Arrêter PWM
 }
 
+

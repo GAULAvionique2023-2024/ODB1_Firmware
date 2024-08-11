@@ -55,7 +55,7 @@ uint8_t ICM20602_Init(ICM20602 *dev){
             return 1;
     }
 
-    ICM20602_Calibrate(dev, ICM20602_GYRO_CALIB_PRECICION);
+    //ICM20602_Calibrate(dev, ICM20602_GYRO_CALIB_PRECICION);
 
     return 0;
 }

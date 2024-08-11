@@ -28,6 +28,8 @@
 #define PYRO_CHANNEL_0 0x01
 #define PYRO_CHANNEL_1 0x02
 
+#define PYRO_CONTINUITY_THRESHOLD 1500
+
 #define VREFPYRO 3.3
 #define VREF5VAN 3.205
 #define VREFLIPO1 2.91338
@@ -35,5 +37,6 @@
 
 uint8_t CD74HC4051_Init(ADC_HandleTypeDef *hadc);
 uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyro_channel, float vref);
+bool Pyro_Check(ADC_HandleTypeDef *hadc, uint8_t pyro_channel);
 
 #endif /* INC_GAUL_DRIVERS_CD74HC4051_H_ */

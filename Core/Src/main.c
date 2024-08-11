@@ -22,9 +22,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "string.h"
-#include "stdio.h"
-#include "inttypes.h"
 #include "util.h"
 
 /* USER CODE END Includes */
@@ -62,7 +59,7 @@ ROCKET_Data rocket_data;
 uint8_t HM10BLE_buffer[20];  // ble
 
 // Variables
-
+char* filename_log = "log.txt";
 uint8_t rocket_behavior = 0x00;
 bool pyro_armed = false;
 /* USER CODE END PV */
