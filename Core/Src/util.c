@@ -55,8 +55,8 @@ void ROCKET_InitRoutine(void) {
 	if (CD74HC4051_Init(&hadc1) != 1) {
 	  printt("(-) CD74HC4051 failed...\r\n");
 	} else {
-		rocket_data.header_states.pyro0 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_0, VREFPYRO);
-		rocket_data.header_states.pyro1 = CD74HC4051_AnRead(&hadc1, CHANNEL_0, PYRO_CHANNEL_1, VREFPYRO);
+		rocket_data.header_states.pyro0 = Pyro_Check(&hadc1, PYRO_CHANNEL_0);
+		rocket_data.header_states.pyro1 = Pyro_Check(&hadc1, PYRO_CHANNEL_1);
 		printt(" -> Pyro0 state: %i\r\n", rocket_data.header_states.pyro0);
 		printt(" -> Pyro1 state: %i\r\n", rocket_data.header_states.pyro1);
 		printt("(+) CD74HC4051 succeeded...\r\n");
