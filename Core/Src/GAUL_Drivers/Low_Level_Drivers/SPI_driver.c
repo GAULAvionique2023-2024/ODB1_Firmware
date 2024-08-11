@@ -5,6 +5,7 @@
 #define TIMEOUT 200  // Timeout value
 
 void SPI_Init(SPI_TypeDef *SPIx) {
+
     if (SPIx == SPI1) {
         RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
 
@@ -28,6 +29,7 @@ void SPI_Init(SPI_TypeDef *SPIx) {
 }
 
 int SPI_TX(SPI_TypeDef *SPIx, uint8_t *data, int size) {
+
     uint32_t timeout = TIMEOUT;
     while (size--) {
         // Attendre que le buffer TX soit vide
@@ -53,6 +55,7 @@ int SPI_TX(SPI_TypeDef *SPIx, uint8_t *data, int size) {
 }
 
 int SPI_RX(SPI_TypeDef *SPIx, uint8_t *data, int size) {
+
     uint32_t timeout = TIMEOUT;
     while (size--) {
         // Envoyer un dummy byte pour générer un clock et recevoir des données
@@ -76,6 +79,7 @@ int SPI_RX(SPI_TypeDef *SPIx, uint8_t *data, int size) {
 }
 
 int SPI_TransmitReceive(SPI_TypeDef *SPIx, uint8_t *pTxData, uint8_t *pRxData, uint16_t Size, uint32_t Timeout) {
+
     uint32_t startTick = HAL_GetTick();
 
     for (uint16_t i = 0; i < Size; i++) {
