@@ -8,7 +8,7 @@
 #ifndef INC_GAUL_DRIVERS_CD74HC4051_H_
 #define INC_GAUL_DRIVERS_CD74HC4051_H_
 
-#include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
+#include <GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h>
 #include "stm32f1xx_hal.h"
 
 #include <stdbool.h>

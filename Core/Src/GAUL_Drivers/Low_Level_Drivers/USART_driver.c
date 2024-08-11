@@ -5,8 +5,8 @@
  *      Author: gagno
  */
 
+#include <GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h>
 #include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
-#include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 
 #define TIMEOUT 200  // Timeout value
 
@@ -15,8 +15,8 @@ void USART_Init(USART_TypeDef *USARTx) {
     if (USARTx == USART1) {
         RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 
-        Init_GPIO(PB, 6, OUT50, O_AF_PP); // TX
-        Init_GPIO(PB, 7, IN, I_PP); // RX
+        Init_GPIO(GPIOB, 6, OUT50, O_AF_PP); // TX
+        Init_GPIO(GPIOB, 7, IN, I_PP); // RX
 
         USART1->CR1 |= USART_CR1_UE; // Activer USART (0x0C)
         USART1->CR1 |= USART_CR1_TE; // Activer la transmission
@@ -24,8 +24,8 @@ void USART_Init(USART_TypeDef *USARTx) {
     } else if (USARTx == USART2) {
         RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
 
-        Init_GPIO(PA, 2, OUT50, O_AF_PP); // TX
-        Init_GPIO(PA, 3, IN, I_PP); // RX
+        Init_GPIO(GPIOA, 2, OUT50, O_AF_PP); // TX
+        Init_GPIO(GPIOA, 3, IN, I_PP); // RX
 
         USART2->CR1 |= USART_CR1_UE; // Activer USART (0x10)
         USART2->CR1 |= USART_CR1_TE; // Activer la transmission
@@ -33,8 +33,8 @@ void USART_Init(USART_TypeDef *USARTx) {
     } else if (USARTx == USART3) {
         RCC->APB1ENR |= RCC_APB1ENR_USART3EN;
 
-        Init_GPIO(PB, 10, OUT50, O_AF_PP); // TX
-        Init_GPIO(PB, 11, IN, I_PP); // RX
+        Init_GPIO(GPIOB, 10, OUT50, O_AF_PP); // TX
+        Init_GPIO(GPIOB, 11, IN, I_PP); // RX
 
         USART3->CR1 |= USART_CR1_UE; // Activer USART (0x14)
         USART3->CR1 |= USART_CR1_TE; // Activer la transmission

@@ -5,8 +5,8 @@
  *      Author: gagno
  */
 
+#include <GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h>
 #include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
-#include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 #include "stm32f1xx_hal.h"
 
 #include <stdint.h>

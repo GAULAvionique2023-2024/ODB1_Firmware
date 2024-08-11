@@ -16,14 +16,14 @@ uint8_t CD74HC4051_Init(ADC_HandleTypeDef *hadc) {
         return 0; // Error
     }
     // Read pin
-    Init_GPIO(PA, 0, IN, I_AN); // MUL_AN
+    Init_GPIO(GPIOA, 0, IN, I_AN); // MUL_AN
     // Batteries
-    Init_GPIO(PC, 13, OUT2, O_GP_PP); // MUL_S0
-    Init_GPIO(PC, 14, OUT2, O_GP_PP); // MUL_S1
-    Init_GPIO(PC, 15, OUT2, O_GP_PP); // MUL_S2
-    Init_GPIO(PB, 8, OUT2, O_GP_PP); // MUL_E~
+    Init_GPIO(GPIOC, 13, OUT2, O_GP_PP); // MUL_S0
+    Init_GPIO(GPIOC, 14, OUT2, O_GP_PP); // MUL_S1
+    Init_GPIO(GPIOC, 15, OUT2, O_GP_PP); // MUL_S2
+    Init_GPIO(GPIOB, 8, OUT2, O_GP_PP); // MUL_E~
     // Set MUL_E~ (inverse)
-    Write_GPIO(PB, 8, HIGH);
+    Write_GPIO(GPIOB, 8, HIGH);
     // Pyros
     Pyro_Init();
 
@@ -44,30 +44,30 @@ uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyr
 
     ADC_Start(hadc);
 
-    Write_GPIO(PB, 8, HIGH); // MUL_E~ (inverse)
-    Write_GPIO(PA, 15, LOW); // Pyro_Test (inverse)
+    Write_GPIO(GPIOB, 8, HIGH); // MUL_E~ (inverse)
+    Write_GPIO(GPIOA, 15, LOW); // Pyro_Test (inverse)
     if (channel == CHANNEL_0) {
         if (pyro_channel == PYRO_CHANNEL_0) {
-            Write_GPIO(PB, 4, HIGH); // Pyro_ON0
+            Write_GPIO(GPIOB, 4, HIGH); // Pyro_ON0
         } else if (pyro_channel == PYRO_CHANNEL_1) {
-            Write_GPIO(PB, 5, HIGH); // Pyro_ON1
+            Write_GPIO(GPIOB, 5, HIGH); // Pyro_ON1
         } else {
             return 0;
         }
     } else {
         // Set channel
-        Write_GPIO(PC, 13, (channel & 0x01) ? HIGH : LOW);
-        Write_GPIO(PC, 14, (channel & 0x02) ? HIGH : LOW);
-        Write_GPIO(PC, 15, (channel & 0x04) ? HIGH : LOW);
+        Write_GPIO(GPIOC, 13, (channel & 0x01) ? HIGH : LOW);
+        Write_GPIO(GPIOC, 14, (channel & 0x02) ? HIGH : LOW);
+        Write_GPIO(GPIOC, 15, (channel & 0x04) ? HIGH : LOW);
     }
     // Reactiver multiplexer pour lecture
-    Write_GPIO(PB, 8, LOW); // MUL_E~ (inverse)
+    Write_GPIO(GPIOB, 8, LOW); // MUL_E~ (inverse)
     // Lecture
     uint32_t adc_value = ADC_Sampling(hadc);
     // Desactiver pyros (ordre important)
-    Write_GPIO(PB, 4, LOW); // Pyro_ON0
-    Write_GPIO(PB, 5, LOW); // Pyro_ON1
-    Write_GPIO(PA, 15, HIGH); // Pyro_Test~
+    Write_GPIO(GPIOB, 4, LOW); // Pyro_ON0
+    Write_GPIO(GPIOB, 5, LOW); // Pyro_ON1
+    Write_GPIO(GPIOA, 15, HIGH); // Pyro_Test~
 
     return (uint16_t)((adc_value * vref / 4096) * 1000);
 }

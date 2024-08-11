@@ -1,67 +1,45 @@
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 
-void Init_GPIO(unsigned short port, unsigned short pin, unsigned short dir, unsigned short opt) {
-    volatile unsigned long *CR;
-    unsigned short tPIN = pin;
-    unsigned short offset = (pin < 8) ? GPIO_CRL : GPIO_CRH;
+void Init_GPIO(GPIO_TypeDef *port, unsigned short pin, unsigned short dir, unsigned short opt) {
 
+    volatile uint32_t *CR;
+    unsigned short pinIndex = pin;
+
+    // Activer l'horloge du port GPIO
+    if (port == GPIOA) {
+        RCC->APB2ENR |= RCC_APB2ENR_IOPAEN; // Activer PORT A
+    } else if (port == GPIOB) {
+        RCC->APB2ENR |= RCC_APB2ENR_IOPBEN; // Activer PORT B
+    } else if (port == GPIOC) {
+        RCC->APB2ENR |= RCC_APB2ENR_IOPCEN; // Activer PORT C
+    } else return;
+
+    // Choisir le bon registre de configuration (CRL ou CRH)
+    CR = (pin < 8) ? &(port->CRL) : &(port->CRH);
     if (pin >= 8) {
-        tPIN -= 8;
+    	pinIndex -= 8;
     }
 
-    if (port == 1) {
-        RCC_APB2ENR |= (1 << 2); // Activer PORT A
-        CR = (volatile unsigned long*)((unsigned long)GPIO_A + offset);
-    } else if (port == 2) {
-        RCC_APB2ENR |= (1 << 3); // Activer PORT B
-        CR = (volatile unsigned long*)((unsigned long)GPIO_B + offset);
-    } else if (port == 3) {
-        RCC_APB2ENR |= (1 << 4); // Activer PORT C
-        CR = (volatile unsigned long*)((unsigned long)GPIO_C + offset);
-    }
-
-    *CR &= ~(0xF << (tPIN * 4)); // Réinitialiser le pin cible
-    *CR |= (dir << (tPIN * 4)) | (opt << (tPIN * 4 + 2)); // Configurer la direction et l'option du PIN
+    // Configurer la direction et l'option du PIN
+    *CR &= ~(0xF << (pinIndex * 4)); // Réinitialiser le pin cible
+    *CR |= (dir << (pinIndex * 4)) | (opt << (pinIndex * 4 + 2)); // Configurer
 }
 
-int Read_GPIO(unsigned short port, unsigned short pin) {
-    volatile unsigned long *IDR;
-    unsigned long offset = GPIO_IDR;
+int Read_GPIO(GPIO_TypeDef *port, unsigned short pin) {
 
-    if (port == 1) {
-        IDR = (volatile unsigned long*)((unsigned long)GPIO_A + offset);
-    } else if (port == 2) {
-        IDR = (volatile unsigned long*)((unsigned long)GPIO_B + offset);
-    } else if (port == 3) {
-        IDR = (volatile unsigned long*)((unsigned long)GPIO_C + offset);
-    }
-
-    return ((*IDR & (1 << pin)) >> pin);
+	return (port->IDR & (1 << pin)) >> pin;
 }
 
-void Write_GPIO(unsigned short port, unsigned short pin, unsigned short state) {
-    volatile unsigned long *ODR;
-    unsigned long offset = GPIO_ODR;
+void Write_GPIO(GPIO_TypeDef *port, unsigned short pin, unsigned short state) {
 
-    if (port == 1) {
-        ODR = (volatile unsigned long*)((unsigned long)GPIO_A + offset);
-    } else if (port == 2) {
-        ODR = (volatile unsigned long*)((unsigned long)GPIO_B + offset);
-    } else if (port == 3) {
-        ODR = (volatile unsigned long*)((unsigned long)GPIO_C + offset);
-    }
-
-    if (state) {
-        *ODR |= (1 << pin);
-    } else {
-        *ODR &= ~(1 << pin);
-    }
+	if (state) {
+		port->ODR |= (1 << pin);
+	} else port->ODR &= ~(1 << pin);
 }
 
-void Toggle_GPIO(unsigned short port, unsigned short pin) {
-    if (Read_GPIO(port, pin)) {
-        Write_GPIO(port, pin, 0);
-    } else {
-        Write_GPIO(port, pin, 1);
-    }
+void Toggle_GPIO(GPIO_TypeDef *port, unsigned short pin) {
+
+	if (Read_GPIO(port, pin)) {
+		Write_GPIO(port, pin, 0);
+	} else Write_GPIO(port, pin, 1);
 }

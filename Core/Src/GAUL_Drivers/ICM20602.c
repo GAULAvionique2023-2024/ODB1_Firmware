@@ -5,10 +5,10 @@
  *      Author: Luka
  */
 
+#include <GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h>
 #include "math.h"
 #include "GAUL_Drivers/ICM20602.h"
 #include "GAUL_Drivers/KalmanFilter.h"
-#include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 
 extern RunTimer run_timer;

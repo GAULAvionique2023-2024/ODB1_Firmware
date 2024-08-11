@@ -1,6 +1,7 @@
 #ifndef __UTIL_H
 #define __UTIL_H
 
+#include <GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -13,7 +14,6 @@
 #include "GAUL_Drivers/WS2812_led.h"
 #include "GAUL_Drivers/BMP280.h"
 #include "GAUL_Drivers/ICM20602.h"
-#include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 #include "GAUL_Drivers/Buzzer.h"
 #include "GAUL_Drivers/RFD900.h"

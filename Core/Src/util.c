@@ -67,15 +67,15 @@ void ROCKET_InitRoutine(void) {
 	// Barometer
 	bmp_data.SPIx = SPI2;
 	bmp_data.cs_pin = 8;
-	bmp_data.cs_port = PA;
+	bmp_data.cs_port = GPIOA;
 	rocket_data.header_states.barometer = BMP280_Init(&bmp_data) == 0 ? 0x01 : 0x00;
 	printt(rocket_data.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
 	// Accelerometer
 	icm_data.SPIx = SPI2;
 	icm_data.cs_pin = 12;
-	icm_data.cs_port = PB;
+	icm_data.cs_port = GPIOB;
 	icm_data.int_pin = 10;
-	icm_data.int_port = PA;
+	icm_data.int_port = GPIOA;
 	rocket_data.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x01 : 0x00;
 	printt(rocket_data.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
 	// GPS
@@ -108,69 +108,38 @@ uint8_t ROCKET_Behavior(void) {
     BMP280_Read_Temperature_Pressure(&bmp_data);
 
     uint8_t behavior = 0x00;
-    /*
-     accZ -> 2bits (orientation / movement)
-     rollUp -> 2bits (east / west)
-     pitchUp -> 2bits (south / north)
-     altitude -> 1bit (check pyro)
-     mach lock -> 1bit (check pyro)
-     */
-
     // Orientation Z
     if (icm_data.accZ > 0) {
         behavior |= (1 << 0);	// up
-    } else {
-        behavior &= ~(1 << 0);	// down
-    }
+    } else behavior &= ~(1 << 0);	// down
     // Movement
     if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) {
         behavior |= (1 << 1);	// idle z
-    } else {
-        behavior &= ~(1 << 1);	// move z
-    }
+    } else behavior &= ~(1 << 1);	// move z
     // East
     if (icm_data.angleX >= ANGLE_MIN) {
         behavior |= (1 << 2); // Detected
-        printt("East: %0.1f\n", icm_data.angleX);
-    } else {
-        behavior &= ~(1 << 2); // Not detected
-    }
+    } else behavior &= ~(1 << 2); // Not detected
     // West
     if (icm_data.angleX <= -ANGLE_MIN) {
         behavior |= (1 << 3); // Detected
-        printt("West: %0.1f\n", icm_data.angleX);
-    } else {
-        behavior &= ~(1 << 3); // Not detected
-    }
+    } else behavior &= ~(1 << 3); // Not detected
     // South
     if (icm_data.angleY <= -ANGLE_MIN) {
         behavior |= (1 << 4);
-        printt("South: %0.1f\n", icm_data.angleY);
-    } else {
-        behavior &= ~(1 << 4);
-    }
+    } else behavior &= ~(1 << 4);
     // North
     if (icm_data.angleY >= ANGLE_MIN) {
         behavior |= (1 << 5);
-        printt("North: %0.1f\n", icm_data.angleY);
-    } else {
-        behavior &= ~(1 << 5);
-    }
+    } else behavior &= ~(1 << 5);
     // Altitude (falling)
     if (Altitude_Trend(bmp_data.altitude_filtered_m) == true) {
         behavior |= (1 << 6);
-        printt("Rocket is descending\n");
-    } else {
-        behavior &= ~(1 << 6);
-    }
+    } else behavior &= ~(1 << 6);
     // Mach Lock (vector norm acceleration)
     if (icm_data.accResult >= ACCRES_MIN) {
         behavior |= (1 << 7);
-        printt("Mach lock: Active\n");
-    } else {
-        behavior &= ~(1 << 7);
-        printt("Mach lock: Disable\n");
-    }
+    } else behavior &= ~(1 << 7);
 
     return behavior;
 }
@@ -339,11 +308,11 @@ void STM32_i32To8(int32_t data, ROCKET_Data rocket_data, uint8_t index) {
 const char* ROCKET_ModeToString(const uint8_t mode) {
 
 	switch(mode) {
-	case 0x00: return "MODE_PREFLIGHT\r\n";
-	case 0x01: return "MODE_INFLIGHT\r\n";
-	case 0x02: return "MODE_POSTFLIGHT\r\n";
-	case 0x03: return "MODE_DEBUG\r\n";
-	default: return "Unknown mode\r\n";
+		case 0x00: return "MODE_PREFLIGHT\r\n";
+		case 0x01: return "MODE_INFLIGHT\r\n";
+		case 0x02: return "MODE_POSTFLIGHT\r\n";
+		case 0x03: return "MODE_DEBUG\r\n";
+		default: return "Unknown mode\r\n";
 	}
 }
 
