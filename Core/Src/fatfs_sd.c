@@ -10,16 +10,12 @@
 #define FALSE 0
 #define bool BYTE
 
-//#include "stm32f1xx_hal.h"
+#include "stm32f1xx_hal.h"
 
 #include "diskio.h"
-#include "util.h"
-#include "main.h"
 #include "fatfs_sd.h"
-#include "stm32f1xx_ll_spi.h"
-#include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
-#include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 
+extern SPI_HandleTypeDef hspi1;
 extern volatile uint8_t Timer1, Timer2;                    /* 10ms 마다 감소하는 타이머 */
 
 static volatile DSTATUS Stat = STA_NOINIT;              /* 디스크 상태 Flag*/
@@ -27,38 +23,40 @@ static uint8_t CardType;                                /* SD 타입 0:MMC, 1:SD
 static uint8_t PowerFlag = 0;                           /* Power 상태 Flag */
 
 #define SD_CS_GPIO_Port GPIOA
-#define SD_CS_Pin 4
+#define SD_CS_Pin GPIO_PIN_4
 
 /* SPI Chip Select */
 static void SELECT(void)
 {
-	Write_GPIO(SD_CS_GPIO_Port, SD_CS_Pin, LOW);
+  HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_RESET);
 }
 
 /* SPI Chip Deselect */
 static void DESELECT(void)
 {
-	Write_GPIO(SD_CS_GPIO_Port, SD_CS_Pin, HIGH);
+  HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_SET);
 }
 
 /* SPI 데이터 전송 */
 static void SPI_TxByte(BYTE data)
 {
-	SPI_TX(SPI1, &data, 1);
+  while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
+  HAL_SPI_Transmit(&hspi1, &data, 1, SPI_TIMEOUT);
 }
 
 /* SPI 데이터 송수신 리턴형 함수 */
 static uint8_t SPI_RxByte(void)
 {
-    uint8_t dummy = 0xFF;
+  uint8_t dummy, data;
+  dummy = 0xFF;
+  data = 0;
 
-    while (!(LL_SPI_IsActiveFlag_TXE(SPI1)));
-    LL_SPI_TransmitData8(SPI1, dummy);
+  while ((HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY));
+  HAL_SPI_TransmitReceive(&hspi1, &dummy, &data, 1, SPI_TIMEOUT);
 
-    while (!(LL_SPI_IsActiveFlag_RXNE(SPI1)));
-
-    return LL_SPI_ReceiveData8(SPI1);
+  return data;
 }
+
 /* SPI 데이터 송수신 포인터형 함수 */
 static void SPI_RxBytePtr(uint8_t *buff)
 {

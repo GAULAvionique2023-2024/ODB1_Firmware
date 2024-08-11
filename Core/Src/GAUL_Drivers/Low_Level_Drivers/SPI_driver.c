@@ -74,38 +74,3 @@ int SPI_RX(SPI_TypeDef *SPIx, uint8_t *data, int size) {
     }
     return 0; // Succès
 }
-
-int SPI_TransmitReceive(SPI_TypeDef *SPIx, uint8_t *pTxData, uint8_t *pRxData, uint16_t Size, uint32_t Timeout) {
-    uint32_t startTick = HAL_GetTick();
-
-    for (uint16_t i = 0; i < Size; i++) {
-        // Attendre que le buffer TX soit vide
-        while (!(SPIx->SR & SPI_SR_TXE)) {
-            if ((HAL_GetTick() - startTick) >= Timeout) {
-                return -1; // Timeout
-            }
-        }
-
-        // Envoyer le byte
-        *(volatile uint8_t *)&SPIx->DR = pTxData[i];
-
-        // Attendre que le byte soit reçu
-        while (!(SPIx->SR & SPI_SR_RXNE)) {
-            if ((HAL_GetTick() - startTick) >= Timeout) {
-                return -1; // Timeout
-            }
-        }
-
-        // Lire le byte reçu
-        pRxData[i] = *(volatile uint8_t *)&SPIx->DR;
-    }
-
-    // Attendre que la transmission soit terminée
-    while (SPIx->SR & SPI_SR_BSY) {
-        if ((HAL_GetTick() - startTick) >= Timeout) {
-            return -1; // Timeout
-        }
-    }
-
-    return 0; // Succès
-}
