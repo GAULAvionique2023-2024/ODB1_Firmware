@@ -8,21 +8,21 @@
 #ifndef INC_GAUL_DRIVERS_CD74HC4051_H_
 #define INC_GAUL_DRIVERS_CD74HC4051_H_
 
-#include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
+#include <GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h>
 #include "stm32f1xx_hal.h"
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
-#define CHANNEL_0 0b00000000	// Pyro_AN
-#define CHANNEL_1 0b00000001	// Batt_Lipo3S2
-#define CHANNEL_2 0b00000010
-#define CHANNEL_3 0b00000011
-#define CHANNEL_4 0b00000100
-#define CHANNEL_5 0b00000101
-#define CHANNEL_6 0b00000110
-#define CHANNEL_7 0b00000111	// 5V_AN -> rfd900
+#define CHANNEL_0 0x00	// Pyro_AN
+#define CHANNEL_1 0x01	// Batt_Lipo3S2
+#define CHANNEL_2 0x02
+#define CHANNEL_3 0x03
+#define CHANNEL_4 0x04
+#define CHANNEL_5 0x05
+#define CHANNEL_6 0x06
+#define CHANNEL_7 0x07	// 5V_AN -> rfd900
 
 #define PYRO_CHANNEL_DISABLED 0x00
 #define PYRO_CHANNEL_0 0x01

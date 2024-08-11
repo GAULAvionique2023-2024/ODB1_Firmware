@@ -1,7 +1,9 @@
 #ifndef __UTIL_H
 #define __UTIL_H
 
+#include <GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -12,7 +14,6 @@
 #include "GAUL_Drivers/WS2812_led.h"
 #include "GAUL_Drivers/BMP280.h"
 #include "GAUL_Drivers/ICM20602.h"
-#include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
 #include "GAUL_Drivers/Buzzer.h"
 #include "GAUL_Drivers/RFD900.h"
@@ -28,9 +29,9 @@
 #define MODE_PREFLIGHT 0x00
 #define PREFLIGHT_DATASIZE 28
 #define MODE_INFLIGHT 0x01
-#define INFLIGHT_DATASIZE 62
+#define INFLIGHT_DATASIZE 52
 #define MODE_POSTFLIGHT 0x02
-#define POSTFLIGHT_DATASIZE 34
+#define POSTFLIGHT_DATASIZE 14
 #define MODE_DEBUG 0x03
 
 #define BMP280_BUFFERSIZE 10
@@ -38,6 +39,8 @@
 #define ACCZ_MASK (1 << 1) // Mach Lock
 #define ALTITUDE_MASK  (1 << 6) // Altitude
 #define MACHLOCK_MASK (1 << 7) // Mach Lock
+
+#define FILENAME_LOG "log.txt"
 
 void ROCKET_InitRoutine(void);
 uint8_t ROCKET_Behavior(void);
@@ -47,8 +50,8 @@ bool Altitude_Trend(const float newAltitude);
 void STM32_u16To8(uint16_t data, ROCKET_Data rocket_data, uint8_t index);
 void STM32_i32To8(int32_t data, ROCKET_Data rocket_data, uint8_t index);
 
-char* ROCKET_ModeToString(uint8_t mode);
-const char* ROCKET_BehaviorToString(uint8_t behavior);
+const char* ROCKET_ModeToString(const uint8_t mode);
+const char* ROCKET_BehaviorToString(const uint8_t behavior);
 
 void RunTimerInit(RunTimer* dev);
 void UpdateTime(RunTimer* dev);

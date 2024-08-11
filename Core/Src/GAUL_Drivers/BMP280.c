@@ -144,17 +144,18 @@ void BMP280_Read_Calib_Data(BMP280 *dev) {
 void BMP280_Write(BMP280 *dev, uint8_t address, uint8_t value) {
     address &= 0x7F;  // Write operation
 
-    Write_GPIO(PA, 8, LOW);
+    Write_GPIO(dev->cs_port, dev->cs_pin, LOW);
     if (SPI_TX(dev->SPIx, &address, 1) != 0) { /* Handle timeout error */
     }
     if (SPI_TX(dev->SPIx, &value, 1) != 0) { /* Handle timeout error */
     }
-    Write_GPIO(PA, 8, HIGH);
+    Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
 
     HAL_Delay(20);
 }
 
 void BMP280_Read(BMP280 *dev, uint8_t address, uint8_t *rxData[], uint8_t size) {
+
     address |= 0x80;  // read operation
 
     Write_GPIO(dev->cs_port, dev->cs_pin, LOW);
@@ -172,11 +173,9 @@ void BMP280_Read(BMP280 *dev, uint8_t address, uint8_t *rxData[], uint8_t size) 
 uint8_t BMP280_SwapMode(uint8_t mode) {
 
     if (BMP280_ReadRegister(BMP280_REG_CTRL_MEAS) != mode) {
-        BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, mode); // BMP280_SETTING_CTRL_MEAS_NORMAL (0x57) ou BMP280_SETTING_CTRL_MEAS_LOW (0x54)
-        printf("BMP mode set to: %i/n", BMP280_SETTING_CTRL_MEAS_NORMAL);
+        BMP280_WriteRegister(BMP280_REG_CTRL_MEAS, mode); // BMP280_SETTING_CTRL_MEAS_NORMAL (0x57) or BMP280_SETTING_CTRL_MEAS_LOW (0x54)
         return 1; // OK
     } else {
-        printf("BMP mode set error...");
         return 0; // Error (no change)
     }
 }

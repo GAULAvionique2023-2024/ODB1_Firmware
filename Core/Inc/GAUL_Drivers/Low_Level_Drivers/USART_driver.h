@@ -16,6 +16,4 @@ void USART_Init(USART_TypeDef *USARTx);
 int USART_TX(USART_TypeDef *USARTx, uint8_t *data, int size);
 int USART_RX(USART_TypeDef *USARTx, uint8_t *data, int size);
 
-void USART_DMA_IRQHandler(unsigned short usart);
-
 #endif /* INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_USART_DRIVER_H_ */
