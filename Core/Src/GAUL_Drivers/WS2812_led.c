@@ -22,7 +22,6 @@
 #include <GAUL_Drivers/WS2812_led.h>
 #include <string.h>
 
-TIM_HandleTypeDef htimer2;
 DMA_HandleTypeDef hdma_tim2_update;
 DMA_HandleTypeDef hdma_tim2_pwm_ch1;
 DMA_HandleTypeDef hdma_tim2_pwm_ch2;
@@ -35,90 +34,77 @@ static uint16_t ws2812_gpio_set_bits = 0;
 static uint16_t dma_buffer[DMA_BUFFER_SIZE];
 
 static void ws2812_timer2_init(void) {
-    TIM_ClockConfigTypeDef sClockSourceConfig = { 0 };
-    TIM_MasterConfigTypeDef sMasterConfig = { 0 };
-    TIM_OC_InitTypeDef sConfigOC = { 0 };
+    // Activer l'horloge pour TIM2
+    RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
 
-    htimer2.Instance = TIM2;
-    htimer2.Init.Prescaler = 0;
-    htimer2.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htimer2.Init.Period = WS2812_TIMER_PERIOD;
+    // Configurer le Prescaler et la Période
+    TIM2->PSC = 0;                       // Pas de prescaler
+    TIM2->ARR = WS2812_TIMER_PERIOD;     // Période
 
-    htimer2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htimer2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    HAL_TIM_Base_Init(&htimer2);
+    // Configurer le Mode de Compteur
+    TIM2->CR1 &= ~TIM_CR1_DIR;    // Compteur ascendant
+    TIM2->CR1 &= ~TIM_CR1_CMS;    // Mode de compteur aligné sur le bord
+    TIM2->CR1 |= TIM_CR1_ARPE;    // Auto-reload preload enable
 
-    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-    HAL_TIM_ConfigClockSource(&htimer2, &sClockSourceConfig);
-    HAL_TIM_PWM_Init(&htimer2);
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    HAL_TIMEx_MasterConfigSynchronization(&htimer2, &sMasterConfig);
+    // Configurer le Mode PWM pour le canal 1
+    TIM2->CCMR1 &= ~TIM_CCMR1_OC1M;        // Clear output compare mode bits for channel 1
+    TIM2->CCMR1 |= (6 << TIM_CCMR1_OC1M_Pos); // PWM mode 1 (OC1M bits = 110)
+    TIM2->CCMR1 &= ~TIM_CCMR1_OC1PE;       // Disable preload (OC1PE bit for channel 1)
+    TIM2->CCER |= TIM_CCER_CC1E;           // Enable output for channel 1
+    TIM2->CCR1 = WS2812_TIMER_PWM_CH1_TIME; // Pulse width for channel 1
 
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
+    // Configurer le Mode PWM pour le canal 2
+    TIM2->CCMR1 &= ~TIM_CCMR1_OC2M;        // Clear output compare mode bits for channel 2
+    TIM2->CCMR1 |= (6 << TIM_CCMR1_OC2M_Pos); // PWM mode 1 (OC2M bits = 110)
+    TIM2->CCMR1 &= ~TIM_CCMR1_OC2PE;       // Disable preload (OC2PE bit for channel 2)
+    TIM2->CCER |= TIM_CCER_CC2E;           // Enable output for channel 2
+    TIM2->CCR2 = WS2812_TIMER_PWM_CH2_TIME; // Pulse width for channel 2
 
-    sConfigOC.Pulse = WS2812_TIMER_PWM_CH1_TIME;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    HAL_TIM_PWM_ConfigChannel(&htimer2, &sConfigOC, TIM_CHANNEL_1);
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
+    // Configurer la Source d'Horloge (interne)
+    TIM2->SMCR &= ~TIM_SMCR_SMS;           // Disable slave mode
+    TIM2->CR2 &= ~TIM_CR2_MMS;             // Master mode selection - reset
 
-    sConfigOC.Pulse = WS2812_TIMER_PWM_CH2_TIME;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    HAL_TIM_PWM_ConfigChannel(&htimer2, &sConfigOC, TIM_CHANNEL_2);
+    // Démarrer le Timer
+    TIM2->CR1 |= TIM_CR1_CEN;  // Activer le timer TIM2
 }
 
 static void ws2812_dma_start(GPIO_TypeDef *gpio_bank) {
-    /* Peripheral clock enable */
-    __HAL_RCC_TIM2_CLK_ENABLE();
+    // Activer l'horloge du DMA1
+    RCC->AHBENR |= RCC_AHBENR_DMA1EN;
 
-    /* TIM2 DMA Init */
-    /* TIM2_UP Init */
-    hdma_tim2_update.Instance = DMA1_Channel2;
-    hdma_tim2_update.Init.Direction = DMA_MEMORY_TO_PERIPH;
-    hdma_tim2_update.Init.PeriphInc = DMA_PINC_DISABLE;
-    hdma_tim2_update.Init.MemInc = DMA_MINC_DISABLE;
-    hdma_tim2_update.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-    hdma_tim2_update.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
-    hdma_tim2_update.Init.Mode = DMA_CIRCULAR;
-    hdma_tim2_update.Init.Priority = DMA_PRIORITY_VERY_HIGH;
+    // Configuration de DMA1_Channel2 pour TIM2 Update (TIM2_UP)
+    DMA1_Channel2->CCR &= ~DMA_CCR_EN; // Désactiver le canal avant configuration
+    DMA1_Channel2->CCR = DMA_CCR_DIR | DMA_CCR_MINC | DMA_CCR_PSIZE_1 | DMA_CCR_MSIZE_0 | DMA_CCR_CIRC | DMA_CCR_PL_1;
+    DMA1_Channel2->CNDTR = DMA_BUFFER_SIZE;
+    DMA1_Channel2->CPAR = (uint32_t)&gpio_bank->BSRR;
+    DMA1_Channel2->CMAR = (uint32_t)&ws2812_gpio_set_bits;
 
-    /* TIM2_CH1 Init */
-    hdma_tim2_pwm_ch1.Instance = DMA1_Channel5;
-    hdma_tim2_pwm_ch1.Init.Direction = DMA_MEMORY_TO_PERIPH;
-    hdma_tim2_pwm_ch1.Init.PeriphInc = DMA_PINC_DISABLE;
-    hdma_tim2_pwm_ch1.Init.MemInc = DMA_MINC_ENABLE;
-    hdma_tim2_pwm_ch1.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-    hdma_tim2_pwm_ch1.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
-    hdma_tim2_pwm_ch1.Init.Mode = DMA_CIRCULAR;
-    hdma_tim2_pwm_ch1.Init.Priority = DMA_PRIORITY_VERY_HIGH;
+    // Configuration de DMA1_Channel5 pour TIM2_CH1 PWM
+    DMA1_Channel5->CCR &= ~DMA_CCR_EN;
+    DMA1_Channel5->CCR = DMA_CCR_DIR | DMA_CCR_MINC | DMA_CCR_PSIZE_1 | DMA_CCR_MSIZE_0 | DMA_CCR_CIRC | DMA_CCR_PL_1;
+    DMA1_Channel5->CNDTR = DMA_BUFFER_SIZE;
+    DMA1_Channel5->CPAR = (uint32_t)&gpio_bank->BRR;
+    DMA1_Channel5->CMAR = (uint32_t)dma_buffer;
 
-    /* TIM2_CH2_CH4 Init */
-    hdma_tim2_pwm_ch2.Instance = DMA1_Channel7;
-    hdma_tim2_pwm_ch2.Init.Direction = DMA_MEMORY_TO_PERIPH;
-    hdma_tim2_pwm_ch2.Init.PeriphInc = DMA_PINC_DISABLE;
-    hdma_tim2_pwm_ch2.Init.MemInc = DMA_MINC_DISABLE;
-    hdma_tim2_pwm_ch2.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-    hdma_tim2_pwm_ch2.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
-    hdma_tim2_pwm_ch2.Init.Mode = DMA_CIRCULAR;
-    hdma_tim2_pwm_ch2.Init.Priority = DMA_PRIORITY_VERY_HIGH;
+    // Configuration de DMA1_Channel7 pour TIM2_CH2 PWM
+    DMA1_Channel7->CCR &= ~DMA_CCR_EN;
+    DMA1_Channel7->CCR = DMA_CCR_DIR | DMA_CCR_MINC | DMA_CCR_PSIZE_1 | DMA_CCR_MSIZE_0 | DMA_CCR_CIRC | DMA_CCR_PL_1;
+    DMA1_Channel7->CNDTR = DMA_BUFFER_SIZE;
+    DMA1_Channel7->CPAR = (uint32_t)&gpio_bank->BRR;
+    DMA1_Channel7->CMAR = (uint32_t)&ws2812_gpio_set_bits;
 
-    /* I don't know why, but making all DMAs run as long as the buffer size makes things more
-     * efficient. Is it the extra full/half-done flags? Only the 2nd DMA needs to run for a given
-     * size ...
-     */
-    HAL_DMA_Init(&hdma_tim2_update);
-    HAL_DMA_Init(&hdma_tim2_pwm_ch1);
-    HAL_DMA_Init(&hdma_tim2_pwm_ch2);
+    // Démarrer les DMA
+    DMA1_Channel2->CCR |= DMA_CCR_EN;
+    DMA1_Channel5->CCR |= DMA_CCR_EN;
+    DMA1_Channel7->CCR |= DMA_CCR_EN;
 
-    HAL_DMA_Start(&hdma_tim2_update, (uint32_t)&ws2812_gpio_set_bits, (uint32_t)&gpio_bank->BSRR, DMA_BUFFER_SIZE);
-    HAL_DMA_Start(&hdma_tim2_pwm_ch1, (uint32_t)dma_buffer, (uint32_t)&gpio_bank->BRR, DMA_BUFFER_SIZE);
-    HAL_DMA_Start(&hdma_tim2_pwm_ch2, (uint32_t)&ws2812_gpio_set_bits, (uint32_t)&gpio_bank->BRR, DMA_BUFFER_SIZE);
+    // Activer les DMA dans le TIM2
+    TIM2->DIER |= TIM_DIER_UDE;   // DMA request enabled for update event
+    TIM2->DIER |= TIM_DIER_CC1DE; // DMA request enabled for capture/compare 1 event
+    TIM2->DIER |= TIM_DIER_CC2DE; // DMA request enabled for capture/compare 2 event
 
-    __HAL_TIM_ENABLE_DMA(&htimer2, TIM_DMA_UPDATE);
-    __HAL_TIM_ENABLE_DMA(&htimer2, TIM_DMA_CC1);
-    __HAL_TIM_ENABLE_DMA(&htimer2, TIM_DMA_CC2);
+    // Démarrer le timer TIM2
+    TIM2->CR1 |= TIM_CR1_CEN;
 }
 
 /*
@@ -198,14 +184,10 @@ void WS2812_Refresh(const struct led_channel_info *channels) {
     int pos = 0;
     int max_length = 0;
 
-    /* This is what gets DMAed to the GPIO BSR / BSRR at the start/end of each bit cycle.
-     * We will dynamically build this shortly
-     */
+    /* Initialiser les bits GPIO à envoyer via le DMA */
     ws2812_gpio_set_bits = 0;
 
-    /* Pre-fill the DMA buffer, because we won't start filling things on-the-fly until the first
-     * half has already been transferred.
-     */
+    /* Pré-remplir le buffer DMA */
     for (i = 0; i < DMA_BUFFER_SIZE; i += 8) {
         fill_dma_buffer(dma_buffer + i, pos, channels);
         pos++;
@@ -214,48 +196,41 @@ void WS2812_Refresh(const struct led_channel_info *channels) {
     max_length = 72 + (DMA_BUFFER_SIZE / 8);
     ws2812_gpio_set_bits |= (1 << WS2812_CH0_GPIO);
 
-    /* We're going to use our standard timer to generate the RESET pulse, so for now just run the
-     * timer without any DMA.
-     */
-    __HAL_TIM_DISABLE_DMA(&htimer2, TIM_DMA_UPDATE);
-    __HAL_TIM_DISABLE_DMA(&htimer2, TIM_DMA_CC1);
-    __HAL_TIM_DISABLE_DMA(&htimer2, TIM_DMA_CC2);
+    /* Désactiver les DMA du timer TIM2 */
+    TIM2->DIER &= ~(TIM_DIER_UDE | TIM_DIER_CC1DE | TIM_DIER_CC2DE);
 
-    __HAL_TIM_DISABLE(&htimer2);
+    /* Désactiver le timer TIM2 */
+    TIM2->CR1 &= ~TIM_CR1_CEN;
 
-    /* Set all LED GPIOs to 0, to begin reset pulse */
+    /* Mettre les GPIO à 0 pour générer l'impulsion de réinitialisation */
     GPIOB->BRR = ws2812_gpio_set_bits;
 
-    __HAL_TIM_ENABLE(&htimer2);
+    /* Activer le timer TIM2 */
+    TIM2->CR1 |= TIM_CR1_CEN;
 
-    /* We know the timer overflows every 1.25uS (our bit-time interval). So rather than
-     * reprogram the timer for 280uS (reset pulse duration) and back, we're gonna be lazy
-     * and just count out ~225 update intervals
-     */
+    /* Attendre que le timer génère l'impulsion de réinitialisation */
     for (i = 0; i < 225; i++) {
-        while (!__HAL_TIM_GET_FLAG(&htimer2, TIM_FLAG_UPDATE))
-            ;
-        __HAL_TIM_CLEAR_FLAG(&htimer2, TIM_FLAG_UPDATE);
+        while (!(TIM2->SR & TIM_SR_UIF)) ; // Attendre la mise à jour
+        TIM2->SR &= ~TIM_SR_UIF; // Effacer le flag d'update
     }
 
-    /* Now that we're done with the RESET pulse, turn off the timer and prepare the DMA stuff */
-    __HAL_TIM_DISABLE(&htimer2);
+    /* Désactiver le timer TIM2 */
+    TIM2->CR1 &= ~TIM_CR1_CEN;
+
+    /* Démarrer le DMA pour la transmission des données */
     ws2812_dma_start(GPIOB);
 
-    /* We set the timer to juuust before the overflow condition, so that the UPDATE event happens
-     * before the CH1 / CH2 match events. We want this so that the UPDATE event gives us a clean
-     * starting "high" level for the first edge of the first bit.
-     */
-    __HAL_TIM_SET_COUNTER(&htimer2, __HAL_TIM_GET_AUTORELOAD(&htimer2) - 10);
+    /* Positionner le compteur du timer juste avant le débordement */
+    TIM2->CNT = TIM2->ARR - 10;
 
-    /* Clear the DMA transfer status flags for the DMA we're using */
+    /* Effacer les flags d'événements du DMA */
     DMA1->IFCR = (DMA_IFCR_CTCIF5 | DMA_IFCR_CHTIF5);
 
-    /* Enable the timer.... and so it begins */
-    __HAL_TIM_ENABLE(&htimer2);
+    /* Réactiver le timer TIM2 */
+    TIM2->CR1 |= TIM_CR1_CEN;
 
     while (1) {
-        /* Wait for DMA full-transfer or half-transfer event. This tells us when to fill the next buffer */
+        /* Attendre un événement de transfert complet ou de demi-transfert du DMA */
         if (!(DMA1->ISR & (DMA_ISR_TCIF5 | DMA_ISR_HTIF5))) {
             cycles++;
             continue;
@@ -263,16 +238,14 @@ void WS2812_Refresh(const struct led_channel_info *channels) {
 
         uint16_t *dest = dma_buffer;
 
-        /* Figure out if we're filling the first half of the DMA buffer, or the second half */
+        /* Vérifier si nous remplissons la première ou la seconde moitié du buffer DMA */
         if (DMA1->ISR & DMA_ISR_TCIF5)
             dest += DMA_BUFFER_FILL_SIZE;
 
-        /* Clear DMA event flags */
+        /* Effacer les flags d'événements DMA */
         DMA1->IFCR = (DMA_IFCR_CTCIF5 | DMA_IFCR_CHTIF5);
 
-        /* Unpack one new byte from each channel, into eight words in our DMA buffer
-         * Each 16-bit word in the DMA buffer contains to one bit of the output byte (from each channel)
-         */
+        /* Décompresser un nouveau byte de chaque canal dans le buffer DMA */
         for (i = 0; i < DMA_BUFFER_FILL_SIZE; i += 8) {
             fill_dma_buffer(dest + i, pos, channels);
             pos++;
@@ -282,14 +255,16 @@ void WS2812_Refresh(const struct led_channel_info *channels) {
             break;
     }
 
-    __HAL_TIM_DISABLE(&htimer2);
+    /* Désactiver le timer TIM2 après la fin de la transmission */
+    TIM2->CR1 &= ~TIM_CR1_CEN;
 
-    /* Set all LED GPIOs back to 0 */
+    /* Remettre les GPIOs à 0 */
     GPIOB->BRR = ws2812_gpio_set_bits;
 
-    __HAL_DMA_DISABLE(&hdma_tim2_update);
-    __HAL_DMA_DISABLE(&hdma_tim2_pwm_ch1);
-    __HAL_DMA_DISABLE(&hdma_tim2_pwm_ch2);
+    /* Désactiver les canaux DMA */
+    DMA1_Channel2->CCR &= ~DMA_CCR_EN;
+    DMA1_Channel5->CCR &= ~DMA_CCR_EN;
+    DMA1_Channel7->CCR &= ~DMA_CCR_EN;
 }
 
 void WS2812_Init() {
