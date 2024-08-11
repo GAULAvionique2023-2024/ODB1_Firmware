@@ -2,6 +2,8 @@
 #define INC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_GPIO_DRIVER_H_
 
 #include "stm32f1xx_hal.h"
+#include "stm32f1xx_ll_gpio.h"
+#include "stm32f1xx_ll_exti.h"
 
 #define RCC_APB2ENR     (*((volatile unsigned long *) 0x40021018))
 
@@ -26,7 +28,9 @@
 #define LOW  0
 #define HIGH 1
 
+// TODO: make interrupt portable
 void Init_GPIO(GPIO_TypeDef *port, unsigned short pin, unsigned short dir, unsigned short opt);
+void Init_Interrupt_GPIO(GPIO_TypeDef *port, unsigned short pin);
 int Read_GPIO(GPIO_TypeDef *port, unsigned short pin);
 void Write_GPIO(GPIO_TypeDef *port, unsigned short pin, unsigned short state);
 void Toggle_GPIO(GPIO_TypeDef *port, unsigned short pin);

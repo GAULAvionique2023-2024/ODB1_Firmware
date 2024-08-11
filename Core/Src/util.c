@@ -36,6 +36,8 @@ static char runtimer_buffer[128] = {"0"};
 // Parameters
 static uint8_t header_states = 0x00;
 
+// Variable
+extern bool push_button;
 
 void ROCKET_InitRoutine(void) {
 
@@ -48,6 +50,8 @@ void ROCKET_InitRoutine(void) {
 	USART_Init(USART2);
 	USART_Init(USART3);
 	printt("|----------Components initialization----------|\r\n");
+	// Button
+	Init_Interrupt_GPIO(GPIOA, 9);
 	ROCKET_SetMode(MODE_PREFLIGHT);
 	printt("(+) Mode flight: %i succeeded...\r\n", rocket_data.header_states.mode);
 	// LED RGB
@@ -150,6 +154,13 @@ uint8_t ROCKET_ModeRoutine(void) {
 	rocket_data.size = 0;
 	memset(rocket_data.crc16, 0, sizeof(rocket_data.crc16));
 	rocket_data.data = rocket_data_buffer;
+
+	// Debug mode
+	if(push_button == true) {
+		printf("Debug mode enabled...\r\n");
+	} else {
+		printf("Debug mode disabled...\r\n");
+	}
 
     switch (rocket_data.header_states.mode) {
     case MODE_PREFLIGHT:

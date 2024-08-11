@@ -62,6 +62,7 @@ uint8_t HM10BLE_buffer[20];  // ble
 char* filename_log = "log.txt";
 uint8_t rocket_behavior = 0x00;
 bool pyro_armed = false;
+bool push_button = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -350,6 +351,18 @@ void Error_Handler(void)
     while (1) {
     }
   /* USER CODE END Error_Handler_Debug */
+}
+
+void EXTI9_5_IRQHandler(void)
+{
+    // Vérifier si l'interruption provient de la ligne 9
+    if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_9))
+    {
+    	printf("button\r\n");
+
+        // Effacer le drapeau d'interruption
+        LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_9);
+    }
 }
 
 #ifdef  USE_FULL_ASSERT

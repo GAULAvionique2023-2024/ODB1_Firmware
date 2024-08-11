@@ -24,9 +24,24 @@ void Init_GPIO(GPIO_TypeDef *port, unsigned short pin, unsigned short dir, unsig
     volatile uint32_t *CR = Select_CR(port, pin);
     unsigned short pinIndex = (pin < 8) ? pin : pin - 8;
 
-    // Configurer la direction et l'option du PIN
-   *CR &= ~(0xF << (pinIndex * 4)); // Réinitialiser le pin cible
-   *CR |= (dir << (pinIndex * 4)) | (opt << (pinIndex * 4 + 2));
+	// Configurer la direction et l'option du PIN
+	*CR &= ~(0xF << (pinIndex * 4)); // Réinitialiser le pin cible
+	*CR |= (dir << (pinIndex * 4)) | (opt << (pinIndex * 4 + 2));
+}
+
+// Only PA9
+void Init_Interrupt_GPIO(GPIO_TypeDef *port, unsigned short pin) {
+
+	Init_GPIO(port, pin, IN, I_PP);
+
+	// Configurer l'interruption externe (EXTI) sur PA9
+	LL_GPIO_AF_SetEXTISource(LL_GPIO_AF_EXTI_PORTA, LL_GPIO_AF_EXTI_LINE9);
+	LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_9);
+	LL_EXTI_EnableRisingTrig_0_31(LL_EXTI_LINE_9);
+
+	// Configurer la priorité de l'interruption et l'activer
+	NVIC_SetPriority(EXTI9_5_IRQn, 0);
+	NVIC_EnableIRQ(EXTI9_5_IRQn);
 }
 
 int Read_GPIO(GPIO_TypeDef *port, unsigned short pin) {
