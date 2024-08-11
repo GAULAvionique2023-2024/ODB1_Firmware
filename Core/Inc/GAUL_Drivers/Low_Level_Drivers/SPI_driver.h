@@ -14,5 +14,6 @@
 void SPI_Init(SPI_TypeDef *SPIx);
 int SPI_TX(SPI_TypeDef *SPIx, uint8_t *data, int size);
 int SPI_RX(SPI_TypeDef *SPIx, uint8_t *data, int size);
+int SPI_TransmitReceive(SPI_TypeDef *SPIx, uint8_t *pTxData, uint8_t *pRxData, uint16_t Size, uint32_t Timeout);
 
 #endif /* SRC_GAUL_DRIVERS_LOW_LEVEL_DRIVERS_SPI_DRIVER_H_ */
