@@ -337,6 +337,18 @@ void TIM3_Init(void) {
     // Démarrer le Timer
     TIM3->CR1 |= TIM_CR1_CEN;
 }
+
+void EXTI9_5_IRQHandler(void)
+{
+    // Vérifier si l'interruption provient de la ligne 9
+    if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_9))
+    {
+        printf("button\r\n");
+
+        // Effacer le drapeau d'interruption
+        LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_9);
+    }
+}
 /* USER CODE END 4 */
 
 /**
@@ -351,18 +363,6 @@ void Error_Handler(void)
     while (1) {
     }
   /* USER CODE END Error_Handler_Debug */
-}
-
-void EXTI9_5_IRQHandler(void)
-{
-    // Vérifier si l'interruption provient de la ligne 9
-    if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_9))
-    {
-    	printf("button\r\n");
-
-        // Effacer le drapeau d'interruption
-        LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_9);
-    }
 }
 
 #ifdef  USE_FULL_ASSERT
