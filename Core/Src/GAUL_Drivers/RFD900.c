@@ -19,15 +19,16 @@ uint8_t RFD900_Init(RFD900 *devRFD) {
 
 uint8_t RFD900_Send(RFD900 *devRFD) {
 
-    uint8_t delim = 0x24;
-    uint8_t crc_delim = 0x2a;
+    uint8_t delim = '$';
+    uint8_t crc_delim = '*';
+    uint8_t new_line = '\n';
 
     USART_TX(devRFD->USARTx, &delim, 1); // Start
     USART_TX(devRFD->USARTx, &devRFD->header, 1);
     USART_TX(devRFD->USARTx, devRFD->data, devRFD->size);
     USART_TX(devRFD->USARTx, &crc_delim, 1); // CRC
     USART_TX(devRFD->USARTx, devRFD->crc, 2);
-    USART_TX(devRFD->USARTx, &delim, 1); // End
+    USART_TX(devRFD->USARTx, &new_line, 1); // End
     return 1; // OK
 }
 
