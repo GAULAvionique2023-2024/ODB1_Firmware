@@ -186,14 +186,16 @@ uint8_t ROCKET_ModeRoutine(void) {
         //BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
         rocket_data.size = INFLIGHT_DATASIZE;
 
+        L76LM33_Read(&L76_data);
+
         // Altitude
         STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa, 1013.25), rocket_data, 0);
         // Temperature
         STM32_i32To8((int32_t)bmp_data.temp_C, rocket_data, 4);
         // GPS
         STM32_i32To8(L76_data.gps_data.time_raw, rocket_data, 8);
-        STM32_i32To8(L76_data.gps_data.latitude, rocket_data, 12);
-        STM32_i32To8(L76_data.gps_data.longitude, rocket_data, 16);
+        STM32_i32To8((int32_t)L76_data.gps_data.latitude, rocket_data, 12);
+        STM32_i32To8((int32_t)L76_data.gps_data.longitude, rocket_data, 16);
         // Gyro
         STM32_i32To8((int32_t)icm_data.gyroX, rocket_data, 20);
         STM32_i32To8((int32_t)icm_data.gyroY, rocket_data, 24);
