@@ -28,19 +28,21 @@ uint8_t HM10BLE_Init(HM10BLE *devHM10) {
 
 	devHM10->status = false;
 
-    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+RENEW\r\n"); // Reset all default parameters
-    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+RESET\r\n"); // Restart to apply changes
+    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+RENEW\n"); // Reset all default parameters
+    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+RESET\n"); // Restart to apply changes
     HAL_Delay(500);
-    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT\r\n"); // Check activity
+    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT\n"); // Check activity
     // Configuration
-    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+IMME1\r\n"); // Start
-    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+NOTI1\r\n"); // Activate notification's module
-    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+NAMEMerope\r\n"); // Name device
-    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+ROLE0\r\n"); // Set device in slave mode
-    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+ADTY0\r\n"); // Set default advertising interval
-    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+RESET\r\n"); // Restart to apply changes
+    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+IMME1\n"); // Start Command mode
+    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+NOTI1\n"); // Activate notification's module
+    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+NAMEMaia\n"); // Name device
+    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+UUID\n"); // Name device
+    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+ROLE0\n"); // Set device in slave mode
+    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+ADTY0\n"); // Set default advertising interval
+    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+FLAG0\n"); // Set default advertising interval
+    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT+RESET\n"); // Restart to apply changes
     HAL_Delay(500);
-    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT\r\n"); // Check activity
+    HM10BLE_SendParameters(devHM10, (uint8_t*)"AT\n"); // Check activity
 
     return 1; // OK
 }
@@ -50,10 +52,10 @@ uint8_t HM10BLE_ConnectionStatus(HM10BLE *devHM10) {
     uint8_t response[128];
 
     HM10BLE_Read(devHM10, response, sizeof(response));
-    if(strstr((char*)response, "OK+CONN")) {
+    if(strstr((char*)response, "OK+CONN\n")) {
     	devHM10->status = true;
         return 1;
-    } else if(strstr((char*)response, "OK+LOST")) {
+    } else if(strstr((char*)response, "OK+LOST\n")) {
     	devHM10->status = false;
         return 0;
     } else return 0;
@@ -117,7 +119,7 @@ bool HM10BLE_SendParameters(HM10BLE *devHM10, uint8_t *parameter) {
     HM10BLE_Send(devHM10, parameter, strlen((char*)parameter));
     HAL_Delay(100); // Delay
     HM10BLE_Read(devHM10, response, sizeof(response));
-    return (strcmp((char*)response, "OK\r\n") == 0) ? true : false;
+    return (strcmp((char*)response, "OK\n") == 0) ? true : false;
 }
 
 uint8_t HM10BLE_CommandTask(HM10BLE *devHM10) {

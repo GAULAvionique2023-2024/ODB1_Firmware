@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+
 typedef struct {
 	USART_TypeDef *USARTx;
 	bool status;

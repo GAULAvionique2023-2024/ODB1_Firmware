@@ -120,6 +120,10 @@ int main(void)
 	rocket_behavior = ROCKET_Behavior();
 	ROCKET_ModeRoutine();
 
+	if(HM10BLE_ConnectionStatus(&ble_data)) {
+		printf("Connected\r\n");
+	} else printf("Not connected\r\n");
+
     if((rocket_behavior & ACCZ_MASK) != 0) {
     	if(bmp_data.altitude_filtered_m >= ALTITUDE_START) {
     		ROCKET_SetMode(MODE_INFLIGHT);

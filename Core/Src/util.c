@@ -157,9 +157,9 @@ uint8_t ROCKET_ModeRoutine(void) {
 
 	// Debug mode
 	if(push_button == true) {
-		printf("Debug mode enabled...\r\n");
+		//printf("Debug mode enabled...\r\n");
 	} else {
-		printf("Debug mode disabled...\r\n");
+		//printf("Debug mode disabled...\r\n");
 	}
 
     switch (rocket_data.header_states.mode) {
@@ -211,6 +211,8 @@ uint8_t ROCKET_ModeRoutine(void) {
     case MODE_POSTFLIGHT:
         //BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_LOW);
         rocket_data.size = POSTFLIGHT_DATASIZE;
+
+        L76LM33_Read(&L76_data);
 
         // Altitude
         STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa, 1013.25), rocket_data, 0);
