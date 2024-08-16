@@ -21,8 +21,8 @@ typedef struct {
     uint8_t accelerometer;
     uint8_t barometer;
     uint8_t gps;
-    //uint8_t rfd;
-    uint8_t fix_gps;
+    uint8_t gps_fix;
+    uint8_t rfd;
     uint8_t sd;
 } ROCKET_states;
 

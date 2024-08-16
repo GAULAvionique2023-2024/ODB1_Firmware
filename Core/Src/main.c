@@ -44,8 +44,8 @@ ADC_HandleTypeDef hadc1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
-struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
+//struct pixel channel_framebuffers[WS2812_NUM_CHANNELS][FRAMEBUFFER_SIZE];
+//struct led_channel_info led_channels[WS2812_NUM_CHANNELS];
 
 // Constructor
 RunTimer run_timer;
@@ -56,7 +56,7 @@ RFD900 rfd_data;
 HM10BLE ble_data;
 ROCKET_Data rocket_data;
 // Buffers
-uint8_t HM10BLE_buffer[20];  // ble
+//uint8_t HM10BLE_buffer[20];  // ble
 
 // Variables
 char* filename_log = "log.txt";
@@ -113,6 +113,7 @@ int main(void)
   TIM3_Init();
   ROCKET_InitRoutine();
 
+  ROCKET_SetMode(MODE_INFLIGHT); // TMP for LC
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -410,17 +411,17 @@ void TIM3_Init(void) {
     TIM3->CR1 |= TIM_CR1_CEN;
 }
 
-void EXTI9_5_IRQHandler(void)
-{
-    // Vérifier si l'interruption provient de la ligne 9
-    if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_9))
-    {
-        printf("button\r\n");
-
-        // Effacer le drapeau d'interruption
-        LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_9);
-    }
-}
+//void EXTI9_5_IRQHandler(void)
+//{
+//    // Vérifier si l'interruption provient de la ligne 9
+//    if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_9))
+//    {
+//        printf("button\r\n");
+//
+//        // Effacer le drapeau d'interruption
+//        LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_9);
+//    }
+//}
 /* USER CODE END 4 */
 
 /**

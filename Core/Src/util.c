@@ -29,7 +29,7 @@ static char u_char_buffer[128] = {"0"};
 static uint8_t header_states = 0x00;
 
 // Variable
-extern bool push_button;
+//extern bool push_button;
 
 void ROCKET_InitRoutine(void) {
 
@@ -38,17 +38,17 @@ void ROCKET_InitRoutine(void) {
 	//Buzz(TIM3, LL_TIM_CHANNEL_CH4, START);
 	SPI_Init(SPI1);
 	SPI_Init(SPI2);
-	USART_Init(USART1, 9600, 72);
-	USART_Init(USART2, 9600, 72);
-	USART_Init(USART3, 9600, 72);
+//	USART_Init(USART1, 9600, 72);
+//	USART_Init(USART2, 9600, 72);
+//	USART_Init(USART3, 9600, 72);
 	printt("|----------Components initialization----------|\r\n");
 	// Button
-	Init_Interrupt_GPIO(GPIOA, 9);
+//	Init_Interrupt_GPIO(GPIOA, 9);
 	ROCKET_SetMode(MODE_PREFLIGHT);
 	printt("(+) Mode flight: %i succeeded...\r\n", rocket_data.header_states.mode);
 	// LED RGB
-	WS2812_Init();
-	printt("(+) WS2812 succeeded...\r\n");
+//	WS2812_Init();
+//	printt("(+) WS2812 succeeded...\r\n");
 	// Multiplexer
 	if (CD74HC4051_Init(&hadc1) != 1) {
 	  printt("(-) CD74HC4051 failed...\r\n");
@@ -75,19 +75,17 @@ void ROCKET_InitRoutine(void) {
 	printt(rocket_data.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
 	// GPS
 	rocket_data.header_states.gps = L76LM33_Init(&L76_data, &huart2) == L76LM33_OK ? 0x01 : 0x00;
-	rocket_data.header_states.gps = L76_data.gps_data.fix == 1 ? 0x01 : 0x00;
 	printt(rocket_data.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
 	// Radio
 	rfd_data.USARTx = USART1;
-	//rocket_data.header_states.rfd = RFD900_Init(&rfd_data) == 1 ? 0x01 : 0x00;
-	RFD900_Init(&rfd_data);
-	//printt(rocket_data.header_states.rfd ? "(+) RFD900 succeeded...\r\n" : "(-) RFD900 failed...\r\n");
+	rocket_data.header_states.rfd = RFD900_Init(&rfd_data) == 1 ? 0x01 : 0x00;
+	printt(rocket_data.header_states.rfd ? "(+) RFD900 succeeded...\r\n" : "(-) RFD900 failed...\r\n");
 	// SD Card
 	rocket_data.header_states.sd = MEM2067_Mount(FILENAME_LOG) == 1 ? 0x01 : 0x00;
 	printt(rocket_data.header_states.sd ? "(+) SD card succeeded...\r\n" : "(-) SD card failed...\r\n");
 	// Bluetooth
-	ble_data.USARTx = USART3;
-	HM10BLE_Init(&ble_data);
+//	ble_data.USARTx = USART3;
+//	HM10BLE_Init(&ble_data);
 
 	// Write LOG data
 	ParseTimerBuffer(&run_timer, u_char_buffer);
@@ -105,12 +103,13 @@ uint8_t ROCKET_Behavior(void) {
     if (icm_data.accZ > 0) {
         behavior |= (1 << 0);	// up
     } else behavior &= ~(1 << 0);	// down
-    // Movement
+    // Movement not in mach lock
     if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) {
-    	if(Altitude_Trend(bmp_data.altitude_filtered_m) == ASCENDING) {
+    	AltitudeTrend trend = Altitude_Trend(bmp_data.altitude_filtered_m);
+    	if(trend == ASCENDING) {
     		behavior |= (1 << 1);
     		behavior |= (0 << 2);
-    	} else if(Altitude_Trend(bmp_data.altitude_filtered_m) == DESCENDING) {
+    	} else if(trend == DESCENDING) {
     		behavior |= (0 << 1);
 			behavior |= (1 << 2);
     	} else {
@@ -169,12 +168,12 @@ uint8_t ROCKET_ModeRoutine(void) {
 	MEM2067_Write(FILENAME_LOG, u_char_buffer);
 	MEM2067_Write(FILENAME_LOG, "  |  ");
 
-	// Debug mode
-	if(push_button == true) {
-		//printf("Debug mode enabled...\r\n");
-	} else {
-		//printf("Debug mode disabled...\r\n");
-	}
+//	// Debug mode
+//	if(push_button == true) {
+//		//printf("Debug mode enabled...\r\n");
+//	} else {
+//		//printf("Debug mode disabled...\r\n");
+//	}
 
     switch (rocket_data.header_states.mode) {
 		case MODE_PREFLIGHT:
