@@ -151,17 +151,18 @@ uint8_t ROCKET_ModeRoutine(void) {
 	memset(rocket_data.crc16, 0, sizeof(rocket_data.crc16));
 	rocket_data.data = rocket_data_buffer;
 
+	L76LM33_Read(&L76_data);
+
 	// Write LOG timer
 	ParseTimerBuffer(&run_timer, u_char_buffer);
 	MEM2067_Write(FILENAME_LOG, u_char_buffer);
 
 	// Set const variable
-	rocket_data.header_states.gps = L76_data.gps_data.fix;
 	rocket_data.header_states.pyro0 = Pyro_Check(&hadc1, PYRO_CHANNEL_0);
 	rocket_data.header_states.pyro1 = Pyro_Check(&hadc1, PYRO_CHANNEL_1);
 	rocket_data.header_states.fix_gps = L76_data.gps_data.fix;
 	header_states = (rocket_data.header_states.mode << 6) | (rocket_data.header_states.pyro0 << 5) | (rocket_data.header_states.pyro1 << 4)
-					| (rocket_data.header_states.accelerometer << 3) | (rocket_data.header_states.barometer << 2) | (rocket_data.header_states.gps << 1)
+					| (rocket_data.header_states.accelerometer << 3) | (rocket_data.header_states.barometer << 2) | (rocket_data.header_states.fix_gps << 1)
 					| rocket_data.header_states.sd;
 	// Write LOG states
 	sprintf(u_char_buffer, "%u\r\n", header_states);
@@ -176,80 +177,76 @@ uint8_t ROCKET_ModeRoutine(void) {
 	}
 
     switch (rocket_data.header_states.mode) {
-    case MODE_PREFLIGHT:
-        //BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
-        rocket_data.size = PREFLIGHT_DATASIZE;
+		case MODE_PREFLIGHT:
+			//BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
+			rocket_data.size = PREFLIGHT_DATASIZE;
 
-        // Altitude
-        STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa, 1013.25), rocket_data, 0);
-        // Temperature
-        STM32_i32To8((int32_t)bmp_data.temp_C, rocket_data, 4);
-        // Roll Pitch
-        STM32_i32To8((int32_t)icm_data.kalmanRoll, rocket_data, 8);
-        STM32_i32To8((int32_t)icm_data.kalmanPitch, rocket_data, 12);
-        // V_Batt
-        STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREFLIPO1), rocket_data, 20);
-        STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 22);
-        STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 24);
-        STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5VAN), rocket_data, 26);
+			// Altitude
+			STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa, 1013.25), rocket_data, 0);
+			// Temperature
+			STM32_i32To8((int32_t)bmp_data.temp_C, rocket_data, 4);
+			// Roll Pitch
+			STM32_i32To8((int32_t)icm_data.kalmanRoll, rocket_data, 8);
+			STM32_i32To8((int32_t)icm_data.kalmanPitch, rocket_data, 12);
+			// V_Batt
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREFLIPO1), rocket_data, 16);
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 18);
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 20);
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5VAN), rocket_data, 22);
 
-        check = 1;
-        break;
-    case MODE_INFLIGHT:
-        //BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
-        rocket_data.size = INFLIGHT_DATASIZE;
+			check = 1;
+			break;
+		case MODE_INFLIGHT:
+			//BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
+			rocket_data.size = INFLIGHT_DATASIZE;
 
-        L76LM33_Read(&L76_data);
+			// Altitude
+			STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa, 1013.25), rocket_data, 0);
+			// Temperature
+			STM32_i32To8((int32_t)bmp_data.temp_C, rocket_data, 4);
+			// GPS
+			STM32_i32To8(L76_data.gps_data.time_raw, rocket_data, 8);
+			STM32_i32To8((int32_t)L76_data.gps_data.latitude, rocket_data, 12);
+			STM32_i32To8((int32_t)L76_data.gps_data.longitude, rocket_data, 16);
+			// Gyro
+			STM32_i32To8((int32_t)icm_data.gyroX, rocket_data, 20);
+			STM32_i32To8((int32_t)icm_data.gyroY, rocket_data, 24);
+			STM32_i32To8((int32_t)icm_data.gyroZ, rocket_data, 28);
+			// Acceleration
+			STM32_i32To8((int32_t)icm_data.accX, rocket_data, 32);
+			STM32_i32To8((int32_t)icm_data.accY, rocket_data, 36);
+			STM32_i32To8((int32_t)icm_data.accZ, rocket_data, 40);
+			// Roll Pitch
+			STM32_i32To8((int32_t)icm_data.kalmanRoll, rocket_data, 44);
+			STM32_i32To8((int32_t)icm_data.kalmanPitch, rocket_data, 48);
 
-        // Altitude
-        STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa, 1013.25), rocket_data, 0);
-        // Temperature
-        STM32_i32To8((int32_t)bmp_data.temp_C, rocket_data, 4);
-        // GPS
-        STM32_i32To8(L76_data.gps_data.time_raw, rocket_data, 8);
-        STM32_i32To8((int32_t)L76_data.gps_data.latitude, rocket_data, 12);
-        STM32_i32To8((int32_t)L76_data.gps_data.longitude, rocket_data, 16);
-        // Gyro
-        STM32_i32To8((int32_t)icm_data.gyroX, rocket_data, 20);
-        STM32_i32To8((int32_t)icm_data.gyroY, rocket_data, 24);
-        STM32_i32To8((int32_t)icm_data.gyroZ, rocket_data, 28);
-        // Acceleration
-        STM32_i32To8((int32_t)icm_data.accX, rocket_data, 32);
-        STM32_i32To8((int32_t)icm_data.accY, rocket_data, 36);
-        STM32_i32To8((int32_t)icm_data.accZ, rocket_data, 40);
-        // Roll Pitch
-        STM32_i32To8((int32_t)icm_data.kalmanRoll, rocket_data, 44);
-        STM32_i32To8((int32_t)icm_data.kalmanPitch, rocket_data, 48);
+			check = 1;
+			break;
+		case MODE_POSTFLIGHT:
+			//BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_LOW);
+			rocket_data.size = POSTFLIGHT_DATASIZE;
 
-        check = 1;
-        break;
-    case MODE_POSTFLIGHT:
-        //BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_LOW);
-        rocket_data.size = POSTFLIGHT_DATASIZE;
+			// Altitude
+			STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa, 1013.25), rocket_data, 0);
+			// GPS
+			STM32_i32To8(L76_data.gps_data.time_raw, rocket_data, 4);
+			STM32_i32To8(L76_data.gps_data.latitude, rocket_data, 8);
+			STM32_i32To8(L76_data.gps_data.longitude, rocket_data, 12);
+			// V_Batt
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREFLIPO1), rocket_data, 16);
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 18);
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 20);
+			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5VAN), rocket_data, 22);
 
-        L76LM33_Read(&L76_data);
-
-        // Altitude
-        STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa, 1013.25), rocket_data, 0);
-        // GPS
-        STM32_i32To8(L76_data.gps_data.time_raw, rocket_data, 4);
-        STM32_i32To8(L76_data.gps_data.latitude, rocket_data, 8);
-        STM32_i32To8(L76_data.gps_data.longitude, rocket_data, 12);
-        // V_Batt
-        STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREFLIPO1), rocket_data, 16);
-        STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 18);
-        STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 20);
-        STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5VAN), rocket_data, 22);
-
-        check = 1;
-        // TODO: add condition execute one time in loop
-        MEM2067_Unmount();
-        break;
-    case MODE_DEBUG:
-    	// TODO: debug mode + wait ble connection
-    	break;
-    default:
-        check = 0; // Error
+			check = 1;
+			// TODO: add condition execute one time in loop
+			MEM2067_Unmount();
+			break;
+		case MODE_DEBUG:
+			// TODO: debug mode + wait ble connection
+			break;
+		default:
+			check = 0; // Error
     }
 
     // Write LOG data

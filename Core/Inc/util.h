@@ -27,7 +27,7 @@
 
 // TODO: Check data length always good after update
 #define MODE_PREFLIGHT 0x00
-#define PREFLIGHT_DATASIZE 28
+#define PREFLIGHT_DATASIZE 24
 #define MODE_INFLIGHT 0x01
 #define INFLIGHT_DATASIZE 52
 #define MODE_POSTFLIGHT 0x02
@@ -36,7 +36,7 @@
 
 #define BMP280_BUFFERSIZE 10
 
-#define ACCZ_MASK (1 << 1) // accz Lock
+#define ACCZ_MASK (1 << 2 | 1 << 1) // accz Lock
 #define ALTITUDE_MASK  (1 << 6) // Altitude
 #define MACHLOCK_MASK (1 << 7) // Mach Lock
 

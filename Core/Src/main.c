@@ -126,6 +126,14 @@ int main(void)
 	} else printf("Not connected\r\n");
 	*/
 
+	/*
+	if((rocket_behavior & ACCZ_MASK) == 0x01 || (rocket_behavior & ACCZ_MASK) == 0x02) { // Ascending
+		if(bmp_data.altitude_filtered_m >= ALTITUDE_START) {
+			ROCKET_SetMode(MODE_INFLIGHT);
+			pyro_armed = true;
+		}
+	}
+
     if((rocket_behavior & ACCZ_MASK) != 0) {
     	if(bmp_data.altitude_filtered_m >= ALTITUDE_START) {
     		ROCKET_SetMode(MODE_INFLIGHT);
@@ -151,6 +159,7 @@ int main(void)
 			}
 		}
 	}
+	*/
 
     /* USER CODE END WHILE */
 
