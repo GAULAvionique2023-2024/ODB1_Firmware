@@ -98,47 +98,51 @@ uint8_t ROCKET_Behavior(void) {
     ICM20602_Update_All(&icm_data);
     BMP280_Read_Temperature_Pressure(&bmp_data);
 
-    uint8_t behavior = 0x00;
-    // Orientation Z
-    if (icm_data.accZ > 0) {
-        behavior |= (1 << 0);	// up
-    } else behavior &= ~(1 << 0);	// down
-    // Movement not in mach lock
-    if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) {
-    	AltitudeTrend trend = Altitude_Trend(bmp_data.altitude_filtered_m);
-    	if(trend == ASCENDING) {
-    		behavior |= (1 << 1);
-    		behavior |= (0 << 2);
-    	} else if(trend == DESCENDING) {
-    		behavior |= (0 << 1);
-			behavior |= (1 << 2);
-    	} else {
-    		behavior |= (0 << 1);
-			behavior |= (0 << 2);
-    	} // No 0x03
-    }
-    // East
-    if (icm_data.angleX >= ANGLE_MIN) {
-        behavior |= (1 << 3); // Detected
-    } else behavior &= ~(1 << 3); // Not detected
-    // West
-    if (icm_data.angleX <= -ANGLE_MIN) {
-        behavior |= (1 << 4); // Detected
-    } else behavior &= ~(1 << 4); // Not detected
-    // South
-    if (icm_data.angleY <= -ANGLE_MIN) {
-        behavior |= (1 << 5);
-    } else behavior &= ~(1 << 5);
-    // North
-    if (icm_data.angleY >= ANGLE_MIN) {
-        behavior |= (1 << 6);
-    } else behavior &= ~(1 << 6);
-    // Mach Lock (vector norm acceleration)
-    if (icm_data.accResult >= ACCRES_MIN) {
-        behavior |= (1 << 7);
-    } else behavior &= ~(1 << 7);
+    // Not in mach lock (engine not burning)
+    if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) {}
 
-    return behavior;
+//    uint8_t behavior = 0x00;
+//    // Orientation Z
+//    if (icm_data.accZ > 0) {
+//        behavior |= (1 << 0);	// up
+//    } else behavior &= ~(1 << 0);	// down
+//    // Movement not in mach lock
+//    if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) {
+//    	AltitudeTrend trend = Altitude_Trend(bmp_data.altitude_filtered_m);
+//    	if(trend == ASCENDING) {
+//    		behavior |= (1 << 1);
+//    		behavior |= (0 << 2);
+//    	} else if(trend == DESCENDING) {
+//    		behavior |= (0 << 1);
+//			behavior |= (1 << 2);
+//    	} else {
+//    		behavior |= (0 << 1);
+//			behavior |= (0 << 2);
+//    	} // No 0x03
+//    }
+//    // East
+//    if (icm_data.angleX >= ANGLE_MIN) {
+//        behavior |= (1 << 3); // Detected
+//    } else behavior &= ~(1 << 3); // Not detected
+//    // West
+//    if (icm_data.angleX <= -ANGLE_MIN) {
+//        behavior |= (1 << 4); // Detected
+//    } else behavior &= ~(1 << 4); // Not detected
+//    // South
+//    if (icm_data.angleY <= -ANGLE_MIN) {
+//        behavior |= (1 << 5);
+//    } else behavior &= ~(1 << 5);
+//    // North
+//    if (icm_data.angleY >= ANGLE_MIN) {
+//        behavior |= (1 << 6);
+//    } else behavior &= ~(1 << 6);
+//    // Mach Lock (vector norm acceleration)
+//    if (icm_data.accResult >= ACCRES_MIN) {
+//        behavior |= (1 << 7);
+//    } else behavior &= ~(1 << 7);
+//
+//    return behavior;
+    return 0; // TMP Launch Canada
 }
 
 uint8_t ROCKET_ModeRoutine(void) {
@@ -159,10 +163,14 @@ uint8_t ROCKET_ModeRoutine(void) {
 	// Set const variable
 	rocket_data.header_states.pyro0 = Pyro_Check(&hadc1, PYRO_CHANNEL_0);
 	rocket_data.header_states.pyro1 = Pyro_Check(&hadc1, PYRO_CHANNEL_1);
-	rocket_data.header_states.fix_gps = L76_data.gps_data.fix;
-	header_states = (rocket_data.header_states.mode << 6) | (rocket_data.header_states.pyro0 << 5) | (rocket_data.header_states.pyro1 << 4)
-					| (rocket_data.header_states.accelerometer << 3) | (rocket_data.header_states.barometer << 2) | (rocket_data.header_states.fix_gps << 1)
-					| rocket_data.header_states.sd;
+	rocket_data.header_states.gps_fix = L76_data.gps_data.fix;
+	header_states = (rocket_data.header_states.mode << 6)
+			| (rocket_data.header_states.pyro0 << 5)
+			| (rocket_data.header_states.pyro1 << 4)
+			| (rocket_data.header_states.accelerometer << 3)
+			| (rocket_data.header_states.barometer << 2)
+			| (rocket_data.header_states.gps_fix << 1)
+			| (rocket_data.header_states.sd);
 	// Write LOG states
 	sprintf(u_char_buffer, "%u\r\n", header_states);
 	MEM2067_Write(FILENAME_LOG, u_char_buffer);
@@ -200,24 +208,29 @@ uint8_t ROCKET_ModeRoutine(void) {
 			rocket_data.size = INFLIGHT_DATASIZE;
 
 			// Altitude
-			STM32_i32To8((int32_t)BMP280_PressureToAltitude(bmp_data.pressure_Pa, 1013.25), rocket_data, 0);
+			STM32_fTo8(bmp_data.altitude_filtered_m, rocket_data, 0);
 			// Temperature
-			STM32_i32To8((int32_t)bmp_data.temp_C, rocket_data, 4);
+			STM32_fTo8(bmp_data.temp_C, rocket_data, 4);
 			// GPS
-			STM32_i32To8(L76_data.gps_data.time_raw, rocket_data, 8);
-			STM32_i32To8((int32_t)L76_data.gps_data.latitude, rocket_data, 12);
-			STM32_i32To8((int32_t)L76_data.gps_data.longitude, rocket_data, 16);
+//			STM32_i32To8(L76_data.gps_data.time_raw, rocket_data, 8);
+			STM32_fTo8(L76_data.gps_data.latitude, rocket_data, 8);
+			STM32_fTo8(L76_data.gps_data.longitude, rocket_data, 12);
 			// Gyro
-			STM32_i32To8((int32_t)icm_data.gyroX, rocket_data, 20);
-			STM32_i32To8((int32_t)icm_data.gyroY, rocket_data, 24);
-			STM32_i32To8((int32_t)icm_data.gyroZ, rocket_data, 28);
+			STM32_fTo8(icm_data.gyroX, rocket_data, 16);
+			STM32_fTo8(icm_data.gyroY, rocket_data, 20);
+			STM32_fTo8(icm_data.gyroZ, rocket_data, 24);
 			// Acceleration
-			STM32_i32To8((int32_t)icm_data.accX, rocket_data, 32);
-			STM32_i32To8((int32_t)icm_data.accY, rocket_data, 36);
-			STM32_i32To8((int32_t)icm_data.accZ, rocket_data, 40);
+			STM32_fTo8(icm_data.accX, rocket_data, 28);
+			STM32_fTo8(icm_data.accY, rocket_data, 32);
+			STM32_fTo8(icm_data.accZ, rocket_data, 36);
 			// Roll Pitch
-			STM32_i32To8((int32_t)icm_data.kalmanRoll, rocket_data, 44);
-			STM32_i32To8((int32_t)icm_data.kalmanPitch, rocket_data, 48);
+			STM32_fTo8(icm_data.kalmanRoll, rocket_data, 44);
+			STM32_fTo8(icm_data.kalmanPitch, rocket_data, 48);
+			// V_Batt
+			// TODO
+//			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREFLIPO1), rocket_data, 16);
+//			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 18);
+//			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 20);
 
 			check = 1;
 			break;
@@ -241,9 +254,9 @@ uint8_t ROCKET_ModeRoutine(void) {
 			// TODO: add condition execute one time in loop
 			MEM2067_Unmount();
 			break;
-		case MODE_DEBUG:
-			// TODO: debug mode + wait ble connection
-			break;
+//		case MODE_DEBUG:
+//			// TODO: debug mode + wait ble connection
+//			break;
 		default:
 			check = 0; // Error
     }
@@ -331,6 +344,15 @@ void STM32_u16To8(uint16_t data, ROCKET_Data rocket_data, uint8_t index) {
 void STM32_i32To8(int32_t data, ROCKET_Data rocket_data, uint8_t index) {
 
     writeBytes(&rocket_data.data[index], (uint32_t)data, 4);
+}
+
+void STM32_fTo8(float data, ROCKET_Data rocket_data, uint8_t index) {
+    uint32_t asInt = *((int*)&data);
+
+    uint8_t i;
+    for (i = 0; i < 4; i++) {
+    	rocket_data.data[index + i] = (uint8_t)((asInt >> 8 * i) & 0xFF);
+    }
 }
 
 const char* ROCKET_ModeToString(const uint8_t mode) {

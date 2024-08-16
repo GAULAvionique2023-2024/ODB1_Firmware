@@ -120,8 +120,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	rocket_behavior = ROCKET_Behavior();
+//	rocket_behavior = ROCKET_Behavior();
+	ROCKET_Behavior();
 	ROCKET_ModeRoutine();
+
+	HAL_Delay(100);
 
 	/*
 	if(HM10BLE_ConnectionStatus(&ble_data)) {

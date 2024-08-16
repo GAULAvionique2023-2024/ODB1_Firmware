@@ -56,6 +56,7 @@ uint8_t ROCKET_SetMode(uint8_t mode);
 AltitudeTrend Altitude_Trend(const float newAltitude);
 void STM32_u16To8(uint16_t data, ROCKET_Data rocket_data, uint8_t index);
 void STM32_i32To8(int32_t data, ROCKET_Data rocket_data, uint8_t index);
+void STM32_fTo8(float data, ROCKET_Data rocket_data, uint8_t index);
 
 const char* ROCKET_ModeToString(const uint8_t mode);
 const char* ROCKET_BehaviorToString(const uint8_t behavior);

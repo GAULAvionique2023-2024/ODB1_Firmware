@@ -11,7 +11,7 @@
 #include "GAUL_Drivers/Low_Level_Drivers/USART_driver.h"
 #include "GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h"
 
-#define TIMEOUT 1000  // Max iterations (Not in ms !!!)
+#define TIMEOUT 100000  // Max iterations (Not in ms !!!)
 
 /**
  * Initialise USART peripheral with default settings
