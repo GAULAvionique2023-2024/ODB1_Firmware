@@ -2,7 +2,7 @@
 
 ![GAUL Banner](doc/logo-full.webp)
 
-Code for the on-board computer (ODB1) of the GAUL.
+Code for the on-board computer (ODB1) of the GAUL for the Launch Canada 2024 competition.
 
 ## LAUNCH CANADA 2024
 
