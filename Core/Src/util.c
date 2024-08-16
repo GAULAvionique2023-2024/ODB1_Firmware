@@ -205,7 +205,8 @@ uint8_t ROCKET_ModeRoutine(void) {
 			break;
 		case MODE_INFLIGHT:
 			//BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
-			rocket_data.size = INFLIGHT_DATASIZE;
+//			rocket_data.size = INFLIGHT_DATASIZE;
+			rocket_data.size = 48;
 
 			// Altitude
 			STM32_fTo8(bmp_data.altitude_filtered_m, rocket_data, 0);
@@ -224,8 +225,8 @@ uint8_t ROCKET_ModeRoutine(void) {
 			STM32_fTo8(icm_data.accY, rocket_data, 32);
 			STM32_fTo8(icm_data.accZ, rocket_data, 36);
 			// Roll Pitch
-			STM32_fTo8(icm_data.kalmanRoll, rocket_data, 44);
-			STM32_fTo8(icm_data.kalmanPitch, rocket_data, 48);
+			STM32_fTo8(icm_data.kalmanRoll, rocket_data, 40);
+			STM32_fTo8(icm_data.kalmanPitch, rocket_data, 44);
 			// V_Batt
 			// TODO
 //			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREFLIPO1), rocket_data, 16);
