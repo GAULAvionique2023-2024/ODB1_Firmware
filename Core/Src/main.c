@@ -124,8 +124,6 @@ int main(void)
 	ROCKET_Behavior();
 	ROCKET_ModeRoutine();
 
-	HAL_Delay(100);
-
 	/*
 	if(HM10BLE_ConnectionStatus(&ble_data)) {
 		printf("Connected\r\n");

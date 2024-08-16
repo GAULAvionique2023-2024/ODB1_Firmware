@@ -28,6 +28,9 @@ static char u_char_buffer[128] = {"0"};
 // Parameters
 static uint8_t header_states = 0x00;
 
+static uint8_t pyro0_fired = 0;
+static uint8_t pyro1_fired = 0;
+
 // Variable
 //extern bool push_button;
 
@@ -98,8 +101,30 @@ uint8_t ROCKET_Behavior(void) {
     ICM20602_Update_All(&icm_data);
     BMP280_Read_Temperature_Pressure(&bmp_data);
 
-    // Not in mach lock (engine not burning)
-    if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) {}
+    if (bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
+    	return 0; // Do nothing when rocket is on the ground
+    }
+
+    if (pyro1_fired == 1) {
+    	return 0; // Skip if pyro 0 and pyro 1 are fired
+    } else if (pyro0_fired == 1) {
+    	// If pyro0 fired, check if pyro1 is ready to fire
+   		if(bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
+			MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro2 release\r\n");
+			pyro1_fired = 1;
+		}
+  	} else {
+  		// If pyro0 is not fired, check if it's read to fire
+  		// Not in mach lock (engine not burning)
+  		if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) {
+			AltitudeTrend trend = Altitude_Trend(bmp_data.altitude_filtered_m);
+			if (trend == DESCENDING) {
+				// Descending and not in mach lock, fire pyro0
+				MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro1 release\r\n");
+				pyro0_fired = 1;
+			}
+    	}
+    }
 
 //    uint8_t behavior = 0x00;
 //    // Orientation Z
@@ -225,8 +250,10 @@ uint8_t ROCKET_ModeRoutine(void) {
 			STM32_fTo8(icm_data.accY, rocket_data, 32);
 			STM32_fTo8(icm_data.accZ, rocket_data, 36);
 			// Roll Pitch
-			STM32_fTo8(icm_data.kalmanRoll, rocket_data, 40);
-			STM32_fTo8(icm_data.kalmanPitch, rocket_data, 44);
+			STM32_fTo8(icm_data.angle_roll_acc, rocket_data, 40);
+			STM32_fTo8(icm_data.angle_pitch_acc, rocket_data, 44);
+//			STM32_fTo8(icm_data.kalmanRoll, rocket_data, 40);
+//			STM32_fTo8(icm_data.kalmanPitch, rocket_data, 44);
 			// V_Batt
 			// TODO
 //			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_3, PYRO_CHANNEL_DISABLED, VREFLIPO1), rocket_data, 16);
