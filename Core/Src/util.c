@@ -20,17 +20,9 @@ extern L76LM33 L76_data;
 extern RFD900 rfd_data;
 extern HM10BLE ble_data;
 
-// Definitions
-#define MAX_ROCKET_DATA_SIZE (INFLIGHT_DATASIZE > POSTFLIGHT_DATASIZE ? INFLIGHT_DATASIZE : POSTFLIGHT_DATASIZE)
-#define DESCENT_THRESHOLD 5
-#define ACCZ_MIN 1.1
-#define ACCRES_MIN 2.0
-#define ANGLE_MIN 5
-
 // Buffers
 static uint8_t rocket_data_buffer[MAX_ROCKET_DATA_SIZE];
-static float BMP280_buffer[BMP280_BUFFERSIZE]; // altimeter bmp
-static char runtimer_buffer[128] = {"0"};
+static char u_char_buffer[128] = {"0"};
 // TODO: add hm10 response buffer
 
 // Parameters
@@ -83,11 +75,13 @@ void ROCKET_InitRoutine(void) {
 	printt(rocket_data.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
 	// GPS
 	rocket_data.header_states.gps = L76LM33_Init(&L76_data, &huart2) == L76LM33_OK ? 0x01 : 0x00;
+	rocket_data.header_states.gps = L76_data.gps_data.fix == 1 ? 0x01 : 0x00;
 	printt(rocket_data.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
 	// Radio
 	rfd_data.USARTx = USART1;
-	rocket_data.header_states.rfd = RFD900_Init(&rfd_data) == 1 ? 0x01 : 0x00;
-	printt(rocket_data.header_states.rfd ? "(+) RFD900 succeeded...\r\n" : "(-) RFD900 failed...\r\n");
+	//rocket_data.header_states.rfd = RFD900_Init(&rfd_data) == 1 ? 0x01 : 0x00;
+	RFD900_Init(&rfd_data);
+	//printt(rocket_data.header_states.rfd ? "(+) RFD900 succeeded...\r\n" : "(-) RFD900 failed...\r\n");
 	// SD Card
 	rocket_data.header_states.sd = MEM2067_Mount(FILENAME_LOG) == 1 ? 0x01 : 0x00;
 	printt(rocket_data.header_states.sd ? "(+) SD card succeeded...\r\n" : "(-) SD card failed...\r\n");
@@ -95,13 +89,10 @@ void ROCKET_InitRoutine(void) {
 	ble_data.USARTx = USART3;
 	HM10BLE_Init(&ble_data);
 
-	UpdateTime(&run_timer);
-	sprintf(runtimer_buffer, "[%03d:%02d:%03d]",run_timer.elapsed_time_m, run_timer.elapsed_time_s, run_timer.elapsed_time_remaining_ms);
-
-	// Set const variable
-	header_states = (rocket_data.header_states.mode << 6) | (rocket_data.header_states.pyro0 << 5) | (rocket_data.header_states.pyro1 << 4)
-					| (rocket_data.header_states.accelerometer << 3) | (rocket_data.header_states.barometer << 2) | (rocket_data.header_states.gps << 1)
-					| rocket_data.header_states.sd;
+	// Write LOG data
+	ParseTimerBuffer(&run_timer, u_char_buffer);
+	MEM2067_Write(FILENAME_LOG, u_char_buffer);
+	MEM2067_Write(FILENAME_LOG, "\r\n");
 }
 
 uint8_t ROCKET_Behavior(void) {
@@ -116,26 +107,31 @@ uint8_t ROCKET_Behavior(void) {
     } else behavior &= ~(1 << 0);	// down
     // Movement
     if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) {
-        behavior |= (1 << 1);	// idle z
-    } else behavior &= ~(1 << 1);	// move z
+    	if(Altitude_Trend(bmp_data.altitude_filtered_m) == ASCENDING) {
+    		behavior |= (1 << 1);
+    		behavior |= (0 << 2);
+    	} else if(Altitude_Trend(bmp_data.altitude_filtered_m) == DESCENDING) {
+    		behavior |= (0 << 1);
+			behavior |= (1 << 2);
+    	} else {
+    		behavior |= (0 << 1);
+			behavior |= (0 << 2);
+    	} // No 0x03
+    }
     // East
     if (icm_data.angleX >= ANGLE_MIN) {
-        behavior |= (1 << 2); // Detected
-    } else behavior &= ~(1 << 2); // Not detected
-    // West
-    if (icm_data.angleX <= -ANGLE_MIN) {
         behavior |= (1 << 3); // Detected
     } else behavior &= ~(1 << 3); // Not detected
+    // West
+    if (icm_data.angleX <= -ANGLE_MIN) {
+        behavior |= (1 << 4); // Detected
+    } else behavior &= ~(1 << 4); // Not detected
     // South
     if (icm_data.angleY <= -ANGLE_MIN) {
-        behavior |= (1 << 4);
-    } else behavior &= ~(1 << 4);
-    // North
-    if (icm_data.angleY >= ANGLE_MIN) {
         behavior |= (1 << 5);
     } else behavior &= ~(1 << 5);
-    // Altitude (falling)
-    if (Altitude_Trend(bmp_data.altitude_filtered_m) == true) {
+    // North
+    if (icm_data.angleY >= ANGLE_MIN) {
         behavior |= (1 << 6);
     } else behavior &= ~(1 << 6);
     // Mach Lock (vector norm acceleration)
@@ -154,6 +150,23 @@ uint8_t ROCKET_ModeRoutine(void) {
 	rocket_data.size = 0;
 	memset(rocket_data.crc16, 0, sizeof(rocket_data.crc16));
 	rocket_data.data = rocket_data_buffer;
+
+	// Write LOG timer
+	ParseTimerBuffer(&run_timer, u_char_buffer);
+	MEM2067_Write(FILENAME_LOG, u_char_buffer);
+
+	// Set const variable
+	rocket_data.header_states.gps = L76_data.gps_data.fix;
+	rocket_data.header_states.pyro0 = Pyro_Check(&hadc1, PYRO_CHANNEL_0);
+	rocket_data.header_states.pyro1 = Pyro_Check(&hadc1, PYRO_CHANNEL_1);
+	rocket_data.header_states.fix_gps = L76_data.gps_data.fix;
+	header_states = (rocket_data.header_states.mode << 6) | (rocket_data.header_states.pyro0 << 5) | (rocket_data.header_states.pyro1 << 4)
+					| (rocket_data.header_states.accelerometer << 3) | (rocket_data.header_states.barometer << 2) | (rocket_data.header_states.gps << 1)
+					| rocket_data.header_states.sd;
+	// Write LOG states
+	sprintf(u_char_buffer, "%u\r\n", header_states);
+	MEM2067_Write(FILENAME_LOG, u_char_buffer);
+	MEM2067_Write(FILENAME_LOG, "  |  ");
 
 	// Debug mode
 	if(push_button == true) {
@@ -239,6 +252,11 @@ uint8_t ROCKET_ModeRoutine(void) {
         check = 0; // Error
     }
 
+    // Write LOG data
+    // TODO: fix mem2067 data write (uint8_t* -> char*)
+    sprintf(u_char_buffer, "%u\r\n", rocket_data.data);
+    MEM2067_Write(FILENAME_LOG, u_char_buffer);
+
     rfd_data.header = header_states;
     rfd_data.size = rocket_data.size;
     rfd_data.data = rocket_data.data;
@@ -269,32 +287,37 @@ uint8_t ROCKET_SetMode(const uint8_t mode) {
     return 1; // OK
 }
 
-bool Altitude_Trend(const float newAltitude) {
+AltitudeTrend Altitude_Trend(const float newAltitude) {
 
-	uint8_t bufferIndex = 0;
-	uint8_t descentCount = 0;
+    static uint8_t bufferIndex = 0;
+    static uint8_t ascentCount = 0;
+    static uint8_t descentCount = 0;
+    static float BMP280_buffer[BMP280_BUFFERSIZE] = {0};
 
     BMP280_buffer[bufferIndex] = newAltitude;
     bufferIndex = (bufferIndex + 1) % BMP280_BUFFERSIZE;
 
+    uint8_t ascentDetected = 0;
     uint8_t descentDetected = 0;
-    bool isDescending = false;
 
     for (uint8_t i = 0; i < BMP280_BUFFERSIZE - 1; i++) {
-        if (BMP280_buffer[i] > BMP280_buffer[i + 1]) {
+        if (BMP280_buffer[i] < BMP280_buffer[i + 1]) {
+            ascentDetected++;
+        } else if (BMP280_buffer[i] > BMP280_buffer[i + 1]) {
             descentDetected++;
-            if (descentDetected >= DESCENT_THRESHOLD) {
-                break;
-            }
         }
     }
 
-    descentCount = (descentDetected >= DESCENT_THRESHOLD) ? descentCount + 1 : 0;
-    if (descentCount >= DESCENT_THRESHOLD) {
-        isDescending = true;
-    }
+    ascentCount = (ascentDetected >= ALTITUDE_TREND_THRESHOLD) ? ascentCount + 1 : 0;
+    descentCount = (descentDetected >= ALTITUDE_TREND_THRESHOLD) ? descentCount + 1 : 0;
 
-    return isDescending;
+    if (ascentCount >= ALTITUDE_TREND_THRESHOLD) {
+        return ASCENDING;
+    } else if (descentCount >= ALTITUDE_TREND_THRESHOLD) {
+        return DESCENDING;
+    } else {
+        return STABLE;
+    }
 }
 
 static void writeBytes(uint8_t* dest, uint32_t data, uint8_t size) {
@@ -384,6 +407,12 @@ int printt(const char *format, ...) {
 
     va_end(args);
     return ret;
+}
+
+void ParseTimerBuffer(RunTimer* dev, char *buffer) {
+
+	UpdateTime(dev);
+	sprintf(buffer, "[%03d:%02d:%03d] : ",dev->elapsed_time_m, dev->elapsed_time_s, dev->elapsed_time_remaining_ms);
 }
 
 uint32_t square(int32_t p_Number) {

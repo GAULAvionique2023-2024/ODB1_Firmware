@@ -13,7 +13,6 @@ static FRESULT fresult;
 
 static FATFS *pfr;
 static DWORD fre_clust;
-static uint32_t total_space, free_space;
 
 void MEM2067_Write(const char *filename, const char* data);
 

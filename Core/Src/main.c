@@ -120,25 +120,28 @@ int main(void)
 	rocket_behavior = ROCKET_Behavior();
 	ROCKET_ModeRoutine();
 
+	/*
 	if(HM10BLE_ConnectionStatus(&ble_data)) {
 		printf("Connected\r\n");
 	} else printf("Not connected\r\n");
+	*/
 
     if((rocket_behavior & ACCZ_MASK) != 0) {
     	if(bmp_data.altitude_filtered_m >= ALTITUDE_START) {
     		ROCKET_SetMode(MODE_INFLIGHT);
     		pyro_armed = true;
-    	} else {
-    		ROCKET_SetMode(MODE_PREFLIGHT);
-    		pyro_armed = false;
     	}
-    }
+    } else if((rocket_behavior & ACCZ_MASK) == 0 && rocket_data.header_states.pyro0 == 0 && rocket_data.header_states.pyro1 == 0) {
+    	ROCKET_SetMode(MODE_POSTFLIGHT);
+    } else {
+		ROCKET_SetMode(MODE_PREFLIGHT);
+		pyro_armed = false;
+	}
     // Mach Lock
     if((rocket_behavior & MACHLOCK_MASK) == 0) {
     	// Altitude
 		if((rocket_behavior & ALTITUDE_MASK) != 0) {
 			Pyro_Fire(pyro_armed, 0);
-			ROCKET_SetMode(MODE_POSTFLIGHT);
 			// TODO: add altitude + time mem2067
 			MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro1 release\r\n");
 			if(bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
@@ -148,7 +151,6 @@ int main(void)
 			}
 		}
 	}
-    // TODO: add condition if flip -> release pyro1&2
 
     /* USER CODE END WHILE */
 

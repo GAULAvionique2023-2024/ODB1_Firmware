@@ -8,6 +8,12 @@
 #ifndef INC_STRUCTS_H_
 #define INC_STRUCTS_H_
 
+typedef enum {
+    STABLE,
+    ASCENDING,
+    DESCENDING
+} AltitudeTrend;
+
 typedef struct {
     uint8_t mode;
     uint8_t pyro0;
@@ -15,9 +21,9 @@ typedef struct {
     uint8_t accelerometer;
     uint8_t barometer;
     uint8_t gps;
-    uint8_t rfd;
+    //uint8_t rfd;
+    uint8_t fix_gps;
     uint8_t sd;
-    uint8_t ble;
 } ROCKET_states;
 
 typedef struct {

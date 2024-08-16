@@ -36,9 +36,16 @@
 
 #define BMP280_BUFFERSIZE 10
 
-#define ACCZ_MASK (1 << 1) // Mach Lock
+#define ACCZ_MASK (1 << 1) // accz Lock
 #define ALTITUDE_MASK  (1 << 6) // Altitude
 #define MACHLOCK_MASK (1 << 7) // Mach Lock
+
+// Definitions
+#define MAX_ROCKET_DATA_SIZE (INFLIGHT_DATASIZE > POSTFLIGHT_DATASIZE ? INFLIGHT_DATASIZE : POSTFLIGHT_DATASIZE)
+#define ALTITUDE_TREND_THRESHOLD 5
+#define ACCZ_MIN 1.1
+#define ACCRES_MIN 2.0
+#define ANGLE_MIN 5
 
 #define FILENAME_LOG "log.txt"
 
@@ -46,7 +53,7 @@ void ROCKET_InitRoutine(void);
 uint8_t ROCKET_Behavior(void);
 uint8_t ROCKET_ModeRoutine(void);
 uint8_t ROCKET_SetMode(uint8_t mode);
-bool Altitude_Trend(const float newAltitude);
+AltitudeTrend Altitude_Trend(const float newAltitude);
 void STM32_u16To8(uint16_t data, ROCKET_Data rocket_data, uint8_t index);
 void STM32_i32To8(int32_t data, ROCKET_Data rocket_data, uint8_t index);
 
@@ -56,6 +63,7 @@ const char* ROCKET_BehaviorToString(const uint8_t behavior);
 void RunTimerInit(RunTimer* dev);
 void UpdateTime(RunTimer* dev);
 int printt(const char *format, ...);
+void ParseTimerBuffer(RunTimer* dev, char *buffer);
 uint32_t square(int32_t p_Number);
 int _write(int le, char *ptr, int len);
 
