@@ -38,9 +38,9 @@ void ROCKET_InitRoutine(void) {
 	//Buzz(TIM3, LL_TIM_CHANNEL_CH4, START);
 	SPI_Init(SPI1);
 	SPI_Init(SPI2);
-	USART_Init(USART1);
-	USART_Init(USART2);
-	USART_Init(USART3);
+	USART_Init(USART1, 9600, 72);
+	USART_Init(USART2, 9600, 72);
+	USART_Init(USART3, 9600, 72);
 	printt("|----------Components initialization----------|\r\n");
 	// Button
 	Init_Interrupt_GPIO(GPIOA, 9);
