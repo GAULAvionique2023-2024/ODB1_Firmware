@@ -27,6 +27,7 @@ void USART_Init(USART_TypeDef *USARTx) {
         USART1->CR1 |= USART_CR1_UE; // Activer USART (0x0C)
         USART1->CR1 |= USART_CR1_TE; // Activer la transmission
         USART1->CR1 |= USART_CR1_RE; // Activer la réception
+        USART1->BRR = 0x1D4C;
     } else if (USARTx == USART2) {
         RCC->APB1ENR |= RCC_APB1ENR_USART2EN; // Enable USART2 clock
 
@@ -36,6 +37,7 @@ void USART_Init(USART_TypeDef *USARTx) {
         USART2->CR1 |= USART_CR1_UE; // Activer USART (0x10)
         USART2->CR1 |= USART_CR1_TE; // Activer la transmission
         USART2->CR1 |= USART_CR1_RE; // Activer la réception
+        USART2->BRR = 0x1D4C;
     } else if (USARTx == USART3) {
         RCC->APB1ENR |= RCC_APB1ENR_USART3EN; // Enable USART3 clock
 
@@ -45,6 +47,7 @@ void USART_Init(USART_TypeDef *USARTx) {
         USART3->CR1 |= USART_CR1_UE; // Activer USART (0x14)
         USART3->CR1 |= USART_CR1_TE; // Activer la transmission
         USART3->CR1 |= USART_CR1_RE; // Activer la réception
+        USART3->BRR = 0x1D4C;
     }
 }
 
