@@ -61,6 +61,7 @@ uint8_t HM10BLE_buffer[20];  // ble
 // Variables
 char* filename_log = "log.txt";
 uint8_t rocket_behavior = 0x00;
+bool preflight_flag = false;
 bool pyro_armed = false;
 bool push_button = false;
 /* USER CODE END PV */
@@ -128,40 +129,33 @@ int main(void)
 	} else printf("Not connected\r\n");
 	*/
 
-	/*
-	if((rocket_behavior & ACCZ_MASK) == 0x01 || (rocket_behavior & ACCZ_MASK) == 0x02) { // Ascending
+	if((rocket_behavior & ACCZ_MASK) == 0x01) { // Ascending
+		ROCKET_SetMode(MODE_INFLIGHT);
 		if(bmp_data.altitude_filtered_m >= ALTITUDE_START) {
-			ROCKET_SetMode(MODE_INFLIGHT);
 			pyro_armed = true;
+		}
+	} else if((rocket_behavior & ACCZ_MASK) == 0x02) { // Descending
+		ROCKET_SetMode(MODE_INFLIGHT);
+	} else if((rocket_behavior & ACCZ_MASK) == 0x00) { // Stable
+		if(preflight_flag == false) {
+			ROCKET_SetMode(MODE_PREFLIGHT);
+			preflight_flag = true;
+		} else {
+			ROCKET_SetMode(MODE_POSTFLIGHT);
 		}
 	}
 
-    if((rocket_behavior & ACCZ_MASK) != 0) {
-    	if(bmp_data.altitude_filtered_m >= ALTITUDE_START) {
-    		ROCKET_SetMode(MODE_INFLIGHT);
-    		pyro_armed = true;
-    	}
-    } else if((rocket_behavior & ACCZ_MASK) == 0 && rocket_data.header_states.pyro0 == 0 && rocket_data.header_states.pyro1 == 0) {
-    	ROCKET_SetMode(MODE_POSTFLIGHT);
-    } else {
-		ROCKET_SetMode(MODE_PREFLIGHT);
-		pyro_armed = false;
-	}
-    // Mach Lock
-    if((rocket_behavior & MACHLOCK_MASK) == 0) {
-    	// Altitude
-		if((rocket_behavior & ALTITUDE_MASK) != 0) {
-			Pyro_Fire(pyro_armed, 0);
+	// Mach lock
+	if((rocket_behavior & MACHLOCK_MASK) == 0 && (rocket_behavior & ACCZ_MASK) == 0x02) {
+		Pyro_Fire(pyro_armed, 0);
+		// TODO: add altitude + time mem2067
+		MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro1 release\r\n");
+		if(bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
+			Pyro_Fire(pyro_armed, 1);
 			// TODO: add altitude + time mem2067
-			MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro1 release\r\n");
-			if(bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
-				Pyro_Fire(pyro_armed, 1);
-				// TODO: add altitude + time mem2067
-				MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro2 release\r\n");
-			}
+			MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro2 release\r\n");
 		}
 	}
-	*/
 
     /* USER CODE END WHILE */
 
