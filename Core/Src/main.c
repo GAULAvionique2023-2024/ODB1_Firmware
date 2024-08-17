@@ -129,19 +129,20 @@ int main(void)
 	} else printf("Not connected\r\n");
 	*/
 
+	// TODO: Only one mode for LC2024
 	if((rocket_behavior & ACCZ_MASK) == 0x01) { // Ascending
-		ROCKET_SetMode(MODE_INFLIGHT);
+		//ROCKET_SetMode(MODE_INFLIGHT);
 		if(bmp_data.altitude_filtered_m >= ALTITUDE_START) {
 			pyro_armed = true;
 		}
 	} else if((rocket_behavior & ACCZ_MASK) == 0x02) { // Descending
-		ROCKET_SetMode(MODE_INFLIGHT);
+		//ROCKET_SetMode(MODE_INFLIGHT);
 	} else if((rocket_behavior & ACCZ_MASK) == 0x00) { // Stable
 		if(preflight_flag == false) {
-			ROCKET_SetMode(MODE_PREFLIGHT);
+			//ROCKET_SetMode(MODE_PREFLIGHT);
 			preflight_flag = true;
 		} else {
-			ROCKET_SetMode(MODE_POSTFLIGHT);
+			//ROCKET_SetMode(MODE_POSTFLIGHT);
 		}
 	}
 
