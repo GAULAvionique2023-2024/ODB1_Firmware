@@ -120,7 +120,7 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 #define SD_SPI_HANDLE hspi1
-#define ALTITUDE_START 10
+#define ALTITUDE_START 100
 #define ALTITUDE_PYRO2 450 // Altitude pyro 2nd parachute (big one) -> m
 /* USER CODE END Private defines */
 

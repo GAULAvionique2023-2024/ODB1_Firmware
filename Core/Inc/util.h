@@ -29,9 +29,9 @@
 #define MODE_PREFLIGHT 0x00
 #define PREFLIGHT_DATASIZE 24
 #define MODE_INFLIGHT 0x01
-#define INFLIGHT_DATASIZE 52
+#define INFLIGHT_DATASIZE 48
 #define MODE_POSTFLIGHT 0x02
-#define POSTFLIGHT_DATASIZE 14
+#define POSTFLIGHT_DATASIZE 24
 #define MODE_DEBUG 0x03
 
 #define BMP280_BUFFERSIZE 10
@@ -56,6 +56,7 @@ uint8_t ROCKET_SetMode(uint8_t mode);
 AltitudeTrend Altitude_Trend(const float newAltitude);
 void STM32_u16To8(uint16_t data, ROCKET_Data rocket_data, uint8_t index);
 void STM32_i32To8(int32_t data, ROCKET_Data rocket_data, uint8_t index);
+void STM32_fTo8(float data, ROCKET_Data rocket_data, uint8_t index);
 
 const char* ROCKET_ModeToString(const uint8_t mode);
 const char* ROCKET_BehaviorToString(const uint8_t behavior);

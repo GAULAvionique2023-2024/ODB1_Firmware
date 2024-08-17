@@ -49,9 +49,10 @@ void USART_Init(USART_TypeDef *USARTx, uint16_t baudrate, uint16_t frequency_MHz
  */
 int8_t USART_TX(USART_TypeDef *USARTx, uint8_t *data, uint16_t size) {
 
-    uint32_t timeout = TIMEOUT;
+    uint32_t timeout;
     while (size--) {
         // Wait until Transmit Data Register is Empty (register is ready to accept new data)
+    	timeout = TIMEOUT;
         while (!(USARTx->SR & USART_SR_TXE)) {
             if (--timeout == 0) {
                 return -1;
