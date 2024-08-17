@@ -22,7 +22,7 @@ extern HM10BLE ble_data;
 
 // Buffers
 static uint8_t rocket_data_buffer[MAX_ROCKET_DATA_SIZE];
-static char u_char_buffer[128] = {"0"};
+static char timer_buffer[128] = {"0"};
 // TODO: add hm10 response buffer
 
 // Parameters
@@ -36,7 +36,7 @@ static uint8_t pyro1_fired = 0;
 
 void ROCKET_InitRoutine(void) {
 
-	printt("|----------Starting----------|\r\n");
+	//printt("|----------Starting----------|\r\n");
 	RunTimerInit(&run_timer);
 	//Buzz(TIM3, LL_TIM_CHANNEL_CH4, START);
 	SPI_Init(SPI1);
@@ -44,30 +44,30 @@ void ROCKET_InitRoutine(void) {
 //	USART_Init(USART1, 9600, 72);
 //	USART_Init(USART2, 9600, 72);
 //	USART_Init(USART3, 9600, 72);
-	printt("|----------Components initialization----------|\r\n");
+	//printt("|----------Components initialization----------|\r\n");
 	// Button
 //	Init_Interrupt_GPIO(GPIOA, 9);
 	ROCKET_SetMode(MODE_PREFLIGHT);
-	printt("(+) Mode flight: %i succeeded...\r\n", rocket_data.header_states.mode);
+	//printt("(+) Mode flight: %i succeeded...\r\n", rocket_data.header_states.mode);
 	// LED RGB
 //	WS2812_Init();
 //	printt("(+) WS2812 succeeded...\r\n");
 	// Multiplexer
 	if (CD74HC4051_Init(&hadc1) != 1) {
-	  printt("(-) CD74HC4051 failed...\r\n");
+	  //printt("(-) CD74HC4051 failed...\r\n");
 	} else {
 		rocket_data.header_states.pyro0 = Pyro_Check(&hadc1, PYRO_CHANNEL_0) ? 0x01 : 0x00;
 		rocket_data.header_states.pyro1 = Pyro_Check(&hadc1, PYRO_CHANNEL_1) ? 0x01 : 0x00;
-		printt(" -> Pyro0 state: %i\r\n", rocket_data.header_states.pyro0);
-		printt(" -> Pyro1 state: %i\r\n", rocket_data.header_states.pyro1);
-		printt("(+) CD74HC4051 succeeded...\r\n");
+		//printt(" -> Pyro0 state: %i\r\n", rocket_data.header_states.pyro0);
+		//printt(" -> Pyro1 state: %i\r\n", rocket_data.header_states.pyro1);
+		//printt("(+) CD74HC4051 succeeded...\r\n");
 	}
 	// Barometer
 	bmp_data.SPIx = SPI2;
 	bmp_data.cs_pin = 8;
 	bmp_data.cs_port = GPIOA;
 	rocket_data.header_states.barometer = BMP280_Init(&bmp_data) == 0 ? 0x01 : 0x00;
-	printt(rocket_data.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
+	//printt(rocket_data.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
 	// Accelerometer
 	icm_data.SPIx = SPI2;
 	icm_data.cs_pin = 12;
@@ -75,20 +75,29 @@ void ROCKET_InitRoutine(void) {
 	icm_data.int_pin = 10;
 	icm_data.int_port = GPIOA;
 	rocket_data.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x01 : 0x00;
-	printt(rocket_data.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
+	//printt(rocket_data.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
 	// GPS
 	rocket_data.header_states.gps = L76LM33_Init(&L76_data, &huart2) == L76LM33_OK ? 0x01 : 0x00;
-	printt(rocket_data.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
+	//printt(rocket_data.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
 	// Radio
 	rfd_data.USARTx = USART1;
 	rocket_data.header_states.rfd = RFD900_Init(&rfd_data) == 1 ? 0x01 : 0x00;
-	printt(rocket_data.header_states.rfd ? "(+) RFD900 succeeded...\r\n" : "(-) RFD900 failed...\r\n");
+	//printt(rocket_data.header_states.rfd ? "(+) RFD900 succeeded...\r\n" : "(-) RFD900 failed...\r\n");
 	// SD Card
 	rocket_data.header_states.sd = MEM2067_Mount(FILENAME_LOG) == 1 ? 0x01 : 0x00;
-	printt(rocket_data.header_states.sd ? "(+) SD card succeeded...\r\n" : "(-) SD card failed...\r\n");
+	//printt(rocket_data.header_states.sd ? "(+) SD card succeeded...\r\n" : "(-) SD card failed...\r\n");
 	// Bluetooth
 //	ble_data.USARTx = USART3;
 //	HM10BLE_Init(&ble_data);
+
+	// Log Start STM32
+	ParseTimerBuffer(&run_timer, timer_buffer);
+	DataField headers[] = {
+			{DATA_TYPE_STRING, .data.str = "Rocket Initializede"},
+			{DATA_TYPE_STRING, .data.str = timer_buffer},
+			{DATA_TYPE_STRING, .data.str = ROCKET_ModeToString(rocket_data.header_states.mode)},
+		};
+	MEM2067_Write(FILENAME_LOG, headers, 3);
 }
 
 uint8_t ROCKET_Behavior(void) {
@@ -245,6 +254,27 @@ uint8_t ROCKET_ModeRoutine(void) {
 //			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 18);
 //			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 20);
 
+			// Log Data STM32
+			ParseTimerBuffer(&run_timer, timer_buffer);
+			DataField headers[] = {
+					{DATA_TYPE_STRING, .data.str = ""},
+					{DATA_TYPE_STRING, .data.str = timer_buffer},
+					{DATA_TYPE_STRING, .data.str = ROCKET_ModeToString(rocket_data.header_states.mode)},
+					{DATA_TYPE_FLOAT, .data.f = bmp_data.altitude_filtered_m},
+					{DATA_TYPE_FLOAT, .data.f = bmp_data.temp_C},
+					{DATA_TYPE_FLOAT, .data.f = L76_data.gps_data.latitude},
+					{DATA_TYPE_FLOAT, .data.f = L76_data.gps_data.longitude},
+					{DATA_TYPE_FLOAT, .data.f = icm_data.gyroX},
+					{DATA_TYPE_FLOAT, .data.f = icm_data.gyroY},
+					{DATA_TYPE_FLOAT, .data.f = icm_data.gyroZ},
+					{DATA_TYPE_FLOAT, .data.f = icm_data.accX},
+					{DATA_TYPE_FLOAT, .data.f = icm_data.accY},
+					{DATA_TYPE_FLOAT, .data.f = icm_data.accZ},
+					{DATA_TYPE_FLOAT, .data.f = icm_data.angle_roll_acc},
+					{DATA_TYPE_FLOAT, .data.f = icm_data.angle_pitch_acc}
+				};
+			MEM2067_Write(FILENAME_LOG, headers, 15);
+
 			check = 1;
 			break;
 		case MODE_POSTFLIGHT:
@@ -365,11 +395,11 @@ void STM32_fTo8(float data, ROCKET_Data rocket_data, uint8_t index) {
 const char* ROCKET_ModeToString(const uint8_t mode) {
 
 	switch(mode) {
-		case 0x00: return "MODE_PREFLIGHT\r\n";
-		case 0x01: return "MODE_INFLIGHT\r\n";
-		case 0x02: return "MODE_POSTFLIGHT\r\n";
-		case 0x03: return "MODE_DEBUG\r\n";
-		default: return "Unknown mode\r\n";
+		case 0x00: return "MODE_PREFLIGHT";
+		case 0x01: return "MODE_INFLIGHT";
+		case 0x02: return "MODE_POSTFLIGHT";
+		case 0x03: return "MODE_DEBUG";
+		default: return "Unknown mode";
 	}
 }
 
@@ -437,7 +467,7 @@ int printt(const char *format, ...) {
 void ParseTimerBuffer(RunTimer* dev, char *buffer) {
 
 	UpdateTime(dev);
-	sprintf(buffer, "[%03d:%02d:%03d] : ",dev->elapsed_time_m, dev->elapsed_time_s, dev->elapsed_time_remaining_ms);
+	sprintf(buffer, "[%03d:%02d:%03d]",dev->elapsed_time_m, dev->elapsed_time_s, dev->elapsed_time_remaining_ms);
 }
 
 uint32_t square(int32_t p_Number) {

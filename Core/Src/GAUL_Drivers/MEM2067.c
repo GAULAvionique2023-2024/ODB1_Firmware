@@ -14,7 +14,7 @@ static FRESULT fresult;
 static FATFS *pfr;
 static DWORD fre_clust;
 
-void MEM2067_Write(const char *filename, const char* data[], size_t num_fields);
+void MEM2067_Write(const char *filename, const DataField data[], size_t num_fields);
 
 uint8_t MEM2067_Mount(const char* filename) {
 
@@ -23,25 +23,78 @@ uint8_t MEM2067_Mount(const char* filename) {
 		return 0;
 	}
 	// Create file with read / write access and open it
-	const char *headers[] = {"Comments", "Time", "Mode", "Altitude", "Temperature", "GPS_Longitude", "GPS_Latitude", "Gyro_X", "Gyro_Y", "Gyro_Z", "ACC_X", "ACC_y", "ACC_Z", "Roll", "Pitch"};
+	char commentHeader[] = 	"Comments";
+	char timeHeader[] = 	"Time";
+	char modeHeader[] = 	"Mode";
+	char altHeader[] = 		"Altitude";
+	char tempHeader[] = 	"Temperature";
+	char latHeader[] = 		"GPS_Latitude";
+	char longHeader[] = 	"GPS_Longitude";
+	char gyroXHeader[] = 	"Gyro_X";
+	char gyroYHeader[] = 	"Gyro_Y";
+	char gyroZHeader[] = 	"Gyro_Z";
+	char accXHeader[] = 	"ACC_X";
+	char accYHeader[] = 	"ACC_Y";
+	char accZHeader[] = 	"ACC_Z";
+	char rollHeader[] = 	"Roll";
+	char pitchHeader[] = 	"Pitch";
+	DataField headers[] = {
+	        {DATA_TYPE_STRING, .data.str = commentHeader},
+	        {DATA_TYPE_STRING, .data.str = timeHeader},
+			{DATA_TYPE_STRING, .data.str = modeHeader},
+			{DATA_TYPE_STRING, .data.str = altHeader},
+			{DATA_TYPE_STRING, .data.str = tempHeader},
+			{DATA_TYPE_STRING, .data.str = latHeader},
+			{DATA_TYPE_STRING, .data.str = longHeader},
+			{DATA_TYPE_STRING, .data.str = gyroXHeader},
+			{DATA_TYPE_STRING, .data.str = gyroYHeader},
+			{DATA_TYPE_STRING, .data.str = gyroZHeader},
+			{DATA_TYPE_STRING, .data.str = accXHeader},
+			{DATA_TYPE_STRING, .data.str = accYHeader},
+	        {DATA_TYPE_STRING, .data.str = accZHeader},
+			{DATA_TYPE_STRING, .data.str = rollHeader},
+			{DATA_TYPE_STRING, .data.str = pitchHeader}
+	    };
 	MEM2067_Write(filename, headers, HEADER_NUM);
 
 	return 1;
 }
 
-void MEM2067_Write(const char *filename, const char* data[], size_t num_fields) {
+void MEM2067_Write(const char *filename, const DataField data[], size_t num_fields) {
 
-    fresult = f_open(&fil, filename, FA_OPEN_ALWAYS | FA_WRITE);
-    if (fresult != FR_OK) {
-        return;
-    }
-
-    f_lseek(&fil, f_size(&fil));  // Aller à la fin du fichier
-
+    FIL fil;
+    FRESULT fresult;
     char buffer[256];
     size_t offset = 0;
+
+    fresult = f_open(&fil, filename, FA_OPEN_ALWAYS | FA_WRITE);
+    if(fresult != FR_OK) {
+    	return;
+    }
+
+    f_lseek(&fil, f_size(&fil));
+
     for (size_t i = 0; i < num_fields; i++) {
-        offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%s", data[i]);
+        switch (data[i].type) {
+            case DATA_TYPE_INT:
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%d", data[i].data.i);
+                break;
+            case DATA_TYPE_FLOAT:
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%.2f", data[i].data.f);
+                break;
+            case DATA_TYPE_DOUBLE:
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%.2lf", data[i].data.d);
+                break;
+            case DATA_TYPE_SHORT:
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%d", data[i].data.s);
+                break;
+            case DATA_TYPE_CHAR:
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%c", data[i].data.c);
+                break;
+            case DATA_TYPE_STRING:
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%s", data[i].data.str);
+                break;
+        }
         if (i < num_fields - 1) {
             offset += snprintf(buffer + offset, sizeof(buffer) - offset, "\t");
         } else {
@@ -49,10 +102,14 @@ void MEM2067_Write(const char *filename, const char* data[], size_t num_fields) 
         }
     }
 
-    f_puts(buffer, &fil);
+    // Écrire les données dans le fichier
+    if (f_puts(buffer, &fil) == EOF) {
+        // Gérer l'erreur d'écriture dans le fichier
+    }
     f_close(&fil);
 }
 
+// TODO: fix union data type
 char *MEM2067_Read(const char *filename) {
 
     static char buffer[128];  // Taille fixe du buffer

@@ -18,7 +18,33 @@
 #include <stdio.h>
 #include <string.h>
 
-#define HEADER_NUM 16
+#define HEADER_NUM 15
+
+// Union pour différents types de données
+typedef union {
+    int i;
+    float f;
+    double d;
+    short s;
+    char c;
+    char* str;
+} DataUnion;
+
+// Type enum pour les types de données
+typedef enum {
+    DATA_TYPE_INT,
+    DATA_TYPE_FLOAT,
+    DATA_TYPE_DOUBLE,
+    DATA_TYPE_SHORT,
+    DATA_TYPE_CHAR,
+	DATA_TYPE_STRING
+} DataType;
+
+// Structure pour représenter un champ de données
+typedef struct {
+    DataType type;
+    DataUnion data;
+} DataField;
 
 typedef struct {
 	uint32_t total_space;
@@ -26,7 +52,7 @@ typedef struct {
 } MEM2067;
 
 uint8_t MEM2067_Mount(const char *filename);
-void MEM2067_Write(const char *filename, const char* data[], size_t num_fields);
+void MEM2067_Write(const char *filename, const DataField data[], size_t num_fields);
 char *MEM2067_Read(const char *filename);
 void MEM2067_Unmount(void);
 void MEM2067_Infos(MEM2067 *devMEM);
