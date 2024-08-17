@@ -89,11 +89,6 @@ void ROCKET_InitRoutine(void) {
 	// Bluetooth
 //	ble_data.USARTx = USART3;
 //	HM10BLE_Init(&ble_data);
-
-	// Write LOG data
-	ParseTimerBuffer(&run_timer, u_char_buffer);
-	MEM2067_Write(FILENAME_LOG, u_char_buffer);
-	MEM2067_Write(FILENAME_LOG, "\r\n");
 }
 
 uint8_t ROCKET_Behavior(void) {
@@ -110,7 +105,6 @@ uint8_t ROCKET_Behavior(void) {
     } else if (pyro0_fired == 1) {
     	// If pyro0 fired, check if pyro1 is ready to fire
    		if(bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
-			MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro2 release\r\n");
 			pyro1_fired = 1;
 		}
   	} else {
@@ -120,7 +114,6 @@ uint8_t ROCKET_Behavior(void) {
 			AltitudeTrend trend = Altitude_Trend(bmp_data.altitude_filtered_m);
 			if (trend == DESCENDING) {
 				// Descending and not in mach lock, fire pyro0
-				MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro1 release\r\n");
 				pyro0_fired = 1;
 			}
     	}
@@ -181,10 +174,6 @@ uint8_t ROCKET_ModeRoutine(void) {
 
 	L76LM33_Read(&L76_data);
 
-	// Write LOG timer
-	ParseTimerBuffer(&run_timer, u_char_buffer);
-	MEM2067_Write(FILENAME_LOG, u_char_buffer);
-
 	// Set const variable
 	rocket_data.header_states.pyro0 = Pyro_Check(&hadc1, PYRO_CHANNEL_0);
 	rocket_data.header_states.pyro1 = Pyro_Check(&hadc1, PYRO_CHANNEL_1);
@@ -196,10 +185,6 @@ uint8_t ROCKET_ModeRoutine(void) {
 			| (rocket_data.header_states.barometer << 2)
 			| (rocket_data.header_states.gps_fix << 1)
 			| (rocket_data.header_states.sd);
-	// Write LOG states
-	sprintf(u_char_buffer, "%u\r\n", header_states);
-	MEM2067_Write(FILENAME_LOG, u_char_buffer);
-	MEM2067_Write(FILENAME_LOG, "  |  ");
 
 //	// Debug mode
 //	if(push_button == true) {
@@ -289,11 +274,6 @@ uint8_t ROCKET_ModeRoutine(void) {
 			check = 0; // Error
     }
 
-    // Write LOG data
-    // TODO: fix mem2067 data write (uint8_t* -> char*)
-    sprintf(u_char_buffer, "%u\r\n", rocket_data.data);
-    MEM2067_Write(FILENAME_LOG, u_char_buffer);
-
     rfd_data.header = header_states;
     rfd_data.size = rocket_data.size;
     rfd_data.data = rocket_data.data;
@@ -319,7 +299,6 @@ uint8_t ROCKET_SetMode(const uint8_t mode) {
 
     if(rocket_data.header_states.mode != mode) {
 		rocket_data.header_states.mode = mode;
-		MEM2067_Write(FILENAME_LOG, ROCKET_ModeToString(mode));
     }
     return 1; // OK
 }

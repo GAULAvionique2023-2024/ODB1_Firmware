@@ -59,7 +59,7 @@ ROCKET_Data rocket_data;
 //uint8_t HM10BLE_buffer[20];  // ble
 
 // Variables
-char* filename_log = "log.txt";
+char* filename_log = "log.csv";
 uint8_t rocket_behavior = 0x00;
 bool pyro_armed = false;
 bool push_button = false;

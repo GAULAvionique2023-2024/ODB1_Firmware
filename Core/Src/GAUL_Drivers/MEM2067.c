@@ -14,7 +14,7 @@ static FRESULT fresult;
 static FATFS *pfr;
 static DWORD fre_clust;
 
-void MEM2067_Write(const char *filename, const char* data);
+void MEM2067_Write(const char *filename, const char* data[], size_t num_fields);
 
 uint8_t MEM2067_Mount(const char* filename) {
 
@@ -23,28 +23,47 @@ uint8_t MEM2067_Mount(const char* filename) {
 		return 0;
 	}
 	// Create file with read / write access and open it
-	MEM2067_Write(filename, "LOG\n");
+	const char *headers[] = {"Comments", "Time", "Mode", "Altitude", "Temperature", "GPS_Longitude", "GPS_Latitude", "Gyro_X", "Gyro_Y", "Gyro_Z", "ACC_X", "ACC_y", "ACC_Z", "Roll", "Pitch"};
+	MEM2067_Write(filename, headers, HEADER_NUM);
 
 	return 1;
 }
 
-void MEM2067_Write(const char *filename, const char* data) {
+void MEM2067_Write(const char *filename, const char* data[], size_t num_fields) {
 
-	fresult = f_open(&fil, filename, FA_OPEN_ALWAYS | FA_WRITE);
-	f_lseek(&fil, f_size(&fil));
-	f_puts(data, &fil);
+    fresult = f_open(&fil, filename, FA_OPEN_ALWAYS | FA_WRITE);
+    if (fresult != FR_OK) {
+        return;
+    }
 
-	f_close(&fil);
+    f_lseek(&fil, f_size(&fil));  // Aller à la fin du fichier
+
+    char buffer[256];
+    size_t offset = 0;
+    for (size_t i = 0; i < num_fields; i++) {
+        offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%s", data[i]);
+        if (i < num_fields - 1) {
+            offset += snprintf(buffer + offset, sizeof(buffer) - offset, "\t");
+        } else {
+            offset += snprintf(buffer + offset, sizeof(buffer) - offset, "\n");
+        }
+    }
+
+    f_puts(buffer, &fil);
+    f_close(&fil);
 }
 
 char *MEM2067_Read(const char *filename) {
 
-	char *data = "";
+    static char buffer[128];  // Taille fixe du buffer
+    memset(buffer, 0, sizeof(buffer));  // Nettoyer le buffer
 
-	fresult = f_open(&fil, filename, FA_OPEN_ALWAYS | FA_WRITE);
-	f_gets(data, sizeof(data), &fil);
-
-	return data;
+    fresult = f_open(&fil, filename, FA_READ);
+    if (fresult == FR_OK) {
+        f_gets(buffer, sizeof(buffer), &fil);
+        f_close(&fil);
+    }
+    return buffer;
 }
 
 void MEM2067_Unmount(void) {

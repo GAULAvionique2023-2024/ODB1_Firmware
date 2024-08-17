@@ -47,7 +47,7 @@
 #define ACCRES_MIN 2.0
 #define ANGLE_MIN 5
 
-#define FILENAME_LOG "log.txt"
+#define FILENAME_LOG "log.csv"
 
 void ROCKET_InitRoutine(void);
 uint8_t ROCKET_Behavior(void);
