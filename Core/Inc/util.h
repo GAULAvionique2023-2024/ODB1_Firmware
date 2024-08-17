@@ -43,7 +43,7 @@
 // Definitions
 #define MAX_ROCKET_DATA_SIZE (INFLIGHT_DATASIZE > POSTFLIGHT_DATASIZE ? INFLIGHT_DATASIZE : POSTFLIGHT_DATASIZE)
 #define ALTITUDE_TREND_THRESHOLD 5
-#define ACCZ_MIN 1.1
+#define ACCZ_MIN 1.2
 #define ACCRES_MIN 2.0
 #define ANGLE_MIN 5
 
@@ -65,6 +65,7 @@ void RunTimerInit(RunTimer* dev);
 void UpdateTime(RunTimer* dev);
 int printt(const char *format, ...);
 void ParseTimerBuffer(RunTimer* dev, char *buffer);
+void ParseLOG(char* comment);
 uint32_t square(int32_t p_Number);
 int _write(int le, char *ptr, int len);
 

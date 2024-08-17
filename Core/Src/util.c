@@ -91,13 +91,7 @@ void ROCKET_InitRoutine(void) {
 //	HM10BLE_Init(&ble_data);
 
 	// Log Start STM32
-	ParseTimerBuffer(&run_timer, timer_buffer);
-	DataField headers[] = {
-			{DATA_TYPE_STRING, .data.str = "Rocket Initializede"},
-			{DATA_TYPE_STRING, .data.str = timer_buffer},
-			{DATA_TYPE_STRING, .data.str = ROCKET_ModeToString(rocket_data.header_states.mode)},
-		};
-	MEM2067_Write(FILENAME_LOG, headers, 3);
+	ParseLOG("Rocket finish init components");
 }
 
 uint8_t ROCKET_Behavior(void) {
@@ -115,6 +109,8 @@ uint8_t ROCKET_Behavior(void) {
     	// If pyro0 fired, check if pyro1 is ready to fire
    		if(bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
 			pyro1_fired = 1;
+			// LOG Pyro release
+			ParseLOG("Pyro1 release");
 		}
   	} else {
   		// If pyro0 is not fired, check if it's read to fire
@@ -124,6 +120,8 @@ uint8_t ROCKET_Behavior(void) {
 			if (trend == DESCENDING) {
 				// Descending and not in mach lock, fire pyro0
 				pyro0_fired = 1;
+				// LOG Pyro release
+				ParseLOG("Pyro0 release");
 			}
     	}
     }
@@ -255,25 +253,7 @@ uint8_t ROCKET_ModeRoutine(void) {
 //			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 20);
 
 			// Log Data STM32
-			ParseTimerBuffer(&run_timer, timer_buffer);
-			DataField headers[] = {
-					{DATA_TYPE_STRING, .data.str = ""},
-					{DATA_TYPE_STRING, .data.str = timer_buffer},
-					{DATA_TYPE_STRING, .data.str = ROCKET_ModeToString(rocket_data.header_states.mode)},
-					{DATA_TYPE_FLOAT, .data.f = bmp_data.altitude_filtered_m},
-					{DATA_TYPE_FLOAT, .data.f = bmp_data.temp_C},
-					{DATA_TYPE_FLOAT, .data.f = L76_data.gps_data.latitude},
-					{DATA_TYPE_FLOAT, .data.f = L76_data.gps_data.longitude},
-					{DATA_TYPE_FLOAT, .data.f = icm_data.gyroX},
-					{DATA_TYPE_FLOAT, .data.f = icm_data.gyroY},
-					{DATA_TYPE_FLOAT, .data.f = icm_data.gyroZ},
-					{DATA_TYPE_FLOAT, .data.f = icm_data.accX},
-					{DATA_TYPE_FLOAT, .data.f = icm_data.accY},
-					{DATA_TYPE_FLOAT, .data.f = icm_data.accZ},
-					{DATA_TYPE_FLOAT, .data.f = icm_data.angle_roll_acc},
-					{DATA_TYPE_FLOAT, .data.f = icm_data.angle_pitch_acc}
-				};
-			MEM2067_Write(FILENAME_LOG, headers, 15);
+
 
 			check = 1;
 			break;
@@ -304,6 +284,9 @@ uint8_t ROCKET_ModeRoutine(void) {
 			check = 0; // Error
     }
 
+    // LOG Data
+	ParseLOG("");
+
     rfd_data.header = header_states;
     rfd_data.size = rocket_data.size;
     rfd_data.data = rocket_data.data;
@@ -329,6 +312,8 @@ uint8_t ROCKET_SetMode(const uint8_t mode) {
 
     if(rocket_data.header_states.mode != mode) {
 		rocket_data.header_states.mode = mode;
+		// LOG Pyro release
+		ParseLOG("Set mode");
     }
     return 1; // OK
 }
@@ -390,6 +375,29 @@ void STM32_fTo8(float data, ROCKET_Data rocket_data, uint8_t index) {
     for (i = 0; i < 4; i++) {
     	rocket_data.data[index + i] = (uint8_t)((asInt >> 8 * i) & 0xFF);
     }
+}
+
+void ParseLOG(char* comment) {
+
+	ParseTimerBuffer(&run_timer, timer_buffer);
+	DataField headers[] = {
+			{DATA_TYPE_STRING, .data.str = comment},
+			{DATA_TYPE_STRING, .data.str = timer_buffer},
+			{DATA_TYPE_STRING, .data.str = ROCKET_ModeToString(rocket_data.header_states.mode)},
+			{DATA_TYPE_FLOAT, .data.f = bmp_data.altitude_filtered_m},
+			{DATA_TYPE_FLOAT, .data.f = bmp_data.temp_C},
+			{DATA_TYPE_FLOAT, .data.f = L76_data.gps_data.latitude},
+			{DATA_TYPE_FLOAT, .data.f = L76_data.gps_data.longitude},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.gyroX},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.gyroY},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.gyroZ},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.accX},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.accY},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.accZ},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.angle_roll_acc},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.angle_pitch_acc}
+		};
+	MEM2067_Write(FILENAME_LOG, headers, 15);
 }
 
 const char* ROCKET_ModeToString(const uint8_t mode) {
