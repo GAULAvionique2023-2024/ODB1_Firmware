@@ -17,7 +17,7 @@ static DWORD fre_clust;
 static const char* headers[] = {
     "Comments", "Time", "Mode", "Altitude", "Temperature",
     "GPS_Latitude", "GPS_Longitude", "Gyro_X", "Gyro_Y", "Gyro_Z",
-    "ACC_X", "ACC_Y", "ACC_Z", "Roll", "Pitch"
+    "ACC_X", "ACC_Y", "ACC_Z", "ACC_Resultant", "Roll", "Pitch"
 };
 
 void MEM2067_Write(const char *filename, const DataField data[], size_t num_fields);
