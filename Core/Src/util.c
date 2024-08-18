@@ -312,7 +312,7 @@ uint8_t ROCKET_SetMode(const uint8_t mode) {
 
     if(rocket_data.header_states.mode != mode) {
 		rocket_data.header_states.mode = mode;
-		// LOG Pyro release
+		// LOG Mode release
 		ParseLOG("Set mode");
     }
     return 1; // OK
