@@ -36,6 +36,7 @@ uint8_t MEM2067_Mount(const char* filename) {
 	char accXHeader[] = 	"ACC_X";
 	char accYHeader[] = 	"ACC_Y";
 	char accZHeader[] = 	"ACC_Z";
+	char accResHeader[] = 	"ACC_Res";
 	char rollHeader[] = 	"Roll";
 	char pitchHeader[] = 	"Pitch";
 	DataField headers[] = {
@@ -52,6 +53,7 @@ uint8_t MEM2067_Mount(const char* filename) {
 			{DATA_TYPE_STRING, .data.str = accXHeader},
 			{DATA_TYPE_STRING, .data.str = accYHeader},
 	        {DATA_TYPE_STRING, .data.str = accZHeader},
+			{DATA_TYPE_STRING, .data.str = accResHeader},
 			{DATA_TYPE_STRING, .data.str = rollHeader},
 			{DATA_TYPE_STRING, .data.str = pitchHeader}
 	    };
