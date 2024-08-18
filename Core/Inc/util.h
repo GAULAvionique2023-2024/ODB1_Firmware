@@ -25,7 +25,6 @@
 #include "GAUL_Drivers/Pyros.h"
 #include "GAUL_Drivers/MEM2067.h"
 
-// TODO: Check data length always good after update
 #define MODE_PREFLIGHT 0x00
 #define PREFLIGHT_DATASIZE 24
 #define MODE_INFLIGHT 0x01
