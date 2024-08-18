@@ -36,7 +36,7 @@
 
 #define BMP280_BUFFERSIZE 10
 
-#define ACCZ_MASK (1 << 2 | 1 << 1) // accz Lock
+#define ACCZ_MASK 0x03 // accz Lock
 #define ALTITUDE_MASK  (1 << 6) // Altitude
 #define MACHLOCK_MASK (1 << 7) // Mach Lock
 

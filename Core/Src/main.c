@@ -117,47 +117,38 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-	rocket_behavior = ROCKET_Behavior();
-	ROCKET_ModeRoutine();
+  while (1) {
 
-	/*
-	if(HM10BLE_ConnectionStatus(&ble_data)) {
-		printf("Connected\r\n");
-	} else printf("Not connected\r\n");
-	*/
+	  rocket_behavior = ROCKET_Behavior();
+      ROCKET_ModeRoutine();
 
-	// TODO: Only one mode for LC2024
-	if((rocket_behavior & ACCZ_MASK) == 0x01) { // Ascending
-		//ROCKET_SetMode(MODE_INFLIGHT);
-		if(bmp_data.altitude_filtered_m >= ALTITUDE_START) {
-			pyro_armed = true;
-		}
-	} else if((rocket_behavior & ACCZ_MASK) == 0x02) { // Descending
-		//ROCKET_SetMode(MODE_INFLIGHT);
-	} else if((rocket_behavior & ACCZ_MASK) == 0x00) { // Stable
-		if(preflight_flag == false) {
-			//ROCKET_SetMode(MODE_PREFLIGHT);
-			preflight_flag = true;
-		} else {
-			//ROCKET_SetMode(MODE_POSTFLIGHT);
-		}
-	}
+	  if ((rocket_behavior & ACCZ_MASK) == 0x01) { // Ascension
+		  ROCKET_SetMode(MODE_INFLIGHT);
+		  if (bmp_data.altitude_filtered_m >= ALTITUDE_START) {
+			  pyro_armed = true;
+		  }
+	  } else if ((rocket_behavior & ACCZ_MASK) == 0x02) { // Descente
+		  ROCKET_SetMode(MODE_POSTFLIGHT);
+	  } else if ((rocket_behavior & ACCZ_MASK) == 0x00) { // Stable
+		  if (!preflight_flag) {
+			  ROCKET_SetMode(MODE_PREFLIGHT);
+			  preflight_flag = true;
+		  } else {
+			  ROCKET_SetMode(MODE_POSTFLIGHT);
+		  }
+	  }
 
-	// Mach lock
-	if((rocket_behavior & MACHLOCK_MASK) == 0 && (rocket_behavior & ACCZ_MASK) == 0x02) {
-		Pyro_Fire(pyro_armed, 0);
-		ParseLOG("Pyro0 release");
-		if(bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
-			Pyro_Fire(pyro_armed, 1);
-			ParseLOG("Pyro1 release");
-		}
-	}
+	  if ((rocket_behavior & MACHLOCK_MASK) == 0) { // Mach lock désactivé
+		  if ((rocket_behavior & ACCZ_MASK) == 0x02) { // Descente
+			  Pyro_Fire(pyro_armed, 0); // Déclenchement du premier pyro
+			  ParseLOG("Pyro0 release");
 
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
+			  if (bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
+				  Pyro_Fire(pyro_armed, 1); // Déclenchement du deuxième pyro
+				  ParseLOG("Pyro1 release");
+			  }
+		  }
+	  }
   }
   /* USER CODE END 3 */
 }
