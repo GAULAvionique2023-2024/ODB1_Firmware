@@ -80,10 +80,10 @@ void MEM2067_Write(const char *filename, const DataField data[], size_t num_fiel
                 offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%d", data[i].data.i);
                 break;
             case DATA_TYPE_FLOAT:
-                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%.2f", data[i].data.f);
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%.6f", data[i].data.f);
                 break;
             case DATA_TYPE_DOUBLE:
-                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%.2lf", data[i].data.d);
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%.6lf", data[i].data.d);
                 break;
             case DATA_TYPE_SHORT:
                 offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%d", data[i].data.s);

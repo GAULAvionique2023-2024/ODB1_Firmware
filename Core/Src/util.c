@@ -47,7 +47,7 @@ void ROCKET_InitRoutine(void) {
 	//printt("|----------Components initialization----------|\r\n");
 	// Button
 //	Init_Interrupt_GPIO(GPIOA, 9);
-	ROCKET_SetMode(MODE_PREFLIGHT);
+	ROCKET_SetMode(MODE_INFLIGHT);
 	//printt("(+) Mode flight: %i succeeded...\r\n", rocket_data.header_states.mode);
 	// LED RGB
 //	WS2812_Init();
@@ -201,6 +201,7 @@ uint8_t ROCKET_ModeRoutine(void) {
 //	}
 
     switch (rocket_data.header_states.mode) {
+    /*
 		case MODE_PREFLIGHT:
 			//BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
 			rocket_data.size = PREFLIGHT_DATASIZE;
@@ -220,6 +221,7 @@ uint8_t ROCKET_ModeRoutine(void) {
 
 			check = 1;
 			break;
+	*/
 		case MODE_INFLIGHT:
 			//BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
 //			rocket_data.size = INFLIGHT_DATASIZE;
@@ -257,6 +259,7 @@ uint8_t ROCKET_ModeRoutine(void) {
 
 			check = 1;
 			break;
+		/*
 		case MODE_POSTFLIGHT:
 			//BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_LOW);
 			rocket_data.size = POSTFLIGHT_DATASIZE;
@@ -280,6 +283,8 @@ uint8_t ROCKET_ModeRoutine(void) {
 //		case MODE_DEBUG:
 //			// TODO: debug mode + wait ble connection
 //			break;
+ *
+ 	 	 */
 		default:
 			check = 0; // Error
     }
