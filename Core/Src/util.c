@@ -116,6 +116,9 @@ uint8_t ROCKET_Behavior(void) {
   		// If pyro0 is not fired, check if it's read to fire
   		// Not in mach lock (engine not burning)
   		if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) {
+  			if (icm_data.accResult >= ACCRES_MIN) {
+				ParseLOG("Mach Lock enabled");
+			}
 			AltitudeTrend trend = Altitude_Trend(bmp_data.altitude_filtered_m);
 			if (trend == DESCENDING) {
 				// Descending and not in mach lock, fire pyro0
