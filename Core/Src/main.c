@@ -59,7 +59,6 @@ ROCKET_Data rocket_data;
 uint8_t HM10BLE_buffer[20];  // ble
 
 // Variables
-char* filename_log = "log.txt";
 uint8_t rocket_behavior = 0x00;
 bool preflight_flag = false;
 bool pyro_armed = false;
@@ -149,12 +148,10 @@ int main(void)
 	// Mach lock
 	if((rocket_behavior & MACHLOCK_MASK) == 0 && (rocket_behavior & ACCZ_MASK) == 0x02) {
 		Pyro_Fire(pyro_armed, 0);
-		// TODO: add altitude + time mem2067
-		MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro1 release\r\n");
+		ParseLOG("Pyro0 release");
 		if(bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
 			Pyro_Fire(pyro_armed, 1);
-			// TODO: add altitude + time mem2067
-			MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro2 release\r\n");
+			ParseLOG("Pyro1 release");
 		}
 	}
 

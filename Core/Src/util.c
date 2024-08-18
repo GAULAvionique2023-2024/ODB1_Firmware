@@ -22,7 +22,7 @@ extern HM10BLE ble_data;
 
 // Buffers
 static uint8_t rocket_data_buffer[MAX_ROCKET_DATA_SIZE];
-static char u_char_buffer[128] = {"0"};
+static char timer_buffer[128] = {"0"};
 // TODO: add hm10 response buffer
 
 // Parameters
@@ -90,10 +90,8 @@ void ROCKET_InitRoutine(void) {
 	ble_data.USARTx = USART3;
 	HM10BLE_Init(&ble_data);
 
-	// Write LOG data
-	ParseTimerBuffer(&run_timer, u_char_buffer);
-	MEM2067_Write(FILENAME_LOG, u_char_buffer);
-	MEM2067_Write(FILENAME_LOG, "\r\n");
+	// Write LOG Start
+	ParseLOG("Rocket end initialization");
 }
 
 uint8_t ROCKET_Behavior(void) {
@@ -155,10 +153,6 @@ uint8_t ROCKET_ModeRoutine(void) {
 
 	L76LM33_Read(&L76_data);
 
-	// Write LOG timer
-	ParseTimerBuffer(&run_timer, u_char_buffer);
-	MEM2067_Write(FILENAME_LOG, u_char_buffer);
-
 	// Set const variable
 	rocket_data.header_states.pyro0 = Pyro_Check(&hadc1, PYRO_CHANNEL_0);
 	rocket_data.header_states.pyro1 = Pyro_Check(&hadc1, PYRO_CHANNEL_1);
@@ -170,10 +164,6 @@ uint8_t ROCKET_ModeRoutine(void) {
 			| (rocket_data.header_states.barometer << 2)
 			| (rocket_data.header_states.gps_fix << 1)
 			| (rocket_data.header_states.sd);
-	// Write LOG states
-	sprintf(u_char_buffer, "%u\r\n", header_states);
-	MEM2067_Write(FILENAME_LOG, u_char_buffer);
-	MEM2067_Write(FILENAME_LOG, "  |  ");
 
 //	// Debug mode
 //	if(push_button == true) {
@@ -184,7 +174,6 @@ uint8_t ROCKET_ModeRoutine(void) {
 
     switch (rocket_data.header_states.mode) {
 		case MODE_PREFLIGHT:
-			/*
 			//BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_NORMAL);
 			rocket_data.size = PREFLIGHT_DATASIZE;
 
@@ -200,31 +189,6 @@ uint8_t ROCKET_ModeRoutine(void) {
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_5, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 18);
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_2, PYRO_CHANNEL_DISABLED, VREFLIPO3), rocket_data, 20);
 			STM32_u16To8(CD74HC4051_AnRead(&hadc1, CHANNEL_6, PYRO_CHANNEL_DISABLED, VREF5VAN), rocket_data, 22);
-
-			check = 1;
-			break;
-			*/
-			rocket_data.size = INFLIGHT_DATASIZE;
-
-			// Altitude
-			STM32_fTo8(bmp_data.altitude_filtered_m, rocket_data, 0);
-			// Temperature
-			STM32_fTo8(bmp_data.temp_C, rocket_data, 4);
-			// GPS
-			//STM32_fTo8(L76_data.gps_data.time_raw, rocket_data, 8);
-			STM32_fTo8(L76_data.gps_data.latitude, rocket_data, 8);
-			STM32_fTo8(L76_data.gps_data.longitude, rocket_data, 12);
-			// Gyro
-			STM32_fTo8(icm_data.gyroX, rocket_data, 16);
-			STM32_fTo8(icm_data.gyroY, rocket_data, 20);
-			STM32_fTo8(icm_data.gyroZ, rocket_data, 24);
-			// Acceleration
-			STM32_fTo8(icm_data.accX, rocket_data, 28);
-			STM32_fTo8(icm_data.accY, rocket_data, 32);
-			STM32_fTo8(icm_data.accZ, rocket_data, 36);
-			// Roll Pitch
-			STM32_fTo8(icm_data.angle_roll_acc, rocket_data, 40);
-			STM32_fTo8(icm_data.angle_pitch_acc, rocket_data, 44);
 
 			check = 1;
 			break;
@@ -255,7 +219,6 @@ uint8_t ROCKET_ModeRoutine(void) {
 			check = 1;
 			break;
 		case MODE_POSTFLIGHT:
-			/*
 			//BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_LOW);
 			rocket_data.size = POSTFLIGHT_DATASIZE;
 
@@ -275,31 +238,6 @@ uint8_t ROCKET_ModeRoutine(void) {
 			// TODO: add condition execute one time in loop
 			MEM2067_Unmount();
 			break;
-			*/
-			rocket_data.size = INFLIGHT_DATASIZE;
-
-			// Altitude
-			STM32_fTo8(bmp_data.altitude_filtered_m, rocket_data, 0);
-			// Temperature
-			STM32_fTo8(bmp_data.temp_C, rocket_data, 4);
-			// GPS
-			//STM32_fTo8(L76_data.gps_data.time_raw, rocket_data, 8);
-			STM32_fTo8(L76_data.gps_data.latitude, rocket_data, 8);
-			STM32_fTo8(L76_data.gps_data.longitude, rocket_data, 12);
-			// Gyro
-			STM32_fTo8(icm_data.gyroX, rocket_data, 16);
-			STM32_fTo8(icm_data.gyroY, rocket_data, 20);
-			STM32_fTo8(icm_data.gyroZ, rocket_data, 24);
-			// Acceleration
-			STM32_fTo8(icm_data.accX, rocket_data, 28);
-			STM32_fTo8(icm_data.accY, rocket_data, 32);
-			STM32_fTo8(icm_data.accZ, rocket_data, 36);
-			// Roll Pitch
-			STM32_fTo8(icm_data.angle_roll_acc, rocket_data, 40);
-			STM32_fTo8(icm_data.angle_pitch_acc, rocket_data, 44);
-
-			check = 1;
-			break;
 		case MODE_DEBUG:
 			// TODO: debug mode + wait ble connection
 			break;
@@ -307,10 +245,8 @@ uint8_t ROCKET_ModeRoutine(void) {
 			check = 0; // Error
     }
 
-    // Write LOG data
-    // TODO: fix mem2067 data write (uint8_t* -> char*)
-    sprintf(u_char_buffer, "%u\r\n", rocket_data.data);
-    MEM2067_Write(FILENAME_LOG, u_char_buffer);
+    // Write LOG Data
+    ParseLOG("");
 
     rfd_data.header = header_states;
     rfd_data.size = rocket_data.size;
@@ -337,7 +273,7 @@ uint8_t ROCKET_SetMode(const uint8_t mode) {
 
     if(rocket_data.header_states.mode != mode) {
 		rocket_data.header_states.mode = mode;
-		MEM2067_Write(FILENAME_LOG, ROCKET_ModeToString(mode));
+		ParseLOG("Set mode");
     }
     return 1; // OK
 }
@@ -399,6 +335,31 @@ void STM32_fTo8(float data, ROCKET_Data rocket_data, uint8_t index) {
     for (i = 0; i < 4; i++) {
     	rocket_data.data[index + i] = (uint8_t)((asInt >> 8 * i) & 0xFF);
     }
+}
+
+void ParseLOG(char* comment) {
+
+	UpdateTime(&run_timer);
+	sprintf(timer_buffer, "[%03d:%02d:%03d] : ",run_timer.elapsed_time_m, run_timer.elapsed_time_s, run_timer.elapsed_time_remaining_ms);
+
+	DataField headers[] = {
+			{DATA_TYPE_STRING, .data.str = comment},
+			{DATA_TYPE_STRING, .data.str = timer_buffer},
+			{DATA_TYPE_STRING, .data.str = ROCKET_ModeToString(rocket_data.header_states.mode)},
+			{DATA_TYPE_FLOAT, .data.f = bmp_data.altitude_filtered_m},
+			{DATA_TYPE_FLOAT, .data.f = bmp_data.temp_C},
+			{DATA_TYPE_FLOAT, .data.f = L76_data.gps_data.latitude},
+			{DATA_TYPE_FLOAT, .data.f = L76_data.gps_data.longitude},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.gyroX},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.gyroY},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.gyroZ},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.accX},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.accY},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.accZ},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.angle_roll_acc},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.angle_pitch_acc}
+		};
+	MEM2067_Write(FILENAME_LOG, headers, 15);
 }
 
 const char* ROCKET_ModeToString(const uint8_t mode) {
@@ -471,12 +432,6 @@ int printt(const char *format, ...) {
 
     va_end(args);
     return ret;
-}
-
-void ParseTimerBuffer(RunTimer* dev, char *buffer) {
-
-	UpdateTime(dev);
-	sprintf(buffer, "[%03d:%02d:%03d] : ",dev->elapsed_time_m, dev->elapsed_time_s, dev->elapsed_time_remaining_ms);
 }
 
 uint32_t square(int32_t p_Number) {

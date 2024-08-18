@@ -14,7 +14,13 @@ static FRESULT fresult;
 static FATFS *pfr;
 static DWORD fre_clust;
 
-void MEM2067_Write(const char *filename, const char* data);
+static const char* headers[] = {
+    "Comments", "Time", "Mode", "Altitude", "Temperature",
+    "GPS_Latitude", "GPS_Longitude", "Gyro_X", "Gyro_Y", "Gyro_Z",
+    "ACC_X", "ACC_Y", "ACC_Z", "Roll", "Pitch"
+};
+
+void MEM2067_Write(const char *filename, const DataField data[], size_t num_fields);
 
 uint8_t MEM2067_Mount(const char* filename) {
 
@@ -23,28 +29,80 @@ uint8_t MEM2067_Mount(const char* filename) {
 		return 0;
 	}
 	// Create file with read / write access and open it
-	MEM2067_Write(filename, "LOG\n");
-
+	if (fresult == FR_OK && f_size(&fil) == 0) {
+		// Si le fichier est vide, écrivez les en-têtes
+		DataField headerFields[HEADER_NUM];
+		for (size_t i = 0; i < HEADER_NUM; i++) {
+			headerFields[i].type = DATA_TYPE_STRING;
+			headerFields[i].data.str = (char*)headers[i];
+		}
+		MEM2067_Write(filename, headerFields, HEADER_NUM);
+		f_close(&fil);
+	}
 	return 1;
 }
 
-void MEM2067_Write(const char *filename, const char* data) {
+void MEM2067_Write(const char *filename, const DataField data[], size_t num_fields) {
 
-	fresult = f_open(&fil, filename, FA_OPEN_ALWAYS | FA_WRITE);
-	f_lseek(&fil, f_size(&fil));
-	f_puts(data, &fil);
+    FIL fil;
+    FRESULT fresult;
+    char buffer[256];
+    size_t offset = 0;
 
-	f_close(&fil);
+    fresult = f_open(&fil, filename, FA_OPEN_ALWAYS | FA_WRITE);
+    if(fresult != FR_OK) {
+    	return;
+    }
+
+    f_lseek(&fil, f_size(&fil));
+
+    for (size_t i = 0; i < num_fields; i++) {
+        switch (data[i].type) {
+            case DATA_TYPE_INT:
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%d", data[i].data.i);
+                break;
+            case DATA_TYPE_FLOAT:
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%.2f", data[i].data.f);
+                break;
+            case DATA_TYPE_DOUBLE:
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%.2lf", data[i].data.d);
+                break;
+            case DATA_TYPE_SHORT:
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%d", data[i].data.s);
+                break;
+            case DATA_TYPE_CHAR:
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%c", data[i].data.c);
+                break;
+            case DATA_TYPE_STRING:
+                offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%s", data[i].data.str);
+                break;
+        }
+        if (i < num_fields - 1) {
+            offset += snprintf(buffer + offset, sizeof(buffer) - offset, "\t");
+        } else {
+            offset += snprintf(buffer + offset, sizeof(buffer) - offset, "\n");
+        }
+    }
+
+    // Écrire les données dans le fichier
+    if (f_puts(buffer, &fil) == EOF) {
+        // Gérer l'erreur d'écriture dans le fichier
+    }
+    f_close(&fil);
 }
 
+// TODO: fix union data type
 char *MEM2067_Read(const char *filename) {
 
-	char *data = "";
+    static char buffer[128];  // Taille fixe du buffer
+    memset(buffer, 0, sizeof(buffer));  // Nettoyer le buffer
 
-	fresult = f_open(&fil, filename, FA_OPEN_ALWAYS | FA_WRITE);
-	f_gets(data, sizeof(data), &fil);
-
-	return data;
+    fresult = f_open(&fil, filename, FA_READ);
+    if (fresult == FR_OK) {
+        f_gets(buffer, sizeof(buffer), &fil);
+        f_close(&fil);
+    }
+    return buffer;
 }
 
 void MEM2067_Unmount(void) {

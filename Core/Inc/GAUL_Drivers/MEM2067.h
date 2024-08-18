@@ -10,21 +10,46 @@
 
 #define BUFFER_SIZE 1024
 
-#include "GAUL_Drivers/Low_Level_Drivers/SPI_driver.h"
-#include <GAUL_Drivers/Low_Level_Drivers/GPIO_driver.h>
 #include <fatfs.h>
 #include "fatfs_sd.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
+#define HEADER_NUM 15
+
+typedef union {
+    int i;
+    float f;
+    double d;
+    short s;
+    char c;
+    char* str;
+} DataUnion;
+
+typedef enum {
+    DATA_TYPE_INT,
+    DATA_TYPE_FLOAT,
+    DATA_TYPE_DOUBLE,
+    DATA_TYPE_SHORT,
+    DATA_TYPE_CHAR,
+	DATA_TYPE_STRING
+} DataType;
+
+typedef struct {
+    DataType type;
+    DataUnion data;
+} DataField;
+
 typedef struct {
 	uint32_t total_space;
 	uint32_t free_space;
 } MEM2067;
 
+//
+
 uint8_t MEM2067_Mount(const char *filename);
-void MEM2067_Write(const char *filename, const char *data);
+void MEM2067_Write(const char *filename, const DataField data[], size_t num_fields);
 char *MEM2067_Read(const char *filename);
 void MEM2067_Unmount(void);
 void MEM2067_Infos(MEM2067 *devMEM);
