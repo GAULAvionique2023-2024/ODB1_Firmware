@@ -402,7 +402,6 @@ void ParseLOG(char* comment) {
 			{DATA_TYPE_FLOAT, .data.f = icm_data.accX},
 			{DATA_TYPE_FLOAT, .data.f = icm_data.accY},
 			{DATA_TYPE_FLOAT, .data.f = icm_data.accZ},
-			{DATA_TYPE_FLOAT, .data.f = icm_data.accResult},
 			{DATA_TYPE_FLOAT, .data.f = icm_data.angle_roll_acc},
 			{DATA_TYPE_FLOAT, .data.f = icm_data.angle_pitch_acc}
 		};
