@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 
+
 typedef struct {
     USART_TypeDef *USARTx;
     uint8_t header; 	// mode + states
@@ -21,7 +22,6 @@ typedef struct {
 } RFD900;
 
 uint8_t RFD900_Init(RFD900 *devRFD);
-
 uint8_t RFD900_Send(RFD900 *devRFD);
 
 #endif /* INC_GAUL_DRIVERS_RFD900_H_ */

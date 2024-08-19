@@ -17,6 +17,7 @@ static const buzzParametres_t buzzParams[] = {
         { 1, 280, 279, 3000, 10 }    // CRASH
 };
 
+/*
 void Buzz(TIM_TypeDef *TIMx, uint32_t channel, buzzRoutines_t routine) {
     LL_TIM_CC_EnableChannel(TIMx, channel);  // Démarrer PWM
 
@@ -41,5 +42,6 @@ void Buzz(TIM_TypeDef *TIMx, uint32_t channel, buzzRoutines_t routine) {
 
     LL_TIM_CC_DisableChannel(TIMx, channel);  // Arrêter PWM
 }
+*/
 
 

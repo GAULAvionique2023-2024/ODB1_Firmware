@@ -27,12 +27,14 @@ static char timer_buffer[128] = {"0"};
 
 // Parameters
 static uint8_t header_states = 0x00;
-
 static uint8_t pyro0_fired = 0;
 static uint8_t pyro1_fired = 0;
 
 // Variable
-//extern bool push_button;
+//extern bool push_button
+uint16_t previous_time_m = 0;
+uint16_t previous_time_s = 0;
+uint16_t previous_time_ms = 0;
 
 void ROCKET_InitRoutine(void) {
 
@@ -304,10 +306,10 @@ uint8_t ROCKET_ModeRoutine(void) {
     rocket_data.crc16[1] = (uint8_t)(crc & 0xFF);
     rfd_data.crc = (uint8_t*)rocket_data.crc16;
 
-    if (RFD900_Send(&rfd_data) == 1)
-        check = 1; // OK
-    else
-        check = 0; // ERROR
+	if(NoBlockingDelay(&run_timer, 0, 1, 0) == true) {
+		RFD900_Send(&rfd_data);
+		check = 1; // OK
+	} else check = 0; // ERROR
 
     return check;
 }
@@ -483,7 +485,18 @@ int printt(const char *format, ...) {
 void ParseTimerBuffer(RunTimer* dev, char *buffer) {
 
 	UpdateTime(dev);
-	sprintf(buffer, "[%03d:%02d:%03d]",dev->elapsed_time_m, dev->elapsed_time_s, dev->elapsed_time_remaining_ms);
+	sprintf(buffer, "[%03d:%02d:%03d]\r\n",dev->elapsed_time_m, dev->elapsed_time_s, dev->elapsed_time_remaining_ms);
+}
+
+bool NoBlockingDelay(RunTimer *dev, uint16_t delay_m, uint16_t delay_s, uint16_t delay_ms) {
+
+	UpdateTime(dev);
+	if(dev->elapsed_time_m - previous_time_m >= delay_m && dev->elapsed_time_s - previous_time_s >= delay_s && dev->elapsed_time_ms - previous_time_ms >= delay_ms) {
+		previous_time_m = dev->elapsed_time_m;
+		previous_time_s = dev->elapsed_time_s;
+		previous_time_ms = dev->elapsed_time_ms;
+		return true;
+	} else return false;
 }
 
 uint32_t square(int32_t p_Number) {

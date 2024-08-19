@@ -63,6 +63,7 @@ const char* ROCKET_BehaviorToString(const uint8_t behavior);
 
 void RunTimerInit(RunTimer* dev);
 void UpdateTime(RunTimer* dev);
+bool NoBlockingDelay(RunTimer *dev, uint16_t delay_m, uint16_t delay_s, uint16_t delay_ms);
 int printt(const char *format, ...);
 void ParseTimerBuffer(RunTimer* dev, char *buffer);
 void ParseLOG(char* comment);

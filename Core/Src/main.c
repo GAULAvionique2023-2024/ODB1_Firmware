@@ -123,7 +123,6 @@ int main(void)
 //	rocket_behavior = ROCKET_Behavior();
 	ROCKET_Behavior();
 	ROCKET_ModeRoutine();
-
 	/*
 	if(HM10BLE_ConnectionStatus(&ble_data)) {
 		printf("Connected\r\n");
