@@ -78,6 +78,8 @@ int SPI_RX(SPI_TypeDef *SPIx, uint8_t *data, int size) {
     return 0; // Succès
 }
 
+
+// Full-Duplex SPI (front montant / descendant)
 int SPI_TransmitReceive(SPI_TypeDef *SPIx, uint8_t *pTxData, uint8_t *pRxData, uint16_t Size, uint32_t Timeout) {
 
     uint32_t startTick = HAL_GetTick();

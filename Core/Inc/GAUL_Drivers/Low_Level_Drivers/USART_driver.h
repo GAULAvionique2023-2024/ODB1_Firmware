@@ -10,7 +10,7 @@
 
 #include "stm32f1xx_hal.h" // USART_TypeDef and int types
 
-void USART_Init(USART_TypeDef *USARTx, uint16_t baudrate, uint16_t frequency_MHz);
+void USART_Init(USART_TypeDef *USARTx, uint16_t baudrate);
 
 int8_t USART_TX(USART_TypeDef *USARTx, uint8_t *data, uint16_t size);
 int8_t USART_RX(USART_TypeDef *USARTx, uint8_t *data, uint16_t size);
