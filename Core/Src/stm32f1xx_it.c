@@ -31,7 +31,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+void SDTimer_Handler(void);
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/

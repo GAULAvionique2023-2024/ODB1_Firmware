@@ -408,7 +408,7 @@ void ParseLOG(char* comment) {
 	MEM2067_Write(FILENAME_LOG, headers, 15);
 }
 
-const char* ROCKET_ModeToString(const uint8_t mode) {
+char* ROCKET_ModeToString(const uint8_t mode) {
 
 	switch(mode) {
 		case 0x00: return "MODE_PREFLIGHT";
