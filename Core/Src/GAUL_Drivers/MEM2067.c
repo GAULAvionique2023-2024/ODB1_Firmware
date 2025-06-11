@@ -38,6 +38,7 @@ uint8_t MEM2067_Mount(const char* filename) {
 	char accZHeader[] = 	"ACC_Z";
 	char rollHeader[] = 	"Roll";
 	char pitchHeader[] = 	"Pitch";
+	char yawHeader[] =		"Yaw";
 	DataField headers[] = {
 	        {DATA_TYPE_STRING, .data.str = commentHeader},
 	        {DATA_TYPE_STRING, .data.str = timeHeader},
@@ -53,7 +54,8 @@ uint8_t MEM2067_Mount(const char* filename) {
 			{DATA_TYPE_STRING, .data.str = accYHeader},
 	        {DATA_TYPE_STRING, .data.str = accZHeader},
 			{DATA_TYPE_STRING, .data.str = rollHeader},
-			{DATA_TYPE_STRING, .data.str = pitchHeader}
+			{DATA_TYPE_STRING, .data.str = pitchHeader},
+			{DATA_TYPE_STRING, .data.str = yawHeader}
 	    };
 	MEM2067_Write(filename, headers, HEADER_NUM);
 

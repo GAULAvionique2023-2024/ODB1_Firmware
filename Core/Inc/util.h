@@ -43,14 +43,11 @@
 // Definitions
 #define MAX_ROCKET_DATA_SIZE (INFLIGHT_DATASIZE > POSTFLIGHT_DATASIZE ? INFLIGHT_DATASIZE : POSTFLIGHT_DATASIZE)
 #define ALTITUDE_TREND_THRESHOLD 5
-#define ACCZ_MIN 1.2
-#define ACCRES_MIN 2.0
-#define ANGLE_MIN 5
 
 #define FILENAME_LOG "log.csv"
 
 void ROCKET_InitRoutine(void);
-uint8_t ROCKET_Behavior(void);
+void ROCKET_Behavior(void);
 uint8_t ROCKET_ModeRoutine(void);
 uint8_t ROCKET_SetMode(uint8_t mode);
 AltitudeTrend Altitude_Trend(const float newAltitude);
@@ -58,7 +55,7 @@ void STM32_u16To8(uint16_t data, ROCKET_Data rocket_data, uint8_t index);
 void STM32_i32To8(int32_t data, ROCKET_Data rocket_data, uint8_t index);
 void STM32_fTo8(float data, ROCKET_Data rocket_data, uint8_t index);
 
-const char* ROCKET_ModeToString(const uint8_t mode);
+char* ROCKET_ModeToString(const uint8_t mode);
 const char* ROCKET_BehaviorToString(const uint8_t behavior);
 
 void RunTimerInit(RunTimer* dev);

@@ -106,6 +106,7 @@ typedef struct {
 
 	float angle_pitch_acc;
 	float angle_roll_acc;
+	float angle_yaw_acc;
 	float angleX;
 	float angleY;
 	float kalmanRoll;

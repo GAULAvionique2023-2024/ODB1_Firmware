@@ -21,7 +21,7 @@ uint8_t BMP280_Init(BMP280 *dev) {
 
     // Check ID
     uint8_t id;
-    BMP280_Read(dev, BMP280_REG_ID, &id, sizeof(id));
+    BMP280_Read(dev, BMP280_REG_ID, &id, 1);
     if (id != BMP280_DEVICE_ID) {
         return 1; // Error
     }
@@ -154,7 +154,7 @@ void BMP280_Write(BMP280 *dev, uint8_t address, uint8_t value) {
     HAL_Delay(20);
 }
 
-void BMP280_Read(BMP280 *dev, uint8_t address, uint8_t *rxData[], uint8_t size) {
+void BMP280_Read(BMP280 *dev, uint8_t address, uint8_t *rxData, uint8_t size) {
 
     address |= 0x80;  // read operation
 
@@ -170,6 +170,7 @@ void BMP280_Read(BMP280 *dev, uint8_t address, uint8_t *rxData[], uint8_t size) 
     Write_GPIO(dev->cs_port, dev->cs_pin, HIGH);
 }
 
+/*
 uint8_t BMP280_SwapMode(uint8_t mode) {
 
     if (BMP280_ReadRegister(BMP280_REG_CTRL_MEAS) != mode) {
@@ -179,3 +180,4 @@ uint8_t BMP280_SwapMode(uint8_t mode) {
         return 0; // Error (no change)
     }
 }
+*/

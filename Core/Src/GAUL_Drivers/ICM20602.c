@@ -81,18 +81,20 @@ void ICM20602_Update_All(ICM20602 *dev){
 
 	// Convertir les valeurs brutes
 	dev->gyroX = gyroRawX * 2000.f / 32768.f;
-	dev->gyroY = gyroRawY * 2000.f / 32768.f;
-	dev->gyroZ = gyroRawZ * 2000.f / 32768.f;
+	dev->gyroY = gyroRawZ * 2000.f / 32768.f;
+	dev->gyroZ = -gyroRawY * 2000.f / 32768.f;
 
 	dev->accX = accRawX * 16.f / 32768.f;
-	dev->accY = accRawY * 16.f / 32768.f;
-	dev->accZ = accRawZ * 16.f / 32768.f;
+	dev->accY = accRawZ * 16.f / 32768.f;
+	dev->accZ = -accRawY * 16.f / 32768.f;
 
 	dev->accResult = sqrt(dev->accX * dev->accX + dev->accY * dev->accY + dev->accZ * dev->accZ);
 
 	// Calculer l'angle de pitch et roll à partir des accéléromètres
-	dev->angle_pitch_acc = -(atan2(dev->accX, sqrt(dev->accY*dev->accY + dev->accZ*dev->accZ))*180.0)/M_PI;
-	dev->angle_roll_acc  = (atan2(dev->accY, dev->accZ)*180.0)/M_PI;
+	dev->angle_pitch_acc = -(atan2(-dev->accX, sqrt(dev->accY*dev->accY + dev->accZ*dev->accZ)) * 180.0) / M_PI;
+	dev->angle_roll_acc  = (atan2(dev->accY, -dev->accZ) * 180.0) / M_PI;
+	dev->angle_yaw_acc = atan2(dev->accX, dev->accZ) * 180.0 / M_PI;
+
 
 	dev->kalmanPitch = KalmanFilter_Update(&kalmanPitch, dev->angle_pitch_acc, dev->gyroY);
 	dev->kalmanRoll = KalmanFilter_Update(&kalmanRoll, dev->angle_roll_acc, dev->gyroX);

@@ -28,8 +28,9 @@ static char timer_buffer[128] = {"0"};
 // Parameters
 static uint8_t header_states = 0x00;
 
-static uint8_t pyro0_fired = 0;
-static uint8_t pyro1_fired = 0;
+static bool armed = false;
+static bool pyro0_fired = false;
+static bool pyro1_fired = false;
 
 // Variable
 //extern bool push_button;
@@ -94,83 +95,39 @@ void ROCKET_InitRoutine(void) {
 	ParseLOG("Rocket finish init components");
 }
 
-uint8_t ROCKET_Behavior(void) {
+void ROCKET_Behavior(void) {
 
     ICM20602_Update_All(&icm_data);
     BMP280_Read_Temperature_Pressure(&bmp_data);
 
-    if (bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
-    	return 0; // Do nothing when rocket is on the ground
-    }
+    printt("AccX: %f  |  ", icm_data.accX);
+    printt("AccY: %f  |  ", icm_data.accY);
+    printt("AccZ: %f  |  ", icm_data.accZ);
+    printt("Yaw: %f\r\n", icm_data.angle_yaw_acc);
 
-    if (pyro1_fired == 1) {
-    	return 0; // Skip if pyro 0 and pyro 1 are fired
-    } else if (pyro0_fired == 1) {
-    	// If pyro0 fired, check if pyro1 is ready to fire
-   		if(bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
-			pyro1_fired = 1;
-			// LOG Pyro release
-			ParseLOG("Pyro1 release");
-		}
-  	} else {
-  		// If pyro0 is not fired, check if it's read to fire
-  		// Not in mach lock (engine not burning)
-  		if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) {
-  			if (icm_data.accResult >= ACCRES_MIN) {
-				ParseLOG("Mach Lock enabled");
-			}
-			AltitudeTrend trend = Altitude_Trend(bmp_data.altitude_filtered_m);
-			if (trend == DESCENDING) {
-				// Descending and not in mach lock, fire pyro0
-				pyro0_fired = 1;
-				// LOG Pyro release
-				ParseLOG("Pyro0 release");
-			}
-    	}
-    }
+    if(bmp_data.altitude_filtered_m <= ALTITUDE_START) return; // Do nothing when rocket is on the ground
 
-//    uint8_t behavior = 0x00;
-//    // Orientation Z
-//    if (icm_data.accZ > 0) {
-//        behavior |= (1 << 0);	// up
-//    } else behavior &= ~(1 << 0);	// down
-//    // Movement not in mach lock
-//    if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) {
-//    	AltitudeTrend trend = Altitude_Trend(bmp_data.altitude_filtered_m);
-//    	if(trend == ASCENDING) {
-//    		behavior |= (1 << 1);
-//    		behavior |= (0 << 2);
-//    	} else if(trend == DESCENDING) {
-//    		behavior |= (0 << 1);
-//			behavior |= (1 << 2);
-//    	} else {
-//    		behavior |= (0 << 1);
-//			behavior |= (0 << 2);
-//    	} // No 0x03
-//    }
-//    // East
-//    if (icm_data.angleX >= ANGLE_MIN) {
-//        behavior |= (1 << 3); // Detected
-//    } else behavior &= ~(1 << 3); // Not detected
-//    // West
-//    if (icm_data.angleX <= -ANGLE_MIN) {
-//        behavior |= (1 << 4); // Detected
-//    } else behavior &= ~(1 << 4); // Not detected
-//    // South
-//    if (icm_data.angleY <= -ANGLE_MIN) {
-//        behavior |= (1 << 5);
-//    } else behavior &= ~(1 << 5);
-//    // North
-//    if (icm_data.angleY >= ANGLE_MIN) {
-//        behavior |= (1 << 6);
-//    } else behavior &= ~(1 << 6);
-//    // Mach Lock (vector norm acceleration)
-//    if (icm_data.accResult >= ACCRES_MIN) {
-//        behavior |= (1 << 7);
-//    } else behavior &= ~(1 << 7);
-//
-//    return behavior;
-    return 0; // TMP Launch Canada
+    if(!armed && icm_data.accZ > ACCELERATION_THRESHOLD) armed = true;
+
+    if(armed) {
+    	AltitudeTrend trend = Altitude_Trend(bmp_data.altitude_filtered_m);
+        // Drogue
+        if(!pyro0_fired) {
+            if((trend == DESCENDING || trend == STABLE) && bmp_data.altitude_filtered_m < ALTITUDE_DROGUE) {
+                pyro0_fired = true;
+                ParseLOG("Drogue release");
+                printt("Drogue release\r\n");
+            }
+        }
+        // Main
+        else if(pyro0_fired && !pyro1_fired) {
+            if(bmp_data.altitude_filtered_m <= ALTITUDE_MAIN) {
+                pyro1_fired = true;
+                ParseLOG("Main release");
+                printt("Main release\r\n");
+            }
+        }
+    }
 }
 
 uint8_t ROCKET_ModeRoutine(void) {
@@ -327,22 +284,28 @@ uint8_t ROCKET_SetMode(const uint8_t mode) {
 }
 
 AltitudeTrend Altitude_Trend(const float newAltitude) {
-
     static uint8_t bufferIndex = 0;
+    static uint8_t bufferCount = 0;
     static uint8_t ascentCount = 0;
     static uint8_t descentCount = 0;
     static float BMP280_buffer[BMP280_BUFFERSIZE] = {0};
 
     BMP280_buffer[bufferIndex] = newAltitude;
     bufferIndex = (bufferIndex + 1) % BMP280_BUFFERSIZE;
+    if (bufferCount < BMP280_BUFFERSIZE) bufferCount++;
+
+    if (bufferCount < BMP280_BUFFERSIZE) return STABLE;
 
     uint8_t ascentDetected = 0;
     uint8_t descentDetected = 0;
 
     for (uint8_t i = 0; i < BMP280_BUFFERSIZE - 1; i++) {
-        if (BMP280_buffer[i] < BMP280_buffer[i + 1]) {
+        uint8_t idx1 = (bufferIndex + i) % BMP280_BUFFERSIZE;
+        uint8_t idx2 = (bufferIndex + i + 1) % BMP280_BUFFERSIZE;
+
+        if (BMP280_buffer[idx1] < BMP280_buffer[idx2]) {
             ascentDetected++;
-        } else if (BMP280_buffer[i] > BMP280_buffer[i + 1]) {
+        } else if (BMP280_buffer[idx1] > BMP280_buffer[idx2]) {
             descentDetected++;
         }
     }
@@ -403,12 +366,13 @@ void ParseLOG(char* comment) {
 			{DATA_TYPE_FLOAT, .data.f = icm_data.accY},
 			{DATA_TYPE_FLOAT, .data.f = icm_data.accZ},
 			{DATA_TYPE_FLOAT, .data.f = icm_data.angle_roll_acc},
-			{DATA_TYPE_FLOAT, .data.f = icm_data.angle_pitch_acc}
+			{DATA_TYPE_FLOAT, .data.f = icm_data.angle_pitch_acc},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.angle_yaw_acc}
 		};
-	MEM2067_Write(FILENAME_LOG, headers, 15);
+	MEM2067_Write(FILENAME_LOG, headers, HEADER_NUM);
 }
 
-const char* ROCKET_ModeToString(const uint8_t mode) {
+char* ROCKET_ModeToString(const uint8_t mode) {
 
 	switch(mode) {
 		case 0x00: return "MODE_PREFLIGHT";
