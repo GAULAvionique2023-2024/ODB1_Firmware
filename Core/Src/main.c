@@ -114,13 +114,13 @@ int main(void)
   ROCKET_InitRoutine();
 
   ROCKET_SetMode(MODE_INFLIGHT); // TMP for LC
+  Pyro_Arming(true);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-//	rocket_behavior = ROCKET_Behavior();
 	ROCKET_Behavior();
 	ROCKET_ModeRoutine();
 
@@ -128,41 +128,6 @@ int main(void)
 	if(HM10BLE_ConnectionStatus(&ble_data)) {
 		printf("Connected\r\n");
 	} else printf("Not connected\r\n");
-	*/
-
-	/*
-	if((rocket_behavior & ACCZ_MASK) == 0x01 || (rocket_behavior & ACCZ_MASK) == 0x02) { // Ascending
-		if(bmp_data.altitude_filtered_m >= ALTITUDE_START) {
-			ROCKET_SetMode(MODE_INFLIGHT);
-			pyro_armed = true;
-		}
-	}
-
-    if((rocket_behavior & ACCZ_MASK) != 0) {
-    	if(bmp_data.altitude_filtered_m >= ALTITUDE_START) {
-    		ROCKET_SetMode(MODE_INFLIGHT);
-    		pyro_armed = true;
-    	}
-    } else if((rocket_behavior & ACCZ_MASK) == 0 && rocket_data.header_states.pyro0 == 0 && rocket_data.header_states.pyro1 == 0) {
-    	ROCKET_SetMode(MODE_POSTFLIGHT);
-    } else {
-		ROCKET_SetMode(MODE_PREFLIGHT);
-		pyro_armed = false;
-	}
-    // Mach Lock
-    if((rocket_behavior & MACHLOCK_MASK) == 0) {
-    	// Altitude
-		if((rocket_behavior & ALTITUDE_MASK) != 0) {
-			Pyro_Fire(pyro_armed, 0);
-			// TODO: add altitude + time mem2067
-			MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro1 release\r\n");
-			if(bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
-				Pyro_Fire(pyro_armed, 1);
-				// TODO: add altitude + time mem2067
-				MEM2067_Write(FILENAME_LOG, "Time: ... / Altitude: ... -> Pyro2 release\r\n");
-			}
-		}
-	}
 	*/
 
     /* USER CODE END WHILE */

@@ -25,6 +25,12 @@
 #include "GAUL_Drivers/Pyros.h"
 #include "GAUL_Drivers/MEM2067.h"
 
+#ifdef DEBUG
+    #define PRINTT(...) printt(__VA_ARGS__)
+#else
+    #define PRINTT(...) ((void)0)
+#endif
+
 // TODO: Check data length always good after update
 #define MODE_PREFLIGHT 0x00
 #define PREFLIGHT_DATASIZE 24

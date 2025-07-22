@@ -36,7 +36,7 @@ static uint8_t pyro1_fired = 0;
 
 void ROCKET_InitRoutine(void) {
 
-	//printt("|----------Starting----------|\r\n");
+	printt("|----------Starting----------|\r\n");
 	RunTimerInit(&run_timer);
 	//Buzz(TIM3, LL_TIM_CHANNEL_CH4, START);
 	SPI_Init(SPI1);
@@ -44,30 +44,30 @@ void ROCKET_InitRoutine(void) {
 //	USART_Init(USART1, 9600, 72);
 //	USART_Init(USART2, 9600, 72);
 //	USART_Init(USART3, 9600, 72);
-	//printt("|----------Components initialization----------|\r\n");
+	printt("|----------Components initialization----------|\r\n");
 	// Button
 //	Init_Interrupt_GPIO(GPIOA, 9);
 	ROCKET_SetMode(MODE_INFLIGHT);
-	//printt("(+) Mode flight: %i succeeded...\r\n", rocket_data.header_states.mode);
+	printt("(+) Mode flight: %i succeeded...\r\n", rocket_data.header_states.mode);
 	// LED RGB
 //	WS2812_Init();
-//	printt("(+) WS2812 succeeded...\r\n");
+	printt("(+) WS2812 succeeded...\r\n");
 	// Multiplexer
 	if (CD74HC4051_Init(&hadc1) != 1) {
-	  //printt("(-) CD74HC4051 failed...\r\n");
+	  printt("(-) CD74HC4051 failed...\r\n");
 	} else {
 		rocket_data.header_states.pyro0 = Pyro_Check(&hadc1, PYRO_CHANNEL_0) ? 0x01 : 0x00;
 		rocket_data.header_states.pyro1 = Pyro_Check(&hadc1, PYRO_CHANNEL_1) ? 0x01 : 0x00;
-		//printt(" -> Pyro0 state: %i\r\n", rocket_data.header_states.pyro0);
-		//printt(" -> Pyro1 state: %i\r\n", rocket_data.header_states.pyro1);
-		//printt("(+) CD74HC4051 succeeded...\r\n");
+		printt(" -> Pyro0 state: %i\r\n", rocket_data.header_states.pyro0);
+		printt(" -> Pyro1 state: %i\r\n", rocket_data.header_states.pyro1);
+		printt("(+) CD74HC4051 succeeded...\r\n");
 	}
 	// Barometer
 	bmp_data.SPIx = SPI2;
 	bmp_data.cs_pin = 8;
 	bmp_data.cs_port = GPIOA;
 	rocket_data.header_states.barometer = BMP280_Init(&bmp_data) == 0 ? 0x01 : 0x00;
-	//printt(rocket_data.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
+	printt(rocket_data.header_states.barometer ? "(+) BMP280 succeeded...\r\n" : "(-) BMP280 failed...\r\n");
 	// Accelerometer
 	icm_data.SPIx = SPI2;
 	icm_data.cs_pin = 12;
@@ -75,17 +75,17 @@ void ROCKET_InitRoutine(void) {
 	icm_data.int_pin = 10;
 	icm_data.int_port = GPIOA;
 	rocket_data.header_states.accelerometer = ICM20602_Init(&icm_data) == 0 ? 0x01 : 0x00;
-	//printt(rocket_data.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
+	printt(rocket_data.header_states.accelerometer ? "(+) ICM20602 succeeded...\r\n" : "(-) ICM20602 failed...\r\n");
 	// GPS
 	rocket_data.header_states.gps = L76LM33_Init(&L76_data, &huart2) == L76LM33_OK ? 0x01 : 0x00;
-	//printt(rocket_data.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
+	printt(rocket_data.header_states.gps ? "(+) L76LM33 succeeded...\r\n" : "(-) L76LM33 failed...\r\n");
 	// Radio
 	rfd_data.USARTx = USART1;
 	rocket_data.header_states.rfd = RFD900_Init(&rfd_data) == 1 ? 0x01 : 0x00;
-	//printt(rocket_data.header_states.rfd ? "(+) RFD900 succeeded...\r\n" : "(-) RFD900 failed...\r\n");
+	printt(rocket_data.header_states.rfd ? "(+) RFD900 succeeded...\r\n" : "(-) RFD900 failed...\r\n");
 	// SD Card
 	rocket_data.header_states.sd = MEM2067_Mount(FILENAME_LOG) == 1 ? 0x01 : 0x00;
-	//printt(rocket_data.header_states.sd ? "(+) SD card succeeded...\r\n" : "(-) SD card failed...\r\n");
+	printt(rocket_data.header_states.sd ? "(+) SD card succeeded...\r\n" : "(-) SD card failed...\r\n");
 	// Bluetooth
 //	ble_data.USARTx = USART3;
 //	HM10BLE_Init(&ble_data);
@@ -109,7 +109,7 @@ uint8_t ROCKET_Behavior(void) {
     	// If pyro0 fired, check if pyro1 is ready to fire
    		if(bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
 			pyro1_fired = 1;
-			// LOG Pyro release
+			Pyro_Fire(PYRO_1);
 			ParseLOG("Pyro1 release");
 		}
   	} else {
@@ -123,53 +123,12 @@ uint8_t ROCKET_Behavior(void) {
 			if (trend == DESCENDING) {
 				// Descending and not in mach lock, fire pyro0
 				pyro0_fired = 1;
-				// LOG Pyro release
+				Pyro_Fire(PYRO_0);
 				ParseLOG("Pyro0 release");
 			}
     	}
     }
 
-//    uint8_t behavior = 0x00;
-//    // Orientation Z
-//    if (icm_data.accZ > 0) {
-//        behavior |= (1 << 0);	// up
-//    } else behavior &= ~(1 << 0);	// down
-//    // Movement not in mach lock
-//    if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) {
-//    	AltitudeTrend trend = Altitude_Trend(bmp_data.altitude_filtered_m);
-//    	if(trend == ASCENDING) {
-//    		behavior |= (1 << 1);
-//    		behavior |= (0 << 2);
-//    	} else if(trend == DESCENDING) {
-//    		behavior |= (0 << 1);
-//			behavior |= (1 << 2);
-//    	} else {
-//    		behavior |= (0 << 1);
-//			behavior |= (0 << 2);
-//    	} // No 0x03
-//    }
-//    // East
-//    if (icm_data.angleX >= ANGLE_MIN) {
-//        behavior |= (1 << 3); // Detected
-//    } else behavior &= ~(1 << 3); // Not detected
-//    // West
-//    if (icm_data.angleX <= -ANGLE_MIN) {
-//        behavior |= (1 << 4); // Detected
-//    } else behavior &= ~(1 << 4); // Not detected
-//    // South
-//    if (icm_data.angleY <= -ANGLE_MIN) {
-//        behavior |= (1 << 5);
-//    } else behavior &= ~(1 << 5);
-//    // North
-//    if (icm_data.angleY >= ANGLE_MIN) {
-//        behavior |= (1 << 6);
-//    } else behavior &= ~(1 << 6);
-//    // Mach Lock (vector norm acceleration)
-//    if (icm_data.accResult >= ACCRES_MIN) {
-//        behavior |= (1 << 7);
-//    } else behavior &= ~(1 << 7);
-//
-//    return behavior;
     return 0; // TMP Launch Canada
 }
 
@@ -264,6 +223,7 @@ uint8_t ROCKET_ModeRoutine(void) {
 			break;
 		/*
 		case MODE_POSTFLIGHT:
+			Pyro_Arming(false);
 			//BMP280_SwapMode(BMP280_SETTING_CTRL_MEAS_LOW);
 			rocket_data.size = POSTFLIGHT_DATASIZE;
 
@@ -314,13 +274,18 @@ uint8_t ROCKET_ModeRoutine(void) {
 
 uint8_t ROCKET_SetMode(const uint8_t mode) {
 
-    if (mode != MODE_PREFLIGHT && mode != MODE_INFLIGHT && mode != MODE_POSTFLIGHT && mode != MODE_DEBUG) {
-        return 0;
-    }
+	switch (mode) {
+	        case MODE_PREFLIGHT:
+	        case MODE_INFLIGHT:
+	        case MODE_POSTFLIGHT:
+	        case MODE_DEBUG:
+	            break;
+	        default:
+	            return 0; // Mode invalide
+	    }
 
     if(rocket_data.header_states.mode != mode) {
 		rocket_data.header_states.mode = mode;
-		// LOG Mode release
 		ParseLOG("Set mode");
     }
     return 1; // OK
