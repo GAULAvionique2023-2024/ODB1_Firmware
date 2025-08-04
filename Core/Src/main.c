@@ -61,8 +61,6 @@ ROCKET_Data rocket_data;
 // Variables
 char* filename_log = "log.csv";
 uint8_t rocket_behavior = 0x00;
-bool pyro_armed = false;
-bool push_button = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

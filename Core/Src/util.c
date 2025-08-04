@@ -28,9 +28,6 @@ static char timer_buffer[128] = {"0"};
 // Parameters
 static uint8_t header_states = 0x00;
 
-static uint8_t pyro0_fired = 0;
-static uint8_t pyro1_fired = 0;
-
 // Variable
 //extern bool push_button;
 
@@ -95,41 +92,38 @@ void ROCKET_InitRoutine(void) {
 }
 
 uint8_t ROCKET_Behavior(void) {
-
     ICM20602_Update_All(&icm_data);
     BMP280_Read_Temperature_Pressure(&bmp_data);
 
-    if (bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
-    	return 0; // Do nothing when rocket is on the ground
-    }
+    // Do nothing when rocket is < 450 meters
+    if (bmp_data.altitude_filtered_m < ALTITUDE_GND) return 0;
 
-    if (pyro1_fired == 1) {
-    	return 0; // Skip if pyro 0 and pyro 1 are fired
-    } else if (pyro0_fired == 1) {
-    	// If pyro0 fired, check if pyro1 is ready to fire
-   		if(bmp_data.altitude_filtered_m <= ALTITUDE_PYRO2) {
-			pyro1_fired = 1;
+    if (main_fired == 1 && drogue_fired == 1) {
+    	return 0; // Skip if main/drogue already fired
+    } else if (drogue_fired == 1) {
+    	// If drogue fired, check if main is ready to fire
+   		if(bmp_data.altitude_filtered_m <= ALTITUDE_MAIN) {
+   			rocket_data.header_states.pyro1 = 1;
 			Pyro_Fire(PYRO_1);
-			ParseLOG("Pyro1 release");
+			ParseLOG("Main release");
 		}
   	} else {
-  		// If pyro0 is not fired, check if it's read to fire
-  		// Not in mach lock (engine not burning)
-  		if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) {
-  			if (icm_data.accResult >= ACCRES_MIN) {
-				ParseLOG("Mach Lock enabled");
-			}
+  		// If drogue is not fired, check if it's ready to fire
+  		// Not in mach lock
+  		if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) { // TODO: a verifier (valuer min/max)
 			AltitudeTrend trend = Altitude_Trend(bmp_data.altitude_filtered_m);
 			if (trend == DESCENDING) {
-				// Descending and not in mach lock, fire pyro0
-				pyro0_fired = 1;
+				// Descending and not in mach lock, fire drogue
+				rocket_data.header_states.pyro0 = 1;
 				Pyro_Fire(PYRO_0);
-				ParseLOG("Pyro0 release");
+				ParseLOG("Drogue release");
 			}
+    	} else {
+    		ParseLOG("Mach lock enabled");
     	}
     }
 
-    return 0; // TMP Launch Canada
+    return 0;
 }
 
 uint8_t ROCKET_ModeRoutine(void) {
