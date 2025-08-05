@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "stm32f1xx_hal.h"
 #include "main.h"
@@ -48,9 +49,9 @@
 
 // Definitions
 #define MAX_ROCKET_DATA_SIZE (INFLIGHT_DATASIZE > POSTFLIGHT_DATASIZE ? INFLIGHT_DATASIZE : POSTFLIGHT_DATASIZE)
-#define ALTITUDE_TREND_THRESHOLD 5
+#define ALTITUDE_TREND_THRESHOLD 5 // meters
+#define ALTITUDE_TREND_MIN_COUNT 5 // nb
 #define ACCZ_MIN 1.2
-#define ACCRES_MIN 2.0
 #define ANGLE_MIN 5
 
 #define FILENAME_LOG "log.csv"

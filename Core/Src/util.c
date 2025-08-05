@@ -27,6 +27,7 @@ static char timer_buffer[128] = {"0"};
 
 // Parameters
 static uint8_t header_states = 0x00;
+static bool pyros_arming = false;
 
 // Variable
 //extern bool push_button;
@@ -93,35 +94,46 @@ void ROCKET_InitRoutine(void) {
 
 uint8_t ROCKET_Behavior(void) {
     ICM20602_Update_All(&icm_data);
-    BMP280_Read_Temperature_Pressure(&bmp_data);
 
-    // Do nothing when rocket is < 450 meters
-    if (bmp_data.altitude_filtered_m < ALTITUDE_GND) return 0;
+    static float last_valid_altitude = 0.0f;
 
-    if (main_fired == 1 && drogue_fired == 1) {
-    	return 0; // Skip if main/drogue already fired
-    } else if (drogue_fired == 1) {
-    	// If drogue fired, check if main is ready to fire
-   		if(bmp_data.altitude_filtered_m <= ALTITUDE_MAIN) {
-   			rocket_data.header_states.pyro1 = 1;
+    bool baro_reading = false;
+	if (fabsf(icm_data.accZ) <= ACCZ_MIN) baro_reading = true;
+    if (baro_reading) {
+    	BMP280_Read_Temperature_Pressure(&bmp_data);
+    	last_valid_altitude = bmp_data.altitude_filtered_m;
+    }
+
+    // Do nothing when rocket is < 100 meters
+    if (last_valid_altitude < ALTITUDE_GND) return 0;
+    // Arming > 450 meters
+    if (last_valid_altitude > ALTITUDE_MAIN && pyros_arming == false) {
+    	pyros_arming = true;
+    	Pyro_Arming(true);
+    }
+    // Skip if main/drogue already fired
+    if (rocket_data.header_states.pyro0 == 1 && rocket_data.header_states.pyro1 == 1) {
+		Pyro_Arming(false);
+		return 0;
+	}
+
+	if (rocket_data.header_states.pyro0 == 1 && rocket_data.header_states.pyro1 == 0) {
+		// Main: if drogue fired, check if main is ready to fire
+		if (last_valid_altitude <= ALTITUDE_MAIN) {
+			rocket_data.header_states.pyro1 = 1;
 			Pyro_Fire(PYRO_1);
 			ParseLOG("Main release");
 		}
-  	} else {
-  		// If drogue is not fired, check if it's ready to fire
-  		// Not in mach lock
-  		if (icm_data.accZ <= ACCZ_MIN && icm_data.accZ >= -ACCZ_MIN) { // TODO: a verifier (valuer min/max)
-			AltitudeTrend trend = Altitude_Trend(bmp_data.altitude_filtered_m);
-			if (trend == DESCENDING) {
-				// Descending and not in mach lock, fire drogue
-				rocket_data.header_states.pyro0 = 1;
-				Pyro_Fire(PYRO_0);
-				ParseLOG("Drogue release");
-			}
-    	} else {
-    		ParseLOG("Mach lock enabled");
-    	}
-    }
+	} else if (rocket_data.header_states.pyro0 == 0 && baro_reading) {
+		// Drogue: if baro_reading & dorgue not fired
+		AltitudeTrend trend = Altitude_Trend(last_valid_altitude);
+		// Descending and pyros armed, fire drogue
+		if (trend == DESCENDING && pyros_arming) {
+			rocket_data.header_states.pyro0 = 1;
+			Pyro_Fire(PYRO_0);
+			ParseLOG("Drogue release");
+		}
+	}
 
     return 0;
 }
@@ -291,6 +303,7 @@ AltitudeTrend Altitude_Trend(const float newAltitude) {
     static uint8_t ascentCount = 0;
     static uint8_t descentCount = 0;
     static float BMP280_buffer[BMP280_BUFFERSIZE] = {0};
+    static AltitudeTrend lastTrend = STABLE;
 
     BMP280_buffer[bufferIndex] = newAltitude;
     bufferIndex = (bufferIndex + 1) % BMP280_BUFFERSIZE;
@@ -299,23 +312,30 @@ AltitudeTrend Altitude_Trend(const float newAltitude) {
     uint8_t descentDetected = 0;
 
     for (uint8_t i = 0; i < BMP280_BUFFERSIZE - 1; i++) {
-        if (BMP280_buffer[i] < BMP280_buffer[i + 1]) {
+        uint8_t idx1 = (bufferIndex + i) % BMP280_BUFFERSIZE;
+        uint8_t idx2 = (bufferIndex + i + 1) % BMP280_BUFFERSIZE;
+
+        if (BMP280_buffer[idx1] < BMP280_buffer[idx2]) {
             ascentDetected++;
-        } else if (BMP280_buffer[i] > BMP280_buffer[i + 1]) {
+        } else if (BMP280_buffer[idx1] > BMP280_buffer[idx2]) {
             descentDetected++;
         }
     }
 
-    ascentCount = (ascentDetected >= ALTITUDE_TREND_THRESHOLD) ? ascentCount + 1 : 0;
-    descentCount = (descentDetected >= ALTITUDE_TREND_THRESHOLD) ? descentCount + 1 : 0;
+    if (ascentDetected >= ALTITUDE_TREND_THRESHOLD) {
+        if (ascentCount < 2 * ALTITUDE_TREND_THRESHOLD) ascentCount++;
+    } else ascentCount = 0;
+    if (descentDetected >= ALTITUDE_TREND_THRESHOLD) {
+		if (descentCount < 2 * ALTITUDE_TREND_THRESHOLD) descentCount++;
+	} else descentCount = 0;
 
-    if (ascentCount >= ALTITUDE_TREND_THRESHOLD) {
-        return ASCENDING;
-    } else if (descentCount >= ALTITUDE_TREND_THRESHOLD) {
-        return DESCENDING;
-    } else {
-        return STABLE;
+    if (ascentCount >= ALTITUDE_TREND_MIN_COUNT) {
+        lastTrend = ASCENDING;
+    } else if (descentCount >= ALTITUDE_TREND_MIN_COUNT) {
+        lastTrend = DESCENDING;
     }
+
+    return lastTrend;
 }
 
 static void writeBytes(uint8_t* dest, uint32_t data, uint8_t size) {

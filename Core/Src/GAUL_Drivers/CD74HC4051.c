@@ -72,8 +72,7 @@ uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyr
     return (uint16_t)((adc_value * vref / 4096) * 1000);
 }
 
-bool Pyro_Check(ADC_HandleTypeDef *hadc, uint8_t pyro_channel)
-{
+bool Pyro_Check(ADC_HandleTypeDef *hadc, uint8_t pyro_channel) {
 	bool pass = false;
 
 	Write_GPIO(GPIOC, 13, LOW);
