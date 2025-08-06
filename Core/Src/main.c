@@ -112,7 +112,6 @@ int main(void)
   ROCKET_InitRoutine();
 
   ROCKET_SetMode(MODE_INFLIGHT); // TMP for LC
-  Pyro_Arming(true);
   /* USER CODE END 2 */
 
   /* Infinite loop */

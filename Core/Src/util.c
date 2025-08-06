@@ -27,7 +27,7 @@ static char timer_buffer[128] = {"0"};
 
 // Parameters
 static uint8_t header_states = 0x00;
-static bool pyros_arming = false;
+static bool pyros_armed = false;
 
 // Variable
 //extern bool push_button;
@@ -97,9 +97,9 @@ uint8_t ROCKET_Behavior(void) {
 
     static float last_valid_altitude = 0.0f;
 
-    bool baro_reading = false;
-	if (fabsf(icm_data.accZ) <= ACCZ_MIN) baro_reading = true;
-    if (baro_reading) {
+    bool can_read_baro = false;
+	if (fabsf(icm_data.accZ) <= ACCZ_MIN) can_read_baro = true;
+    if (can_read_baro) {
     	BMP280_Read_Temperature_Pressure(&bmp_data);
     	last_valid_altitude = bmp_data.altitude_filtered_m;
     }
@@ -107,8 +107,8 @@ uint8_t ROCKET_Behavior(void) {
     // Do nothing when rocket is < 100 meters
     if (last_valid_altitude < ALTITUDE_GND) return 0;
     // Arming > 450 meters
-    if (last_valid_altitude > ALTITUDE_MAIN && pyros_arming == false) {
-    	pyros_arming = true;
+    if (last_valid_altitude > ALTITUDE_MAIN && pyros_armed == false) {
+    	pyros_armed = true;
     	Pyro_Arming(true);
     }
     // Skip if main/drogue already fired
@@ -124,11 +124,11 @@ uint8_t ROCKET_Behavior(void) {
 			Pyro_Fire(PYRO_1);
 			ParseLOG("Main release");
 		}
-	} else if (rocket_data.header_states.pyro0 == 0 && baro_reading) {
-		// Drogue: if baro_reading & dorgue not fired
+	} else if (rocket_data.header_states.pyro0 == 0 && can_read_baro) {
+		// Drogue: if baro_reading & drogue not fired
 		AltitudeTrend trend = Altitude_Trend(last_valid_altitude);
 		// Descending and pyros armed, fire drogue
-		if (trend == DESCENDING && pyros_arming) {
+		if (trend == DESCENDING && pyros_armed) {
 			rocket_data.header_states.pyro0 = 1;
 			Pyro_Fire(PYRO_0);
 			ParseLOG("Drogue release");
@@ -308,24 +308,24 @@ AltitudeTrend Altitude_Trend(const float newAltitude) {
     BMP280_buffer[bufferIndex] = newAltitude;
     bufferIndex = (bufferIndex + 1) % BMP280_BUFFERSIZE;
 
-    uint8_t ascentDetected = 0;
-    uint8_t descentDetected = 0;
+    uint8_t ascentSteps = 0;
+    uint8_t descentSteps = 0;
 
     for (uint8_t i = 0; i < BMP280_BUFFERSIZE - 1; i++) {
         uint8_t idx1 = (bufferIndex + i) % BMP280_BUFFERSIZE;
         uint8_t idx2 = (bufferIndex + i + 1) % BMP280_BUFFERSIZE;
 
         if (BMP280_buffer[idx1] < BMP280_buffer[idx2]) {
-            ascentDetected++;
+            ascentSteps++;
         } else if (BMP280_buffer[idx1] > BMP280_buffer[idx2]) {
-            descentDetected++;
+            descentSteps++;
         }
     }
 
-    if (ascentDetected >= ALTITUDE_TREND_THRESHOLD) {
+    if (ascentSteps >= ALTITUDE_TREND_THRESHOLD) {
         if (ascentCount < 2 * ALTITUDE_TREND_THRESHOLD) ascentCount++;
     } else ascentCount = 0;
-    if (descentDetected >= ALTITUDE_TREND_THRESHOLD) {
+    if (descentSteps >= ALTITUDE_TREND_THRESHOLD) {
 		if (descentCount < 2 * ALTITUDE_TREND_THRESHOLD) descentCount++;
 	} else descentCount = 0;
 
