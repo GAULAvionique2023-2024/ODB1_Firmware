@@ -27,8 +27,6 @@ static char timer_buffer[128] = {"0"};
 
 // Parameters
 static uint8_t header_states = 0x00;
-static bool pyros_armed = false;
-
 // Variable
 //extern bool push_button;
 
@@ -106,14 +104,9 @@ uint8_t ROCKET_Behavior(void) {
 
     // Do nothing when rocket is < 100 meters
     if (last_valid_altitude < ALTITUDE_GND) return 0;
-    // Arming > 450 meters
-    if (last_valid_altitude > ALTITUDE_MAIN && pyros_armed == false) {
-    	pyros_armed = true;
-    	Pyro_Arming(true);
-    }
+
     // Skip if main/drogue already fired
     if (rocket_data.header_states.pyro0 == 1 && rocket_data.header_states.pyro1 == 1) {
-		Pyro_Arming(false);
 		return 0;
 	}
 
@@ -128,7 +121,7 @@ uint8_t ROCKET_Behavior(void) {
 		// Drogue: if baro_reading & drogue not fired
 		AltitudeTrend trend = Altitude_Trend(last_valid_altitude);
 		// Descending and pyros armed, fire drogue
-		if (trend == DESCENDING && pyros_armed) {
+		if (trend == DESCENDING) {
 			rocket_data.header_states.pyro0 = 1;
 			Pyro_Fire(PYRO_0);
 			ParseLOG("Drogue release");

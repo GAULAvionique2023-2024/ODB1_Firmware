@@ -35,9 +35,11 @@ uint8_t Pyro_Fire(char pyro) {
 		default:
 			return 0;
 	}
-
+	Pyro_Arming(true);
+	HAL_Delay(5);
 	Write_GPIO(GPIOB, target_pin, HIGH);
 	HAL_Delay(100);		// TODO: Remplacer HAL_Delay par un timer non-bloquant ou une callback
 	Write_GPIO(GPIOB, target_pin, LOW);
+	Pyro_Arming(false);
     return 1;
 }
