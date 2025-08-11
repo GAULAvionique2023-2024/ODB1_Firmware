@@ -358,7 +358,6 @@ void STM32_fTo8(float data, ROCKET_Data rocket_data, uint8_t index) {
 }
 
 void ParseLOG(char* comment) {
-
 	ParseTimerBuffer(&run_timer, timer_buffer);
 	DataField headers[] = {
 			{DATA_TYPE_STRING, .data.str = comment},
@@ -374,10 +373,13 @@ void ParseLOG(char* comment) {
 			{DATA_TYPE_FLOAT, .data.f = icm_data.accX},
 			{DATA_TYPE_FLOAT, .data.f = icm_data.accY},
 			{DATA_TYPE_FLOAT, .data.f = icm_data.accZ},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.velX},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.velY},
+			{DATA_TYPE_FLOAT, .data.f = icm_data.velZ},
 			{DATA_TYPE_FLOAT, .data.f = icm_data.angle_roll_acc},
 			{DATA_TYPE_FLOAT, .data.f = icm_data.angle_pitch_acc}
 		};
-	MEM2067_Write(FILENAME_LOG, headers, 15);
+	MEM2067_Write(FILENAME_LOG, headers, HEADER_NUM);
 }
 
 char* ROCKET_ModeToString(const uint8_t mode) {

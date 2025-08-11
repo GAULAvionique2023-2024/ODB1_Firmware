@@ -111,12 +111,14 @@ typedef struct {
 
 	float angle_pitch_acc;
 	float angle_roll_acc;
+	//float angle_yaw_acc;
 	float angleX;
 	float angleY;
 	float kalmanRoll;
 	float kalmanPitch;
+	float kalmanYaw;
 
-}ICM20602;
+} ICM20602;
 
 uint8_t ICM20602_Init(ICM20602 *dev);
 void ICM20602_Update_All(ICM20602 *dev);

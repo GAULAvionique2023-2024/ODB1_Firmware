@@ -15,6 +15,29 @@ extern RunTimer run_timer;
 KalmanFilter kalmanPitch;
 KalmanFilter kalmanRoll;
 
+static float yaw = 0.0f;
+
+static void anglesToRotationMatrix(float pitch, float roll, float yaw, float R[3][3]) {
+    float sp = sinf(pitch);
+    float cp = cosf(pitch);
+    float sr = sinf(roll);
+    float cr = cosf(roll);
+    float sy = sinf(yaw);
+    float cy = cosf(yaw);
+
+    R[0][0] = cp * cy;
+    R[0][1] = cp * sy;
+    R[0][2] = -sp;
+
+    R[1][0] = sr * sp * cy - cr * sy;
+    R[1][1] = sr * sp * sy + cr * cy;
+    R[1][2] = sr * cp;
+
+    R[2][0] = cr * sp * cy + sr * sy;
+    R[2][1] = cr * sp * sy - sr * cy;
+    R[2][2] = cr * cp;
+}
+
 uint8_t ICM20602_Init(ICM20602 *dev){
     dev->accResult = 0.0f;
     dev->temperatureC = 0.0f;
@@ -61,52 +84,87 @@ uint8_t ICM20602_Init(ICM20602 *dev){
 
 void ICM20602_Update_All(ICM20602 *dev) {
     static const float dt = 0.01f; // 100 Hz
-    static const float alpha = 0.999f; // filter
+    static const float alpha_vel = 0.98f; // filtre
 
     if (!ICM20602_Data_Ready(dev)) return;
 
     uint8_t rxData[14];
     int16_t gyroRawX, gyroRawY, gyroRawZ;
     int16_t accRawX, accRawY, accRawZ;
+
     ICM20602_Read(dev, ICM20602_REG_ACCEL_XOUT_H, rxData, 14);
 
     accRawX = (int16_t)((rxData[0] << 8) | rxData[1]);
     accRawY = (int16_t)((rxData[2] << 8) | rxData[3]);
     accRawZ = (int16_t)((rxData[4] << 8) | rxData[5]);
+
     dev->temperatureC = ((rxData[6] << 8) | rxData[7]) / 326.8f + 25;
+
     gyroRawX = (int16_t)((rxData[8] << 8) | rxData[9]);
     gyroRawY = (int16_t)((rxData[10] << 8) | rxData[11]);
     gyroRawZ = (int16_t)((rxData[12] << 8) | rxData[13]);
 
-    dev->gyroX = gyroRawX * 2000.f / 32768.f; // rad/s
+    // Gyro en deg/s
+    dev->gyroX = gyroRawX * 2000.f / 32768.f;
     dev->gyroY = gyroRawY * 2000.f / 32768.f;
     dev->gyroZ = gyroRawZ * 2000.f / 32768.f;
 
-    dev->accX = accRawX * 16.f / 32768.f; // g
+    // Accélération en g
+    dev->accX = accRawX * 16.f / 32768.f;
     dev->accY = accRawY * 16.f / 32768.f;
     dev->accZ = accRawZ * 16.f / 32768.f;
 
     dev->accResult = sqrtf(dev->accX * dev->accX +
-                           dev->accY * dev->accY +
-                           dev->accZ * dev->accZ);
+                          dev->accY * dev->accY +
+                          dev->accZ * dev->accZ);
 
-    float accX_ms2 = dev->accX * ICM20602_G_TO_V;
-    float accY_ms2 = dev->accY * ICM20602_G_TO_V;
-    float accZ_ms2 = dev->accZ * ICM20602_G_TO_V;
-
-    dev->velX = alpha * (dev->velX + accX_ms2 * dt);
-    dev->velY = alpha * (dev->velY + accY_ms2 * dt);
-    dev->velZ = alpha * (dev->velZ + accZ_ms2 * dt);
-
+    // Angles pitch et roll à partir de l'acc
     dev->angle_pitch_acc = -(atan2f(dev->accX, sqrtf(dev->accY * dev->accY + dev->accZ * dev->accZ)) * 180.0f) / M_PI;
     dev->angle_roll_acc  =  (atan2f(dev->accY, dev->accZ) * 180.0f) / M_PI;
 
+    // Mise à jour filtres Kalman pitch et roll
     dev->kalmanPitch = KalmanFilter_Update(&kalmanPitch, dev->angle_pitch_acc, dev->gyroY);
-    dev->kalmanRoll = KalmanFilter_Update(&kalmanRoll, dev->angle_roll_acc, dev->gyroX);
+    dev->kalmanRoll  = KalmanFilter_Update(&kalmanRoll, dev->angle_roll_acc, dev->gyroX);
+
+    // Estimation yaw par intégration gyroZ (deg/s)
+    yaw += dev->gyroZ * dt;
+    if (yaw > 180.0f) yaw -= 360.0f;
+    else if (yaw < -180.0f) yaw += 360.0f;
+
+    dev->kalmanYaw = yaw;
+
+    // Conversion angles en radians
+    float pitch = dev->kalmanPitch * M_PI / 180.0f;
+    float roll = dev->kalmanRoll * M_PI / 180.0f;
+    float yaw_rad = yaw * M_PI / 180.0f;
+
+    // Calcul matrice rotation capteur->monde
+    float R[3][3];
+    anglesToRotationMatrix(pitch, roll, yaw_rad, R);
+
+    // Accélération en m/s²
+    float acc_mps2[3] = {
+        dev->accX * ICM20602_G_TO_V,
+        dev->accY * ICM20602_G_TO_V,
+        dev->accZ * ICM20602_G_TO_V
+    };
+
+    // Transformation vers repère monde
+    float acc_world[3] = {
+        R[0][0]*acc_mps2[0] + R[0][1]*acc_mps2[1] + R[0][2]*acc_mps2[2],
+        R[1][0]*acc_mps2[0] + R[1][1]*acc_mps2[1] + R[1][2]*acc_mps2[2],
+        R[2][0]*acc_mps2[0] + R[2][1]*acc_mps2[1] + R[2][2]*acc_mps2[2]
+    };
+
+    // Soustraction gravité (Z vers le haut)
+    acc_world[2] -= ICM20602_G_TO_V;
+
+    dev->velX = alpha_vel * (dev->velX + acc_world[0] * dt);
+    dev->velY = alpha_vel * (dev->velY + acc_world[1] * dt);
+    dev->velZ = alpha_vel * (dev->velZ + acc_world[2] * dt);
 }
 
 void ICM20602_Calibrate(ICM20602 *dev, int8_t p_Sense){
-
     uint8_t rxData[6];
     int16_t gyroRawX, gyroRawY, gyroRawZ;
     int16_t xOffset = 0;
