@@ -16,7 +16,6 @@ KalmanFilter kalmanPitch;
 KalmanFilter kalmanRoll;
 
 uint8_t ICM20602_Init(ICM20602 *dev){
-
     dev->accResult = 0.0f;
     dev->temperatureC = 0.0f;
 
@@ -60,42 +59,50 @@ uint8_t ICM20602_Init(ICM20602 *dev){
     return 0;
 }
 
-void ICM20602_Update_All(ICM20602 *dev){
+void ICM20602_Update_All(ICM20602 *dev) {
+    static const float dt = 0.01f; // 100 Hz
+    static const float alpha = 0.999f; // filter
 
-	if(!ICM20602_Data_Ready(dev))
-		return;
+    if (!ICM20602_Data_Ready(dev)) return;
 
-	uint8_t rxData[14];
-	int16_t gyroRawX, gyroRawY, gyroRawZ;
-	int16_t accRawX, accRawY, accRawZ;
-	ICM20602_Read(dev, ICM20602_REG_ACCEL_XOUT_H, rxData, 14);
+    uint8_t rxData[14];
+    int16_t gyroRawX, gyroRawY, gyroRawZ;
+    int16_t accRawX, accRawY, accRawZ;
+    ICM20602_Read(dev, ICM20602_REG_ACCEL_XOUT_H, rxData, 14);
 
-	// Lire les données brutes
-	accRawX = (int16_t)((rxData[0] << 8) | rxData[1]);
-	accRawY = (int16_t)((rxData[2] << 8) | rxData[3]);
-	accRawZ = (int16_t)((rxData[4] << 8) | rxData[5]);
-	dev->temperatureC = ((rxData[6] << 8) | rxData[7]) / 326.8f + 25;
-	gyroRawX = (int16_t)((rxData[8] << 8) | rxData[9]);
-	gyroRawY = (int16_t)((rxData[10] << 8) | rxData[11]);
-	gyroRawZ = (int16_t)((rxData[12] << 8) | rxData[13]);
+    accRawX = (int16_t)((rxData[0] << 8) | rxData[1]);
+    accRawY = (int16_t)((rxData[2] << 8) | rxData[3]);
+    accRawZ = (int16_t)((rxData[4] << 8) | rxData[5]);
+    dev->temperatureC = ((rxData[6] << 8) | rxData[7]) / 326.8f + 25;
+    gyroRawX = (int16_t)((rxData[8] << 8) | rxData[9]);
+    gyroRawY = (int16_t)((rxData[10] << 8) | rxData[11]);
+    gyroRawZ = (int16_t)((rxData[12] << 8) | rxData[13]);
 
-	// Convertir les valeurs brutes
-	dev->gyroX = gyroRawX * 2000.f / 32768.f;
-	dev->gyroY = gyroRawY * 2000.f / 32768.f;
-	dev->gyroZ = gyroRawZ * 2000.f / 32768.f;
+    dev->gyroX = gyroRawX * 2000.f / 32768.f; // rad/s
+    dev->gyroY = gyroRawY * 2000.f / 32768.f;
+    dev->gyroZ = gyroRawZ * 2000.f / 32768.f;
 
-	dev->accX = accRawX * 16.f / 32768.f;
-	dev->accY = accRawY * 16.f / 32768.f;
-	dev->accZ = accRawZ * 16.f / 32768.f;
+    dev->accX = accRawX * 16.f / 32768.f; // g
+    dev->accY = accRawY * 16.f / 32768.f;
+    dev->accZ = accRawZ * 16.f / 32768.f;
 
-	dev->accResult = sqrt(dev->accX * dev->accX + dev->accY * dev->accY + dev->accZ * dev->accZ);
+    dev->accResult = sqrtf(dev->accX * dev->accX +
+                           dev->accY * dev->accY +
+                           dev->accZ * dev->accZ);
 
-	// Calculer l'angle de pitch et roll à partir des accéléromètres
-	dev->angle_pitch_acc = -(atan2(dev->accX, sqrt(dev->accY*dev->accY + dev->accZ*dev->accZ))*180.0)/M_PI;
-	dev->angle_roll_acc  = (atan2(dev->accY, dev->accZ)*180.0)/M_PI;
+    float accX_ms2 = dev->accX * ICM20602_G_TO_V;
+    float accY_ms2 = dev->accY * ICM20602_G_TO_V;
+    float accZ_ms2 = dev->accZ * ICM20602_G_TO_V;
 
-	dev->kalmanPitch = KalmanFilter_Update(&kalmanPitch, dev->angle_pitch_acc, dev->gyroY);
-	dev->kalmanRoll = KalmanFilter_Update(&kalmanRoll, dev->angle_roll_acc, dev->gyroX);
+    dev->velX = alpha * (dev->velX + accX_ms2 * dt);
+    dev->velY = alpha * (dev->velY + accY_ms2 * dt);
+    dev->velZ = alpha * (dev->velZ + accZ_ms2 * dt);
+
+    dev->angle_pitch_acc = -(atan2f(dev->accX, sqrtf(dev->accY * dev->accY + dev->accZ * dev->accZ)) * 180.0f) / M_PI;
+    dev->angle_roll_acc  =  (atan2f(dev->accY, dev->accZ) * 180.0f) / M_PI;
+
+    dev->kalmanPitch = KalmanFilter_Update(&kalmanPitch, dev->angle_pitch_acc, dev->gyroY);
+    dev->kalmanRoll = KalmanFilter_Update(&kalmanRoll, dev->angle_roll_acc, dev->gyroX);
 }
 
 void ICM20602_Calibrate(ICM20602 *dev, int8_t p_Sense){
@@ -106,7 +113,7 @@ void ICM20602_Calibrate(ICM20602 *dev, int8_t p_Sense){
     int16_t yOffset = 0;
     int16_t zOffset = 0;
 
-    do{
+    do {
         ICM20602_Read(dev, ICM20602_REG_GYRO_XOUT_H, rxData, 6);
         gyroRawX = (int16_t)((rxData[0] << 8) | rxData[1]);
         gyroRawY = (int16_t)((rxData[2] << 8) | rxData[3]);

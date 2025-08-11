@@ -26,6 +26,8 @@
 #include "GAUL_Drivers/Pyros.h"
 #include "GAUL_Drivers/MEM2067.h"
 
+//#define DEBUG
+
 #ifdef DEBUG
     #define PRINTT(...) printt(__VA_ARGS__)
 #else

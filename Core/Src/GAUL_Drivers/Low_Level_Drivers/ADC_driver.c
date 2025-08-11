@@ -26,13 +26,10 @@ uint8_t ADC_Stop(ADC_HandleTypeDef *hadc) {
 }
 
 uint32_t ADC_Sampling(ADC_HandleTypeDef *hadc) {
+	if (!(hadc->Instance->CR2 & ADC_CR2_ADON)) return 0xFFFF;
+	if (HAL_ADC_PollForConversion(hadc, HAL_MAX_DELAY) != HAL_OK) return 0xFFFF; // Timeout/error
 
-    if (!(ADC1->CR2 & ADC_CR2_ADON)) {
-        return 0xFFFF;
-    }
-    HAL_ADC_PollForConversion(hadc, HAL_MAX_DELAY); // Timeout peut etre ajuste
-    uint32_t adc_value = HAL_ADC_GetValue(hadc);
-    HAL_ADC_Stop(hadc);
-
-    return adc_value;
+	uint32_t adc_value = HAL_ADC_GetValue(hadc);
+	HAL_ADC_Stop(hadc);
+	return adc_value;
 }

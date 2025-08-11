@@ -35,25 +35,18 @@ uint8_t CD74HC4051_Init(ADC_HandleTypeDef *hadc) {
 }
 
 uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyro_channel, float vref) {
-    if (hadc == NULL) {
-        return 0;
-    }
-    if (channel == CHANNEL_1 || channel == CHANNEL_7) {
-        return 0;
-    }
-
-    ADC_Start(hadc);
+    if (hadc == NULL) return 0;
+    if (channel == CHANNEL_1 || channel == CHANNEL_7) return 0;
 
     Write_GPIO(GPIOB, 8, HIGH); // MUL_E~ (inverse)
     Write_GPIO(GPIOA, 15, LOW); // Pyro_Test (inverse)
+
     if (channel == CHANNEL_0) {
         if (pyro_channel == PYRO_CHANNEL_0) {
             Write_GPIO(GPIOB, 4, HIGH); // Pyro_ON0
         } else if (pyro_channel == PYRO_CHANNEL_1) {
             Write_GPIO(GPIOB, 5, HIGH); // Pyro_ON1
-        } else {
-            return 0;
-        }
+        } else return 0;
     } else {
         // Set channel
         Write_GPIO(GPIOC, 13, (channel & 0x01) ? HIGH : LOW);
@@ -62,8 +55,11 @@ uint16_t CD74HC4051_AnRead(ADC_HandleTypeDef *hadc, uint8_t channel, uint8_t pyr
     }
     // Reactiver multiplexer pour lecture
     Write_GPIO(GPIOB, 8, LOW); // MUL_E~ (inverse)
+
     // Lecture
+    ADC_Start(hadc);
     uint32_t adc_value = ADC_Sampling(hadc);
+
     // Desactiver pyros (ordre important)
     Write_GPIO(GPIOB, 4, LOW); // Pyro_ON0
     Write_GPIO(GPIOB, 5, LOW); // Pyro_ON1
@@ -87,12 +83,11 @@ bool Pyro_Check(ADC_HandleTypeDef *hadc, uint8_t pyro_channel) {
 	else
 		return false;
 
-	ADC_Start(hadc);
-
 	Write_GPIO(GPIOB, 8, LOW); // MUL_E~ (inverse)
-
 	HAL_Delay(10);
+
 	// Lecture
+	ADC_Start(hadc);
 	uint32_t adc_value = ADC_Sampling(hadc);
 
 	if(adc_value < PYRO_CONTINUITY_THRESHOLD)

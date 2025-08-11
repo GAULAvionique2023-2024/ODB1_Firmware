@@ -82,6 +82,7 @@
 
 #define ICM20602_GYRO_CALIB_PRECICION		4
 #define ICM20602_PI 						3.14159265358979323846f
+#define ICM20602_G_TO_V 					9.80665f
 
 // Sensor struct
 typedef struct {
@@ -100,6 +101,10 @@ typedef struct {
 	float accX;
 	float accY;
 	float accZ;
+
+	float velX;
+	float velY;
+	float velZ;
 
 	float temperatureC;
 	float accResult;
