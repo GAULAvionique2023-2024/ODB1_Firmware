@@ -120,8 +120,6 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 #define SD_SPI_HANDLE hspi1
-#define ALTITUDE_GND 100 // Minimal altitude
-#define ALTITUDE_MAIN 450 // Altitude main parachute m
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

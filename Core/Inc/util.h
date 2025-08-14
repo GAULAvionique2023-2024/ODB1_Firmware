@@ -51,10 +51,13 @@
 
 // Definitions
 #define MAX_ROCKET_DATA_SIZE (INFLIGHT_DATASIZE > POSTFLIGHT_DATASIZE ? INFLIGHT_DATASIZE : POSTFLIGHT_DATASIZE)
+#define ALTITUDE_GND 100 // Minimal altitude
+#define ALTITUDE_MAIN 450 // Altitude main parachute m
 #define ALTITUDE_TREND_THRESHOLD 5 // meters
-#define ALTITUDE_TREND_MIN_COUNT 5 // nb
-#define ACCZ_MIN 1.2
-#define ANGLE_MIN 5
+#define ALTITUDE_TREND_MIN_COUNT 3 // nb
+#define ACCZ_MIN 2 // g/s2 TODO: Remplacer par une vitesse (machlock)
+#define DROGUE_DELAY_MS 3000 // redondance ms
+#define ANGLE_MIN 5 // deg
 
 #define FILENAME_LOG "log.csv"
 
