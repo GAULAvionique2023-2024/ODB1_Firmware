@@ -28,6 +28,8 @@ static char timer_buffer[128] = {"0"};
 // Parameters
 static uint8_t header_states = 0x00;
 // Variable
+bool main_fired = false;
+bool drogue_fired = false;
 uint32_t drogue_start_time = 0;
 bool drogue_timer_active = false;
 //extern bool push_button;
@@ -108,16 +110,16 @@ uint8_t ROCKET_Behavior(void) {
     if (last_valid_altitude < ALTITUDE_GND) return 0;
 
     // Skip if main/drogue already fired
-    if (rocket_data.header_states.pyro0 == 0 && rocket_data.header_states.pyro1 == 0) return 0;
+    if (drogue_fired == true && main_fired) return 0;
 
-	if (rocket_data.header_states.pyro0 == 0 && rocket_data.header_states.pyro1 == 1) {
+	if (drogue_fired == true && main_fired == false) {
 		// Main: if drogue fired, check if main is ready to fire (Ascending)
 		if (last_valid_altitude <= ALTITUDE_MAIN) {
-			rocket_data.header_states.pyro1 = 0;
+			main_fired = true;
 			Pyro_Fire(PYRO_1);
 			ParseLOG("Main release");
 		}
-	} else if (rocket_data.header_states.pyro0 == 1 && can_read_baro) {
+	} else if (drogue_fired == false && can_read_baro) {
 		// Drogue: if baro_reading & drogue not fired
 		AltitudeTrend trend = Altitude_Trend(last_valid_altitude);
 		// Descending and pyros armed, fire drogue
@@ -130,7 +132,7 @@ uint8_t ROCKET_Behavior(void) {
 			} else {
 				if ((HAL_GetTick() - drogue_start_time) >= DROGUE_DELAY_MS) {
 					drogue_timer_active = false;
-					rocket_data.header_states.pyro0 = 0;
+					drogue_fired = true;
 					Pyro_Fire(PYRO_0);
 					ParseLOG("Drogue release (timer)");
 				}
@@ -155,6 +157,10 @@ uint8_t ROCKET_ModeRoutine(void) {
 	L76LM33_Read(&L76_data);
 
 	// Set header_states
+	if (drogue_fired && drogue_fired) {
+		rocket_data.header_states.pyro0 = Pyro_Check(&hadc1, PYRO_CHANNEL_0);
+		rocket_data.header_states.pyro1 = Pyro_Check(&hadc1, PYRO_CHANNEL_1);
+	}
 	rocket_data.header_states.gps_fix = L76_data.gps_data.fix;
 	header_states = (rocket_data.header_states.mode << 6)
 			| (rocket_data.header_states.pyro0 << 5)

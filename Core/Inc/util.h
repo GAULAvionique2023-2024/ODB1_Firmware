@@ -56,7 +56,7 @@
 #define ALTITUDE_TREND_THRESHOLD 5 // meters
 #define ALTITUDE_TREND_MIN_COUNT 3 // nb
 #define ACCZ_MIN 2 // g/s2 TODO: Remplacer par une vitesse (machlock)
-#define DROGUE_DELAY_MS 3000 // redondance ms
+#define DROGUE_DELAY_MS 1000 // redondance ms
 #define ANGLE_MIN 5 // deg
 
 #define FILENAME_LOG "log.csv"
