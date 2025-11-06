@@ -1,4 +1,100 @@
-.settings
-Release
-Debug
+# Build directories
+build/
+Debug/
+Release/
 **/Backup/*.bak
+
+# IDE and tool-specific files
+.settings/
+.vscode/
+.vs/
+*.code-workspace
+
+# STM32CubeIDE / Eclipse
+.metadata/
+.cproject
+.project
+.classpath
+.factorypath
+.buildpath
+.launch
+RemoteSystemsTempFiles/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+!**/cmake/*.cmake
+CMakeUserPresets.json
+
+# Build artifacts
+*.elf
+*.hex
+*.bin
+*.map
+*.o
+*.d
+*.su
+*.lst
+*.a
+*.so
+*.out
+
+# Linker and compiler outputs
+*.log
+*.axf
+
+# Generated documentation
+html/
+latex/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*~
+*.swp
+*.swo
+*.tmp
+*.bak
+*.old
+
+# Python (if using scripts)
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+
+# FatFS generated files (if applicable)
+*.img
+
+# OpenOCD logs
+openocd.log
+
+# ST-Link logs
+STM32_Programmer_CLI.log
+
+# Compiled Python files
+*.pyc
+
+# JLink logs
+JLink.log
+
+# Optional: Keep STM32CubeMX generated files tracked
+# Uncomment these if you want to track CubeMX generated code
+# !Drivers/
+# !Core/Inc/
+# !Core/Src/
+# !*.ioc
+
+# Optional: Ignore all generated code (if using CubeMX in workflow)
+# Drivers/CMSIS/
+# Drivers/STM32*_HAL_Driver/
+# Middlewares/
+
+cmake/stm32cubemx/
