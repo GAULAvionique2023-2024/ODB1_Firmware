@@ -48,7 +48,6 @@ target_link_options(${PROJECT_NAME} PRIVATE
 
 # --- Sources
 target_sources(${PROJECT_NAME} PRIVATE
-  # Core
   Core/Src/main.c
   Core/Src/util.c
   Core/Src/stm32f1xx_it.c
@@ -57,11 +56,9 @@ target_sources(${PROJECT_NAME} PRIVATE
   Core/Startup/startup_stm32f103c8tx.s
   Core/Src/fatfs_sd.c
 
-  # FatFs glue
   FATFS/App/fatfs.c
   FATFS/Target/user_diskio.c
 
-  # HAL
   Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c
   Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c
   Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c
@@ -78,13 +75,12 @@ target_sources(${PROJECT_NAME} PRIVATE
   Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usart.c
   Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_rcc.c
 
-  # FatFs core
   Middlewares/Third_Party/FatFs/src/ff.c
   Middlewares/Third_Party/FatFs/src/ff_gen_drv.c
   Middlewares/Third_Party/FatFs/src/diskio.c
   Middlewares/Third_Party/FatFs/src/option/ccsbcs.c
 
-  # Your ring buffer (adjust path if yours differs)
+  
   Core/Src/ringbuffer.c
 )
 
